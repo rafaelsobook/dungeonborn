@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@socket.io/component-emitter": "./@socket.io/component-emitter.js",
+    "babylonjs": "./babylonjs.js",
+    "babylonjs-gui": "./babylonjs-gui.js",
+    "babylonjs-loaders": "./babylonjs-loaders.js",
+    "engine.io-client": "./engine.io-client.js",
+    "engine.io-parser": "./engine.io-parser.js",
+    "socket.io-client": "./socket.io-client.js",
+    "socket.io-parser": "./socket.io-parser.js"
+  }
+}

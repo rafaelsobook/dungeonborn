@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="./images/myicon.png">
+    <link rel="apple-touch-icon" href="./images/myicon.png">
+    <title>Dungeon Born</title>
+
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <p class="map-name remove-map"></p> 
+    
+    <div class="craft-btns-cont">
+        <button class="crafthere-btn">cancel</button>
+        <button class="crafthere-btn">craft</button>
+    </div>
+
+    <div class="tutorial-cont">
+        <div class="tutorial-bx">
+            <p class="tut-ttle">Controls</p>
+            <p class="tut-line">W-A-S-D for basic movement</p>
+        </div>
+        <div class="tutorial-bx">
+            <p class="tut-ttle">Modes</p>
+            <p class="tut-line onleft">Character have 3 modes. Standby, Weapon and Fist Mode</p>
+            <p class="tut-line onleft">You Can change your modes by clicking the buttons on your bottom right of the screen</p>
+            <p class="tut-line onleft">You Can only activate weapon mode if you have a weapon equiped</p>
+        </div>
+        <button class="cancel-parent tut-btn">okay</button>
+    </div>
+
+    <div class="notif-popup"> 
+        <p class="notif-ttle">Quest Completed</p>
+    </div>
+    <div class="quest-container trans-close">
+        <p class="quest-label">Quest</p>
+        <div class="quest-list">
+            <div class="qst-bx">
+                <p class="qst-ttle">Kill Goblins</p>
+                <p class="reward-cap">reward: 1000</p>
+                <p class="req-rank">job class: <span class="rank-n">F</span></p>
+            </div>
+        </div>
+        <button class="cancel-parent guild-btn">cancel</button>
+    </div>
+    <p class="fps"></p>
+    <div class="adventurer-cont">
+        <p class="adv-cap">Adventurer Details</p>
+        <div class="adv-det">
+            <p class="adv">rank: F</p>
+            <p class="adv">kills: 85</p>
+            <p class="adv">quests: 10</p>
+        </div>
+        <p class="adv-cap">My Quests</p>
+        <div class="adv-quests">
+            <div class="myquest-bx">
+                <img src="./images/loots/scroll.png" alt="" class="myquest-img">
+            </div>
+        </div>
+        <button class="cancel-parent guild-btn">close</button>
+    </div>
+    <div class="rewardinfo-cont transClose">
+        <div class="rew-up">
+            <img src="./images/questpics/goblinslayer.png" alt="" class="rew-mons-img">
+            <h2 class="reward-ttle">Goblin Slayer</h2>
+        </div>
+        <p class="reward-desc">There are so many of them and we will ask our fellow adventurers to clean the job</p>
+        <div class="reward-info">
+            <p class="rank-float">F</p>
+            <div class="rewards-pictures">
+                Item Rewards:
+                <img src="./images/loots/azurite.png" alt="" class="reward-img" />
+                <img src="./images/loots/redberyl.png" alt="" class="reward-img" />
+                <img src="./images/loots/alexandrite.png" alt="" class="reward-img" />
+            </div>
+            <div class="reward-coin">
+                <img src="./images/UI/coins.png" class="coin-img" alt="">
+                <span class="rc">100</span>
+            </div>
+        </div>
+        <button class="accept-quest-btn">accept quest</button>
+        <button class="cancel-parent guild-btn">close</button>
+    </div>
+    <div class="scroll-cont">
+        <img class="scroll-img" src="./images/setup/scroll.png" alt="">
+
+        <p class="scroll-ttle"></p>
+        <p class="scroll-mess"></p>
+        <div class="scroll-btns">
+            <button class="scroll-btn decline">Decline</button>
+            <button class="scroll-btn accept">Accept</button>    
+        </div>
+    </div>
+    <div class="doing-container">
+        <p class="doing-name">Sleeping</p>
+
+        <button class="cancel-doing">wake up</button>
+    </div>
+    <div class="apartment-cont">
+        <div class="aprt-info">
+            <p class="aprt-name">Amys Apartment</p>
+            <div class="aprt-det">
+                <div class="price-details">
+                    <p class="pRent rents">2300$</p> 
+                </div>
+                <div class="aprt-btns">
+                    <button class="aprt-btn rent">rent</button>
+                </div>
+            </div>
+            <button class="cancel-buying">cancel</button>
+        </div>
+        <div class="aprt-loading-bx">
+            <p class="aprt-load-cap">Loading ...</p>
+        </div>
+    </div>
+    <div class="world-chat-container slide-left">
+        <p class="chat-min-btn slide-down"> >> </p>
+        <p class="players-online">players: 1</p>
+        <div class="chats-list">
+            <!-- <div class="pl-bx">
+                <p class="pl-name">oscar:</p>
+                <p class="pl-message">HI guys where you left Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore asperiores corrupti vitae. Unde est, laboriosam non molestias atque nihil itaque, molestiae voluptas iste facilis tenetur. Vel saepe voluptatibus aliquam laboriosam.</p>
+            </div>
+            <div class="pl-bx mine-bx">
+                <p class="pl-name">conyo:</p>
+                <p class="pl-message">HI guys where you left Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore asperiores corrupti vitae. Unde est, laboriosam non molestias atque nihil itaque, molestiae voluptas iste facilis tenetur. Vel saepe voluptatibus aliquam laboriosam.</p>
+            </div> -->
+        </div>
+        <div class="send-container">
+            <input type="text" class="message-inp" />
+            <button id="send-btn">send</button>
+        </div>
+        <div class="mode-opt-cont">
+            <div class="opt-bx" id="pkMode">
+                <div class="opt-circ"></div>
+                <p class="opt-label">PK Mode</p>
+            </div>
+            <div class="opt-bx" id="safeMode">
+                <div class="opt-circ on"></div>
+                <p class="opt-label">Safe Mode</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-page">
+        <div class="copyright">Ⓒ dungeonBorn 2023 beta test</div>
+        <div class="backgrounds-container"></div>
+        <img src="./images/wallpaper/wall3.jpg" class="wallpaperz" />
+        <nav>
+            <div class="nav-choices">
+                <button class="nav-choice"> <span class="slog">A</span>bout</button>
+                <button class="nav-choice" id="installGame">Install</button>
+            </div>
+            
+            <div class="nav-choices">
+                <button class="nav-choice gotoreg desk"> <span class="slog">R</span>egister</button>
+                <button class="nav-choice gotologin desk"> <span class="slog">L</span>ogin</button>
+            </div>
+        </nav>
+        <p class="logo back-to-home"><span class="slog">D</span>ungeon <span class="slog">B</span>orn</p>
+        <button class="homepage-btn" id="continue">continue</button>
+        <div class="login-container">
+            <div class="login-background"></div>
+            <div class="circ-backg"></div>
+            <input type="text" placeholder="Enter UserName"
+            id="usernameInp" class="inputs" />
+
+            <input type="password" placeholder="Enter Password"
+            id="passwordInp" class="inputs" />
+
+            <input type="password" placeholder="Confirm Password"
+            id="confirmpass" class="inputs toreg" />
+
+            <div class="login-cont-btns">
+                <button class="btn" id="loginBtn">Login</button>
+                <button class="btn toreg" id="createRegister">Create</button>
+                <button class="btn back-to-home">Back</button>
+            </div>
+
+        </div>
+    </div>
+    <!-- THE LIFE AND MANA GUI -->
+    <div class="simple-details-gui">
+        <p class="lvl-name">lvl 2 orchid</p>
+        <div class="life-mana-bx">
+            <div class="bar-outline">
+                <div class="life-ui bar"></div>
+                <p class="lifeCap thecap"></p>
+            </div>
+            <div class="bar-outline">
+                <div class="mana-ui bar"></div>
+                <p class="manaCap thecap"></p>
+            </div>
+        </div>
+        <div class="stam-bx">
+            <div class="stamina-bar"></div>
+            <p class="stamCap"></p>
+        </div>
+        <div class="survival-stats">
+            <div class="surv-bx">
+                <img src="./images/UI/stomach.png" alt="" class="surv-img">
+                <p class="hungStat surv-lbl">100</p>
+            </div>
+            <div class="surv-bx">
+                <img src="./images/UI/pillow.png" alt="" class="surv-img">
+                <p class="restStat surv-lbl">100</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="guild-cont">
+        <p class="guild-title"></p>
+        <button class="guild-btn claimReward">claim rewards</button>
+        <button class="guild-btn guild-yes"></button>
+        <button class="guild-btn guild-sell-items">sell items</button>
+        <button class="cancel-parent guild-btn">cancel</button>
+    </div>
+    <div class="warning-screen">
+        <img src="./images/settings/phone.svg" alt="" class="warning-img">
+        <p class="warning-label">Landscape To Play</p>
+    </div>
+    <div class="popup transClosePopUp">
+        <h2 class="popup-caption"></h2>
+    </div>
+    <div class="intro-load-screen">
+        <p class="ils-cap">Dungeon Born</p>
+    </div>
+    <div class="questions-cont">
+        <p class="question">Question 1</p>
+    </div>
+    <div class="blessings-cont">
+        <div class="bless-bx">
+            <img src="./images/blessings/oblivion.png" alt="" class="bless-img">
+            <p class="bless-ttle">Appolo's Grace</p>
+            <p class="bless-desc">Apollo the healing God will support you by watching your health as you heal</p>
+        </div>
+    </div>
+    <div id="loadingScreen">
+        <img src="./images/settings/menu.png" alt="" class="lc-img">
+        <p class="lc-cap">Loading</p>
+        <p class="ls-percent">0%</p>
+        <p class="ls-tips">Always bring pickaxe for dungeons</p>
+    </div>
+
+    <div class="nointernet">
+        <img src="./images/loots/brokensword.png" alt="" class="ni-img">
+        <p class="ni-cap">Server Error</p>
+    </div>
+    <div class="toCook-cont">
+        <p class="tocook-label">Raw Foods</p>
+        <div class="tocook-list">
+  
+        </div>
+        <button class="cancel-parent cancel-cook">cancel</button>
+    </div>
+    <div class="setup-container">
+        <div class="category">
+            <img src="./images/setup/hair.png" class="cat hair" />
+            <img src="./images/setup/cloth.png" class="cat cloth" />
+            <img src="./images/setup/pants.png" class="cat pants" />
+            <img src="./images/setup/boots.png" class="cat boots" />
+        </div>
+        <div class="choices">
+            <p class="choices-label"></p>
+            <ul class="choices-list">
+            </ul>
+            <div class="naming-container">
+                <input type="text" placeholder="Character Name"
+                id="characName" class="set-up-name-inp" />
+                <button id="createAndStart">create</button>
+            </div>
+            <button id="doneSetup" class="done-setup">Done</button>
+        </div>
+    </div>
+    <div class="other-controls">
+        <img src="./images/UI/craftIcon.svg" id="craftIcon" alt="" class="oc-img">
+        
+    </div>
+    <div class="craft-container">
+        <p class="cc-label">Craft</p>
+        <div class="to-crafts">
+            <img src="./images/actions/bonfire.svg" alt="" class="craft-img bonfire">
+        </div>
+        <button class="cancel-parent cancel-craft">cancel</button>
+    </div>
+    <div class="right-upper-ui game-controls">
+        <button class="rui-btn openstatus">
+            <img src="./images/UI/statusImg.png" class="rui-img" />
+            <p class="rui-caps">items</p>
+        </button>
+        <button class="rui-btn crafts">
+            <img src="./images/UI/craft.png" class="rui-img" />
+            <p class="rui-caps">craft</p>
+        </button>
+        <button class="rui-btn myquests">
+            <img src="./images/UI/guildbook.png" class="rui-img" />
+            <p class="rui-caps">quests</p>
+        </button>
+        <!-- <div class="action-controller-cont">
+            <button class="rui-btn stand">
+                <img class="rui-img" src="./images/UI/standpic.png" />
+            </button>
+            <button class="rui-btn fist">
+                <img class="rui-img" src="./images/UI/handpic.png" />
+            </button>
+            <button class="rui-btn weapon">
+                <img class="rui-img" src="./images/UI/swordpic.png" />
+            </button>
+        </div> -->
+    </div>
+    <div class="storyboard-container">
+        <p class="story-word">Have You Ever Been Reborn <br/> In Another World</p>
+    </div>
+    <img src="./images/UI/arrowR.png" class="arrow-r" alt="">
+    <div class="right-lower-ui game-controls">
+        <img id="attackBtn" src="./images/UI/btnBackG.png" class="for-border" />
+        <button class="atk-btn-bx">
+            <img src="./images/UI/fistattack.png" class="attack-img" />
+        </button>
+        
+        <img src="./images/setup/armorui/blade.svg" alt="" class="swordpic-btn mode-btn">
+        <img src="./images/UI/handpic.png" alt="" class="handpic-btn mode-btn">
+        <img src="./images/UI/standpic.png" alt="" class="walkpic-btn mode-btn">
+        <img src="./images/setup/armorui/blade.svg" alt="" class="throw-btn mode-btn">
+    </div>
+    <p class="transaction-message trans-close">Bought Successfully</p>
+    <div class="profile">
+        <p class="close-btn">X</p>
+        <div class="background">
+            <div class="left backg left-backg"></div>
+            <div class="mid backg"></div>
+            <div class="right backg"></div>
+        </div>
+        <div class="profile-ui">
+            <div class="occupation-titles stat-bx">
+                <div class="occupation">
+                    <p class="occ-label">occupation</p>
+                    <h2 class="occ-ttle">none</h2>
+                </div>
+                <div class="quests"></div>
+            </div>
+            <div class="inventory stat-bx">
+                <div class="inv-categ">
+                    <p class="inv-label">Inventory</p>
+                    <p class="coin">coins: 2314</p>
+                </div>
+                <div class="inv-list">
+                    
+                </div>
+            </div>
+            <div class="armory-status stat-bx">
+                <div class="prof-choices">
+                    <button class="prf-btn myequipeds">Armory</button>
+                    <button class="prf-btn statUpgrades">Upgrades</button>
+                    <button class="prf-btn profDetails">Details</button>
+                </div>
+                <div class="prof-details">
+                    <div class="lvl-rank">
+                        <p class="lvl">Lvl. 1</p>
+                        <p class="rank">Rank: F</p>
+                    </div>
+    
+                    <div class="mystatus">
+                        <p class="mystat-label hplabel">HP: 22/120</p>
+                        <p class="mystat-label mp">MP: 402/100</p>
+                        <p id="statExp" class="mystat-label exp">exp: 0%</p>
+                    </div>
+                </div>
+                <div class="equipedItems">
+                    <div class="armor-set forweapon">
+                        <div class="arms-bx">
+                            <img class="arms-img" src="./images/setup/armorui/blade.svg" alt="">
+                            <p class="arm-cap">sword</p>
+                        </div>
+                        <p class="none-cap">none</p>
+                        <div class="arm-det">
+                            <p class="arm-dmg-def">damage <span class="a-s">+140</span></p>
+                            <p class="normal-arm-cap">durability</p>
+                            <div class="durab-bx">
+                                <div class="dura-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="armor-set forshield">
+                        <div class="arms-bx">
+                            <img class="arms-img" src="./images/setup/armorui/shield.svg" alt="">
+                            <p class="arm-cap">shield</p>
+                        </div>
+                        <p class="none-cap">none</p>
+                        <div class="arm-det">
+                            <p class="arm-dmg-def">damage <span class="a-s">+140</span></p>
+                            <p class="normal-arm-cap">durability</p>
+                            <div class="durab-bx">
+                                <div class="dura-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="armor-set forhelmet">
+                        <div class="arms-bx">
+                            <img class="arms-img" src="./images/setup/armorui/helmet.svg" alt="">
+                            <p class="arm-cap">helmet</p>
+                        </div>
+                        <p class="none-cap">none</p>
+                        <div class="arm-det">
+                            <p class="arm-dmg-def">damage <span class="a-s">+140</span></p>
+                            <p class="normal-arm-cap">durability</p>
+                            <div class="durab-bx">
+                                <div class="dura-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="armor-set forarmor">
+                        <div class="arms-bx">
+                            <img class="arms-img" src="./images/setup/armorui/armor.svg" alt="">
+                            <p class="arm-cap">armor</p>
+                        </div>
+                        <p class="none-cap">none</p>
+                        <div class="arm-det">
+                            <p class="arm-dmg-def">damage <span class="a-s">+140</span></p>
+                            <p class="normal-arm-cap">durability</p>
+                            <div class="durab-bx">
+                                <div class="dura-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="armor-set forboots">
+                        <div class="arms-bx">
+                            <img class="arms-img" src="./images/setup/armorui/boots.svg" alt="">
+                            <p class="arm-cap">boots</p>
+                        </div>
+                        <p class="none-cap">none</p>
+                                                <div class="arm-det">
+                            <p class="arm-dmg-def">damage <span class="a-s">+140</span></p>
+                            <p class="normal-arm-cap">durability</p>
+                            <div class="durab-bx">
+                                <div class="dura-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upgradeCont">
+                    <div class="points-bx">
+                        <p class="label-pnts">Upgrade Stats</p>
+                        <p class="points">points: 1</p>
+                    </div>
+                
+                    <div class="eqpdbx" id="sword">
+                        <img src="./images/setup/swordpic.png" class="eqpd sword" />
+                        <p class="eqpd-int sword">1</p>
+                        <p class="stat-label">weapon</p>
+                        <button class="button-upgrade">+</button>
+                    </div>
+                    <div class="eqpdbx" id="def">
+                        <img src="./images/setup/armor.png" class="eqpd armor" />
+                        <p class="eqpd-int def">1</p>
+                        <p class="stat-label">defense</p>
+                        <button class="button-upgrade">+</button>
+                    </div>
+                    <div class="eqpdbx" id="core">
+                        <img src="./images/setup/muscles.png" class="eqpd cloth" />
+                        <p class="eqpd-int core">1</p>
+                        <p class="stat-label">strength</p>
+                        <button class="button-upgrade">+</button>
+                    </div>
+                    <div class="eqpdbx" id="magic">
+                        <img src="./images/setup/magic.png" class="eqpd pants" />
+                        <p class="eqpd-int magic">1</p>
+                        <p class="stat-label">sorcery</p>
+                        <button class="button-upgrade">+</button>
+                    </div>
+                    
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="merchant-choice-cont">
+        <button class="merch-btn buy">Buy</button>
+        <button class="merch-btn sell">Sell</button>
+        <button class="merch-btn cancel">Cancel</button>
+    </div>
+    <div class="shopchoice-cont">
+        <p class="close-btn">X</p>
+        <p class="shop-categ">Buy Equipments</p>
+        <div class="shop-list">
+            <div class="shopbx">
+                <img src="./images/loots/ruztysword.png" class="shop-img" />
+                <p class="shopitem-name">Ruzty Sword</p>
+                <button class="shopitem-btn">2800</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="speech-cont speech-close">
+        <p class="speaker-name">Rafael</p>
+        <p class="speaker-speech">...What's this</p>
+        <button class="nextBtn">>></button>
+    </div>
+
+    <div class="popup-actions-container">
+        <button class="pac-btn">
+            <img class="pac-btnimg" src="./images/actions/pickaxe.png" />
+        </button>
+    </div>
+
+    <div class="acquired-lists">
+       
+    </div>
+
+    <!-- ITEM INFO  -->
+    <div class="item-info-cont">
+        <p class="close-btn">X</p>
+        <div class="iet-top">
+            <img src="./images/loots/berries.png" alt="" class="iet-img">
+            <p class="iet-item-name">Berries</p>
+            
+        </div>
+        <p class="plus-info"></p>
+        <p class="iet-desc">
+            this fruit can fill your thirst and hunger for short
+            period of time
+        </p>
+        <div class="item-info-btns">
+        </div>
+    </div>
+
+    <div class="admin-page">
+        <div class="admin-container">
+            <input type="text" placeholder="Spawn Type" name="spawntype"
+            class="admin-input" />
+            <input type="text" placeholder="Place Name" name="place"
+            class="admin-input" />
+            <input type="text" placeholder="Model Name" name="name"
+            class="admin-input" />
+            <input type="text" placeholder="Hits" name="hits"
+            class="admin-input" />
+            <input type="text" placeholder="X,Z" name="pos"
+            class="admin-input" />
+            <input type="text" placeholder="Item Details" name="details"
+            class="admin-input ai-itemdet" />
+            <div class="admin-btn-container">
+                <button class="admin-btn" id="adminCreate">create</button>
+            </div>
+        </div>
+    </div>
+    <p class="lvl-up-message"></p>
+
+    <!-- <div class="topick-bx">
+        <div class="topick-img-bx">
+            <p class="topick-cap">item drop</p>
+            <img src="./images/loots/azurite.png" class="topick-img" alt="">
+        </div>
+        <p class="topick-desc"> Lorem ipsum, dolor sit amet co</p>
+        <div class="topick-btns">
+            <button class="tp-btn">cancel</button>
+            <button class="tp-btn">accept</button>
+        </div>
+    </div> -->
+    
+<script type="text/javascript">
+if('serviceWorker' in navigator){
+    window.addEventListener('load', e => {
+        navigator.serviceWorker.register('sw.js')
+    })
+}
+</script>
+<script type="module" src="./index.js"></script>
+</body>
+</html>
