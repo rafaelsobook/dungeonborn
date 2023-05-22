@@ -1,4 +1,4 @@
-import AllCrafts from "../crafts/crafts"
+import AllCrafts from "../crafts/crafts.js"
 
 const npcDet = {
     _id: '', 
