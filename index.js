@@ -446,12 +446,18 @@ function showNotif(message, dura){
 function closeNotif(){
     notifPopup.style.display = "none"
 }
-function translateRank(theRank){
-    switch(theRank){
-        case "0":
-            return "F"
-        break;
-    }
+function showChartMesssage(ttleOfChart, theMessage, justifyStyle, alignStyle, textAlignStyle){
+    tutorialCont.innerHTML = ''
+    const divBx = createElement("div", "tutorial-bx")
+    const pTitle = createElement("p", "tut-ttle", ttleOfChart)
+    const pDesc = createElement("p", "tut-line", theMessage)
+    pDesc.style.justifyContent = justifyStyle
+    pDesc.style.alignItems = alignStyle
+    pDesc.style.textAlign = textAlignStyle
+    divBx.append(pTitle)
+    divBx.append(pDesc)
+    tutorialCont.append(divBx)
+
 }
 class App{
     constructor(userdet){
@@ -1568,7 +1574,7 @@ class App{
                         }
                     }
                 })
-                if(requirementsPassed < crft.requirements.length) return this._statPopUp("Insufficient tools")
+                if(requirementsPassed < crft.requirements.length) return crftBx.innerHTML = `<p class="insuf">Insufficient Tools</p>`
                 toCraftCont.style.display = "flex"
                 craftCont.style.display = "none"
                 switch(crft.name){
@@ -1686,15 +1692,21 @@ class App{
                     if(!rankDet) return log("not found my rank")
                     advDet.children[0].innerHTML = `rank: ${rankDet.displayRank}`
                     advDet.children[1].innerHTML = `kills: ${this.det.monsterKilled}`
-                    advDet.children[2].innerHTML = `quest: ${this.det.clearedQuests.totalCleared}`
+                    advDet.children[2].innerHTML = `cleared: ${this.det.clearedQuests.totalCleared}`
                     advQuestLists.innerHTML = ''
                     this.checkItemsForQuest("edibles")
                     this.det.quests.forEach(myqst => {
                         log(myqst)
                         const newDiv = createElement("div", "myquest-bx")
                         const newImg = createElement("img", "myquest-img")
-                        newImg.src = `./images/loots/scroll.png`
+                        if(myqst.questPicName !== ""){
+                            newImg.src = `./images/questpics/${myqst.questPicName}.png`
+                        }else{
+                            newImg.src = `./images/loots/${myqst.questTarget.targetName}.png`
+                        }
+                        const qstTtle = createElement("p", "myquest-ttle", myqst.title)
                         newDiv.append(newImg)
+                        newDiv.append(qstTtle)
                         advQuestLists.append(newDiv)
                         
                         newDiv.addEventListener("click", () => {
@@ -1891,13 +1903,16 @@ class App{
         })
         // kaya nandito tong restingInterval kase kelangan ko din sa cancelDoing
         let restingInterval
-        cancelDoingBtn.addEventListener("click", e => {
+        cancelDoingBtn.addEventListener("click", async e => {
             //means we're sleeping
             if(this.targetRecource.name === "bedleave"){
                 doingCont.style.display = "none"
                 this.myChar.mode = "stand"
                 openGameUI()
                 this.allCanPress()
+                this.myChar.bx.position.y = this.yPos
+                log("waking up from bed leave")
+                this.updateMyDetailsOL(this.det, false);
                 return clearInterval(restingInterval)
             }
             if(this.targetRecource.name.includes("bed")){
@@ -2065,7 +2080,7 @@ class App{
                 cancelDoingBtn.innerHTML = 'wake up'
                 closeGameUI()
                 const blpos = this.targetRecource.position
-                this.myChar.bx.position = new Vector3(blpos.x,blpos.y+1,blpos.z)
+                this.myChar.bx.position = new Vector3(blpos.x,blpos.y+.8,blpos.z)
                 this.myChar.mode = "onground"
                 clearInterval(restingInterval)
                 restingInterval = setInterval(() => {
@@ -2394,6 +2409,7 @@ class App{
                         const curpos = this.myChar.bx.position
                         this.socket.emit("stop", {_id: this.det._id, dirTarg:{x: recPos.x,z:recPos.z}, mypos: {x: curpos.x,z:curpos.z} })
                     }
+                    this._statPopUp("required stamina", 100, "yellow")
                     return clearInterval(this.hitRecourceInterval)
                 }
                 
@@ -2479,7 +2495,7 @@ class App{
             // take the quest
             // after taking delete the quest
             rewardInfoCont.style.display = "none"
-            if(this.det.quests.length >= 2) return this.showTransaction("You Still Have 2 Quest", 2000)
+            if(this.det.quests.length >= 1) return this.showTransaction("Finish Your Current Quest", 2000)
             if(parseInt(this.det.rank)+2 <= parseInt(rewardInfo.requiredRank)) return this.showTransaction(`Your Rank Is Low For This`, 2000)
             this.cannotBeClick([questCont])
             this.showTransaction("Registering Quest ...", false)
@@ -2700,6 +2716,9 @@ class App{
                     this.det.rank = this.det.rank.toString()
 
                     this.det.clearedQuests.currPoints=0
+                    this.det.clearedQuests.totalCleared+=1
+                    const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
+                    if(myCurRank) showChartMesssage("Congratulations", `You are promoted to Rank ${myCurRank.displayRank}`, "center", "center", "center")
                 }
             })
             await this.updateMyDetailsOL(this.det, true);
@@ -4074,13 +4093,15 @@ class App{
 
         cam.onCollide = m => {
             log('cam colliding with ' + m.name)
-            
-            this.camZoomingIn = true
-            cam.alpha+=.05
-            clearTimeout(this.hideMeshTimeOut)
-            this.hideMeshTimeOut = setTimeout(() => {
-                this.camZoomingIn = false
-            }, 2000)
+            cam.radius-=.5
+            // this.camZoomingIn = true
+            // cam.alpha-=Math.PI/2
+            // clearTimeout(this.hideMeshTimeOut)
+            // this.hideMeshTimeOut = setTimeout(() => {
+            //     // cam.lowerRadiusLimit = 5.6 ;
+            //     // cam.upperRadiusLimit = 14.5//6.1
+            //     this.camZoomingIn = false
+            // }, 2000)
             // if(cam.radius > 1) cam.radius -= 2.10
             // this.camZoomingOut = false
             // clearTimeout(this.hideMeshTimeOut)
@@ -4094,6 +4115,12 @@ class App{
             //         m.isVisible = true
             //     }, 500)
             // }
+            if(m.name.includes("house") || m.name.includes("wall")){
+                if(isLoading){
+                    log("cam is stock while loading")
+                    cam.alpha = Math.PI
+                }
+            }
         }
         // cam.exit
         this.cam = cam
@@ -4191,8 +4218,9 @@ class App{
     updateHunger(){
         if(this.det.survival.hunger > 0) this.det.survival.hunger-=1
         this.updateSurvival_UI();
-        const toDeduct = this.det.maxHp*.7
-        if(this.det.hp > toDeduct){
+        const toDeduct = this.det.maxHp*.1 // 10% of life
+
+        if(this.det.hp > toDeduct && this.det.survival.hunger < 1){
             this.det.hp -= toDeduct
             this._statPopUp(`- ${toDeduct}hp hunger`, 500, 'crimson');
         }
@@ -4228,16 +4256,17 @@ class App{
             this.updateHunger()
             // saling ketket lang tong check body
             this.checkBody()
-        }, 28.5 * 1000)
+        }, 40.5 * 1000)
         this.sleepyInterval = setInterval(() => {
-            if(this.det.survival.sleep > 0) this.det.survival.sleep--
+            if(this.det.survival.sleep > 0) this.det.survival.sleep-=.2
+            if(this.det.survival.sleep < 0.2) this.det.survival.sleep = 0
             this.updateSurvival_UI();
             if(this.det.survival.sleep < 10){
                 restStat.parentElement.children[0].style.animation = "blinkingRed .5s infinite"
             }else{
                 restStat.parentElement.children[0].style.animation = "none"
             }
-        }, 20.2 * 1000)
+        }, 2.2 * 1000)
         log("successfully made the life") 
     }
     updateHP_UI(){
@@ -4254,8 +4283,8 @@ class App{
     }
     updateSurvival_UI(){
         const {sleep, hunger} = this.det.survival
-        hungStat.innerHTML = hunger
-        restStat.innerHTML = sleep
+        hungStat.innerHTML = Math.floor(hunger)
+        restStat.innerHTML = Math.floor(sleep)
     }
     updateLifeManaSpGUI(){
         this.updateHP_UI()
@@ -5369,14 +5398,15 @@ class App{
         gl.intensity = 1
 
         const trapDmg = 50*floorNumber
-        this.createTrap(this.det._id, "earth", {x: 0, y: .2, z: -70}, 2400,trapDmg, 1000, 3)
-        let trapTill = 110;
+        this.createTrap(this.det._id, "earth", {x: 0, y: .2, z: -70}, 2400,trapDmg, 1000, 2)
+        let trapTill = 70;
         let startingTrap = -80
         while(startingTrap <= trapTill){
-            this.createTrap(this.det._id, "earth", {x: -9 + Math.random()*20, y: .2, z: startingTrap}, 2400, trapDmg, 1000, 10)
-            startingTrap+=1
+            this.createTrap(this.det._id, "earth", {x: -9 + Math.random()*20, y: .2, z: startingTrap}, 2400, trapDmg, 1000, 2)
+            startingTrap+=3
         }
-
+        this.createBlock(100,100,{x: 0, z: -106}, 0, scene);
+        this.createBlock(100,100,{x: 0, z: 106}, 0, scene);
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
@@ -5435,7 +5465,6 @@ class App{
         Spike.meshes.forEach(mesh => mesh.position.y+=100);
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
         this.registerBlocks(this.myChar, .09);
-      
     }
     async _heartLand(){
         this.emptyArray();
@@ -6690,7 +6719,10 @@ class App{
         //         this.camZoomingOut = false
         //     }
         // }
-        if(this.camZoomingIn)cam.radius -= .10
+        if(this.camZoomingIn && this.cam){
+            this.cam.radius-=.7
+        }
+        
            
         this.myChar.weaponCol.locallyTranslate(new Vector3(0,.3,0))        
 
@@ -7809,10 +7841,10 @@ class App{
         this.toRegAction(this.myChar.bx, bedleav, () => {
             this.openPopUpAction("rest")
             this.targetRecource = bedleav;
+            log("colliding with bedleave")
         })
         this.toRegActionExit(this.myChar.bx, bedleav, () => {
             this.closePopUpAction()
-            this.targetRecource = undefined;
         })
     }
     createNpc(theCharacterRoot, det, castShadow, npcCol){
@@ -8455,7 +8487,7 @@ class App{
                         }, startingRelease)
                         startingRelease+=2000
                     }
-                    
+                    this.createTextMesh(makeRandNum(), "Trap Detected", "red", this.myChar.bx.position, 100, this._scene, true, false)
                 break
             }
         })

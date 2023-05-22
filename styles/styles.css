@@ -3965,14 +3965,32 @@ nav {
 }
 
 .adventurer-cont .adv-quests .myquest-bx {
-  width: 50px;
-  height: 50px;
   cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 10px;
+  border: 2px solid #adadad;
+  border-radius: 3px;
 }
 
 .adventurer-cont .adv-quests .myquest-bx .myquest-img {
-  height: 100%;
-  width: 100%;
+  width: 60px;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(216, 195, 9, 0.876)), color-stop(rgba(184, 166, 10, 0.876)), color-stop(rgba(149, 136, 11, 0.876)), to(rgba(149, 136, 11, 0.476)));
+  background: linear-gradient(to bottom, rgba(216, 195, 9, 0.876), rgba(184, 166, 10, 0.876), rgba(149, 136, 11, 0.876), rgba(149, 136, 11, 0.476));
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.adventurer-cont .adv-quests .myquest-bx .myquest-ttle {
+  font-family: "Bellefair", serif;
+  color: #adadad;
 }
 
 .adventurer-cont .adv-det {
@@ -4830,5 +4848,12 @@ nav {
   opacity: 0.8;
   -webkit-transform: scale(0.9);
           transform: scale(0.9);
+}
+
+.insuf {
+  width: 100%;
+  text-align: center;
+  color: #adadad;
+  padding: 20px;
 }
 /*# sourceMappingURL=styles.css.map */
