@@ -1,4 +1,4 @@
-import AllCrafts from "../crafts/crafts.js"
+import AllCrafts from "../crafts/crafts.js" // lagi dapat may JS to
 
 const npcDet = {
     _id: '', 
@@ -338,8 +338,8 @@ const npcInfos = [
         _id: `npc${randomNum()}`,
         name: 'niko',
         nType: "standby",
-        x: -6 + Math.random()*10,
-        z: 51.3,
+        x: 10.4,
+        z: 11.5,
         toWear: {hair: "aegon", cloth: "grand", pants: "brown", boots: "sinbad", hairColor: {r: .1,g: .1,b:1}},
         displayW: {name: "none", isHide: false},
         armor: {name: "none"},
@@ -352,15 +352,15 @@ const npcInfos = [
                 console.log('still have it ', playerDet.storyQue )
                 return this.speech(playerDet.name)
             }else{
-                console.log("no more friend here")
-                return this.secSpeech
+                return this.normSpeech
             }
         },
-        dirTarg: {x:0, z: 80},
+        dirTarg: {x:9, z: 13.5},
         speech: function(mainName){
-            return [{ name: mainName, message: "I'm looking for someone named Niko" },{name: 'Niko', message: "You must be him, I'm Informed I will see you here..."}, {name: 'Niko', message: "I Know the Person who sent you here, No One must know how you got In here and where you came from ..."}, {name: 'Niko', message: "I'm here to support you In your Journey, He told me that you might need something ..."}]
+            return [{ name: mainName, message: "Are you ...." },{name: 'Niko', message: "You must be him, I'm Informed I will see you here..."}, {name: 'Niko', message: "I Know the Person who sent you here, No One must know how you got In here and where you came from ..."}, {name: 'Niko', message: "I'm here to support you In your Journey, You might need something ..."}]
         },
-        secSpeech: [{name: "Niko", message: "Goodluck On Your Journey, If you want to rest you can rent in one of the apartments"}, {name: "Niko", message: "Having a good meal and enough rest will keep your focus"}, {name: "Niko", message: "You can sometimes find me here, I have some quests going on ... I might not be here always "}]
+        secSpeech: [{name: "Niko", message: "Goodluck On Your Journey, If you want to rest you can rent in one of the apartments"}, {name: "Niko", message: "Having a good meal and enough rest will keep your focus"}, {name: "Niko", message: "You can sometimes find me here, I have some quests going on ... I might not be here always "}],
+        normSpeech: [{name: "Niko", message: "Be Careful Out there ..."}]
     },
     {...npcDet,
         _id: `npc${randomNum()}`,

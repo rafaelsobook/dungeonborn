@@ -3,7 +3,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Almendra+Display&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Graduate&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bellefair&display=swap");
-
+@import url("https://fonts.googleapis.com/css2?family=Bellefair&display=swap");
 $naturalBlack: rgb(29, 28, 28);
 $superBlack: rgb(15, 17, 17);
 $littleBlack: rgb(116, 109, 99);
@@ -16,6 +16,7 @@ $mapfont: "Caudex", serif;
 $scrollfont: "Almendra Display", cursive;
 $tipsFont: "Bellefair", serif;
 $numFont: "Graduate", cursive;
+$gamefont: "Bellefair", serif;
 
 * {
   margin: 0;
@@ -83,27 +84,31 @@ body {
 }
 nav {
   position: fixed;
-  top: 0;
+  top: 1%;
   left: 0;
   right: 0;
-  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.6),
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 0, 0, 0.1),
-    rgba(0, 0, 0, 0)
-  );
+  // background: linear-gradient(
+  //   to bottom,
+  //   rgba(0, 0, 0, 0.6),
+  //   rgba(0, 0, 0, 0.5),
+  //   rgba(0, 0, 0, 0.3),
+  //   rgba(0, 0, 0, 0.1),
+  //   rgba(0, 0, 0, 0)
+  // );
+  background: linear-gradient(to Bottom, #1a1e41, #252947, #161930, #030311);
+  transform: scale(0.98);
+  border-radius: 5px;
+  border-radius: 1px solid #7d878f;
 }
 .nav-choices {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px 5px;
   .nav-choice {
     background: none;
     border: none;
@@ -116,13 +121,16 @@ nav {
     .slog {
       font-weight: 1900;
       color: white;
-      font-family: $scrollfont;
-      font-size: 2rem;
+      font-family: $gamefont;
     }
   }
   .nav-choice:active {
     transform: scale(0.98);
   }
+}
+.dark-nav {
+  background: rgba(0, 0, 0, 0.2);
+  padding-left: 15px;
 }
 
 .logo {
@@ -137,23 +145,14 @@ nav {
   cursor: pointer;
   font-weight: 700;
   z-index: 8;
-  .slog {
-    font-weight: 1900;
-    color: black;
-    font-family: $scrollfont;
-  }
 }
-
-@media (max-height: 450px) {
-  .logo {
-    top: 10%;
-    font-size: 2.4rem;
-  }
-}
-@media (max-width: 620px) {
+@media (max-height: 500px) {
   .nav-choices {
     .nav-choice {
-      font-size: 1.2rem;
+      font-size: 0.9rem;
+      .slog {
+        font-size: 1rem;
+      }
     }
   }
 }
@@ -179,8 +178,9 @@ nav {
 .home-page {
   @include fitToScreen(2);
   @include flexCenter();
-  background: transparent;
-  background: $naturalBlack;
+  background: url("../images/wallpaper/dbhomeback.jpg") no-repeat;
+  background-size: cover;
+  box-shadow: inset 0px 0px 70px 60px rgba(0, 0, 0, 0.7);
   .wallpaperz {
     position: fixed;
     top: 50%;
@@ -188,15 +188,6 @@ nav {
     transform: translate(-50%, -50%) scale(100%);
     z-index: -1;
   }
-  // @media (max-height: 500px) {
-  //   .wallpaperz {
-  //     position: fixed;
-  //     top: 50%;
-  //     left: 50%;
-  //     transform: translate(-50%, -50%) scale(0.7);
-  //     z-index: 1;
-  //   }
-  // }
   #installGame {
     display: none;
   }
@@ -208,18 +199,16 @@ nav {
     padding: 10px 0;
     font-size: 1.5rem;
     border: none;
-    color: #f5f5f5;
-    background: linear-gradient(
-      to left,
-      transparent,
-      rgba(0, 0, 0, 0.5),
-      transparent
-    );
-    width: 30%;
+    color: #dbdbdb;
+    background: linear-gradient(to Bottom, #1a1e41, #252947, #161930, #030311);
+    padding: 2px 30px;
     cursor: pointer;
     font-family: $scrollfont;
     font-weight: 600;
     opacity: 0.9;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.6);
   }
   .homepage-btn:active {
     transform: translate(-50%, -50%) scale(0.95);
@@ -256,7 +245,7 @@ nav {
   @include flexCenter();
   flex-direction: column;
   width: 360px;
-  height: 60%;
+  height: 50%;
   display: none;
   font-size: 1.3rem;
   padding: 15px;
@@ -273,11 +262,12 @@ nav {
     border-top: 3px solid rgba(116, 108, 108, 0.685);
     border-bottom: 3px solid rgba(116, 108, 108, 0.685);
     border-radius: 10px;
+    box-shadow: inset 0px 0px 60px 50px rgba(0, 0, 0, 0.6);
   }
   .circ-backg {
     position: absolute;
-    top: 32%;
-    left: 32%;
+    top: 12%;
+    left: 1 2%;
     transform: translate(-50%, -50%) scale(100%);
     opacity: 0.2;
     z-index: -1;
@@ -292,7 +282,7 @@ nav {
     margin-bottom: 10px;
     background: none;
     border: none;
-    border-bottom: 2px solid #b9b9b9;
+    border-bottom: 1px solid #838383;
     font-family: $copyrightFont;
     border-radius: 3px;
     width: 76%;
@@ -302,14 +292,20 @@ nav {
   }
   .btn {
     color: $littlewhite;
-    border: 1px solid #f5f5f5;
-    padding: 1px 30px;
+    border: 1px solid #838383;
+    padding: 2px 30px;
     font-size: 1rem;
-    border-radius: 3px;
+    border-radius: 10%;
     margin-top: 15px;
     cursor: pointer;
     transform: scale(1);
-    background: rgb(53, 49, 49);
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1),
+      rgb(58, 58, 58),
+      rgba(71, 71, 71, 0.8),
+      rgba(117, 117, 117, 0.6)
+    );
     font-family: $tipsFont;
   }
   .btn:active {
@@ -319,9 +315,8 @@ nav {
     transform: scale(0.95);
   }
 }
-@media (max-height: 350px) {
-  .login-container,
-  .register-container {
+@media (max-height: 500px) {
+  .login-container {
     @include centerFix(5);
     background: linear-gradient(
       to left,
@@ -333,21 +328,19 @@ nav {
     border-radius: 5px;
     @include flexCenter();
     flex-direction: column;
-    width: 360px;
+    width: 300px;
     display: none;
-    font-size: 1.3rem;
+    font-size: 0.9rem;
     padding: 15px;
-    height: 100%;
+    height: 60%;
     .inputs {
-      outline: none;
+      font-size: 0.6rem;
       padding: 5px 7px;
-      margin-bottom: 8px;
-      width: 76%;
+      margin-bottom: 5px;
+      width: 80%;
     }
     .btn {
       font-size: 0.8rem;
-      border-radius: 3px;
-      margin-top: 9px;
     }
   }
 }
@@ -488,7 +481,43 @@ nav {
     }
   }
 }
-
+@media (max-height: 450px) {
+  .quest-container {
+    .quest-label {
+      font-size: 1.1rem;
+    }
+    .quest-list {
+      padding: 10px;
+      gap: 10px;
+      .qst-bx {
+        padding: 5px 8px;
+        width: 100%;
+        .qst-target-img {
+          width: 35px;
+        }
+        .qst-ttle {
+          font-size: 0.8rem;
+        }
+        .reward-cap {
+          pointer-events: none;
+        }
+        .req-rank {
+          font-size: 1.1rem;
+          border: 1px solid rgba(228, 1, 1, 0.952);
+          height: 30px;
+          width: 30px;
+        }
+        .check-reward {
+          padding: 1px 6px;
+        }
+      }
+      .qst-bx:active {
+        opacity: 0.9;
+        transform: scale(0.97);
+      }
+    }
+  }
+}
 // LOGIN CONTAINER PAGE
 .login-cont-btns {
   @include flexCenter();
@@ -1306,6 +1335,7 @@ nav {
         align-content: flex-start;
         gap: 12px;
         overflow-y: scroll;
+        box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.4);
         .item {
           width: 40px;
           height: 40px;
@@ -1383,27 +1413,7 @@ nav {
           transform: translateY(-2px);
         }
       }
-      .prof-details {
-        display: none;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        .mystatus,
-        .lvl-rank {
-          padding: 10px 4px;
-          width: 100%;
-          color: $littlewhite;
-          @include flexCenter();
-          justify-content: space-between;
-          font-size: 12px;
-          display: flex;
-          font-family: $tipsFont;
-        }
-        .mystat-label {
-          font-size: 0.8rem;
-        }
-      }
+
       .equipedItems {
         height: 70%;
         width: 100%;
@@ -1495,101 +1505,8 @@ nav {
           }
         }
       }
-      .upgradeCont {
-        display: none;
-        flex-direction: column;
-        justify-content: flex-start;
-        height: 70%;
-        width: 100%;
-        position: relative;
-        gap: 10px;
-        .points-bx {
-          font-size: 12px;
-          color: $littlewhite;
-          font-family: $copyrightFont;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
-        }
-        .eqpdbx {
-          position: relative;
-          @include flexCenter();
-          justify-content: space-between;
-          padding: 0 10px;
-          .eqpd-int {
-            pointer-events: none;
-            color: $littlewhite;
-            margin-left: 10px;
-            padding: 0 4px;
-            margin-left: -5px;
-          }
-          .stat-label {
-            font-size: 13px;
-            color: $littlewhite;
-            font-family: $tipsFont;
-            padding-right: 15px;
-            text-align: left;
-            color: rgb(190, 221, 52);
-          }
-          .button-upgrade {
-            cursor: pointer;
-            background-color: $superBlack;
-            color: $littlewhite;
-            font-size: 18px;
-            border: 1px solid $littleBlack;
-            padding: 0 7px;
-            border-radius: 3px;
-            transform: scale(1);
-            text-align: center;
-            font-family: sans-serif;
-          }
-          .button-upgrade:active {
-            transform: scale(0.9);
-          }
-        }
-        .eqpd {
-          // images
-          height: 50px;
-          width: 50px;
-          filter: invert(1);
-          padding: 10px;
-          cursor: pointer;
-        }
-      }
+
       @media (max-height: 600px) {
-        .upgradeCont {
-          flex-direction: column;
-          height: 60%;
-          position: relative;
-          .points-bx {
-            font-size: 10px;
-            color: $littlewhite;
-            font-family: $copyrightFont;
-          }
-          .eqpdbx {
-            @include flexCenter();
-            justify-content: space-between;
-            padding: 0 5px;
-            .eqpd-int {
-              pointer-events: none;
-              color: $littlewhite;
-              flex: 1;
-              margin-left: 15px;
-              width: 7px;
-              font-size: 10px;
-            }
-            .stat-label {
-              font-size: 11px;
-            }
-          }
-          .eqpd {
-            // images
-            height: 35px;
-            width: 35px;
-            padding: 5px;
-          }
-        }
         .equipedItems {
           height: 60%;
           width: 100%;
@@ -2808,33 +2725,66 @@ nav {
     height: 70%;
     justify-self: flex-end;
     padding: 15px;
-    display: flex;
-    justify-self: flex-start;
+    @include flexCenter();
     align-items: flex-start;
-    flex-wrap: wrap;
     .myquest-bx {
       cursor: pointer;
       display: flex;
       justify-content: flex-start;
       align-items: center;
+      flex-direction: column;
       padding: 10px;
-      border: 2px solid $littlewhite;
       border-radius: 3px;
+      height: 90%;
+      // background: url("../images/setup/scroll.png");
+      .myquest-backimg {
+        height: 85%;
+        width: 80%;
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(60%);
+        z-index: -1;
+      }
       .myquest-img {
-        width: 60px;
-        background: linear-gradient(
-          to bottom,
-          rgba(216, 195, 9, 0.876),
-          rgba(184, 166, 10, 0.876),
-          rgba(149, 136, 11, 0.876),
-          rgba(149, 136, 11, 0.476)
-        );
+        width: 30%;
         border-radius: 4px;
-        margin-right: 10px;
+        margin-bottom: 10px;
       }
       .myquest-ttle {
+        font-family: $mapfont;
+        color: $naturalBlack;
+        margin-bottom: 10px;
+      }
+      .myquest-defi {
+        color: rgba(122, 99, 4, 0.94);
         font-family: $tipsFont;
-        color: $littlewhite;
+        margin-bottom: 10px;
+      }
+      .myquest-demand {
+        color: crimson;
+        font-weight: 400;
+        text-align: left;
+      }
+    }
+    @media (max-height: 600px) {
+      .myquest-bx {
+        .myquest-backimg {
+          height: 320px;
+          width: 190px;
+        }
+        .myquest-img {
+          width: 50px;
+          margin-bottom: 3px;
+        }
+        .myquest-ttle {
+          margin-bottom: 3px;
+          font-size: 0.8rem;
+        }
+        .myquest-defi {
+          margin-bottom: 5px;
+          font-size: 0.7rem;
+        }
       }
     }
   }
@@ -3360,7 +3310,7 @@ nav {
     opacity: 0.7;
   }
   100% {
-    opacity: 0.9;
+    opacity: 1;
     transform: translate(-50%, -50%) scale(0.6);
   }
 }
@@ -3420,15 +3370,17 @@ nav {
     transition: 0.1s;
   }
 }
-@media (max-height: 400px) {
+@media (max-height: 450px) {
   .tutorial-cont {
+    width: 60%;
+    height: 50%;
     .tut-ttle {
       text-align: center;
       font-family: $mapfont;
       color: $littlewhite;
     }
     .tut-line {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
   }
 }
@@ -3462,4 +3414,351 @@ nav {
   text-align: center;
   color: $littlewhite;
   padding: 20px;
+}
+.about-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  overflow-y: scroll;
+  background: url("../images/UI/btnBackG.jpg") no-repeat;
+  background-size: cover;
+  height: 100%;
+  width: 100%;
+  box-shadow: inset 0px 0px 30px 30px rgba(0, 0, 0, 0.7);
+  @include flexCenter();
+  flex-direction: column;
+  display: none;
+  .intro-center {
+    @include flexCenter();
+    flex-direction: column;
+    .about-logo {
+      width: 50%;
+    }
+    .ic-ttle {
+      text-align: center;
+      width: 100%;
+      display: none;
+    }
+    .ic-def {
+      text-align: center;
+      width: 100%;
+      color: rgb(184, 0, 0);
+      font-size: 2rem;
+      font-family: $tipsFont;
+      font-weight: 900;
+      color: white;
+      font-family: $gamefont;
+    }
+    margin-bottom: 20px;
+  }
+
+  .intro-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 30px 10px;
+    // background: rgba(1, 1, 1, 0.474);
+    .ic-img {
+      width: 400px;
+      margin-right: 15px;
+    }
+    .ic-ttle-def {
+      width: 40%;
+      .ic-ttle {
+        color: rgba(228, 4, 4, 0.822);
+        font-size: 1.2rem;
+        font-family: $mapfont;
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      .ic-def {
+        color: rgba(171, 171, 171, 0.979);
+        font-family: $tipsFont;
+        width: 100%;
+      }
+    }
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    color: #ffbdbd;
+    font-family: $scrollfont;
+    background: none;
+    outline: none;
+    border: none;
+    font-size: 1.4rem;
+  }
+}
+.new-craft-notif {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  font-family: $tipsFont;
+  z-index: 4;
+  background: rgb(249, 173, 76);
+  color: rgb(43, 25, 8);
+  border-radius: 4px;
+  border: 1px solid $naturalBlack;
+  display: none;
+  pointer-events: none;
+  width: auto;
+}
+.new-craft-notif::after {
+  content: "";
+  position: fixed;
+  top: 25%;
+  right: -5px;
+  width: 15px;
+  height: 15px;
+  transform: rotate(45deg);
+  background: rgb(249, 173, 76);
+
+  z-index: -1;
+}
+.sideAnimate {
+  transition: 1s;
+  left: 50%;
+  animation: 1s slidingLeft ease-in-out forwards;
+  opacity: 0;
+}
+
+@keyframes slidingLeft {
+  0% {
+    left: 50%;
+    opacity: 0;
+  }
+  100% {
+    left: -70%;
+    opacity: 1;
+  }
+}
+
+.db-logo {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%) scale(0.4);
+  z-index: 10;
+  transition: 0.5s ease-in-out;
+}
+.logo-introscreen {
+  transform: scale(0.4);
+}
+.whole-stats-container {
+  width: 65%;
+  height: 45%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  // background: rgba(0, 0, 0, 0.4);
+  background: $naturalBlack;
+  z-index: 5;
+  box-shadow: inset 0px 0px 20px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px;
+  transition: 0.5s ease-in-out;
+  .human-body {
+    position: absolute;
+    height: 100%;
+    left: 20%;
+    width: 20%;
+    .hb-body {
+      @include centerAbs(2, 60%);
+    }
+    .hb-star {
+      @include centerAbs(1, 50%);
+      filter: invert(1);
+      opacity: 0.7;
+    }
+  }
+  .upgradeCont {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    width: 60%;
+    height: 100%;
+    z-index: 4;
+    .sep-bx {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .points-bx {
+      font-size: 1.2rem;
+      color: $littlewhite;
+      font-family: $tipsFont;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 10px 15px;
+    }
+    .eqpdbx {
+      position: relative;
+      @include flexCenter();
+      justify-content: space-between;
+      height: 15%;
+      background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.9),
+        rgba(22, 22, 22, 0.7),
+        rgba(47, 47, 47, 0.3),
+        rgba(44, 44, 44, 0.3),
+        rgba(53, 53, 53, 0.6),
+        transparent
+      );
+      border-radius: 4px;
+      margin-bottom: 2%;
+      .eqpd-int {
+        pointer-events: none;
+        color: $littlewhite;
+        margin-left: 10px;
+        padding: 0 4px;
+        margin-left: -5px;
+      }
+      .stat-label {
+        font-size: 1.1rem;
+        color: $littlewhite;
+        font-family: $gamefont;
+        text-align: left;
+        color: crimson;
+        font-weight: 400;
+      }
+      .button-upgrade {
+        cursor: pointer;
+        background-color: $superBlack;
+        color: $littlewhite;
+        font-size: 18px;
+        border: 1px solid $littleBlack;
+        padding: 0 7px;
+        border-radius: 3px;
+        transform: scale(1);
+        text-align: center;
+        font-family: sans-serif;
+        margin-right: 10px;
+        transform: skew(-10deg);
+      }
+      .button-upgrade:active {
+        transform: scale(0.9);
+      }
+    }
+    .eqpd {
+      // images
+      height: 50px;
+      width: 50px;
+      filter: invert(1);
+      padding: 10px;
+      cursor: pointer;
+    }
+  }
+  .prof-details {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 35%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0px 0px 40px 40px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 15px;
+    .lvl-rank {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: $littlewhite;
+      font-weight: 700;
+      font-family: $tipsFont;
+    }
+    .mystatus {
+      height: 5%;
+      width: 100%;
+      color: $littlewhite;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      font-size: 12px;
+      display: flex;
+      font-family: $tipsFont;
+      font-weight: 700;
+    }
+    .mystat-label {
+      font-size: 0.8rem;
+    }
+  }
+  .stat-close {
+    @include centerAbs(2, auto);
+    outline: none;
+    background: linear-gradient(
+      to Bottom,
+      rgb(46, 46, 46),
+      rgb(32, 32, 32),
+      rgb(46, 46, 46),
+      rgb(100, 100, 100)
+    );
+    font-size: 1.1rem;
+    font-family: $tipsFont;
+    padding: 2px 20px;
+    color: $littlewhite;
+    border: 1px solid $naturalBlack;
+    border-radius: 3px;
+    top: 100%;
+    cursor: pointer;
+  }
+  .stat-close:active {
+    filter: invert(1);
+    opacity: 0.6;
+  }
+}
+@media (max-height: 450px) {
+  .db-logo {
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+  .whole-stats-container {
+    height: 65%;
+    .upgradeCont {
+      .points-bx {
+        font-size: 1.1rem;
+        padding: 5px 15px;
+      }
+      .eqpdbx {
+        height: 17%;
+      }
+    }
+    .prof-details {
+      .mystatus {
+        height: 10%;
+      }
+    }
+  }
+}
+@media (max-height: 350px) {
+  .db-logo {
+    transform: translate(-50%, -50%) scale(0.15);
+  }
+}
+.db-placeup {
+  top: 15%;
+  transition: 0.5s ease-in-out;
+}
+.game-font {
+  font-family: $gamefont;
+}
+.my-stat-hidding {
+  top: -50%;
+  transition: 0.5s ease-in-out;
 }

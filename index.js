@@ -101,30 +101,30 @@ const continueBtn = document.getElementById("continue")
 let mobileMaxWidth = 700
 let deferredPrompt
 
-if(window.innerWidth < mobileMaxWidth){
-    installGame.style.display = 'block'
-    console.log("its on mobile mode")
-    window.addEventListener("beforeinstallprompt", e => {
-        log(e)
-        deferredPrompt = e
-    })        
-    installGame.addEventListener("click", e => {
-        if(!deferredPrompt) return fitScreenWarn("The App is already Installed <br /> on your device")
-        deferredPrompt.prompt()
-        deferredPrompt.userChoice
-        .then( choiceResult => {
-            if(choiceResult.outcome === "accepted"){
-                console.log("User want to install the game")
-            }
-            deferredPrompt = null
+// if(window.innerWidth < mobileMaxWidth){
+//     installGame.style.display = 'block'
+//     console.log("its on mobile mode")
+//     window.addEventListener("beforeinstallprompt", e => {
+//         log(e)
+//         deferredPrompt = e
+//     })        
+//     installGame.addEventListener("click", e => {
+//         if(!deferredPrompt) return fitScreenWarn("The App is already Installed <br /> on your device")
+//         deferredPrompt.prompt()
+//         deferredPrompt.userChoice
+//         .then( choiceResult => {
+//             if(choiceResult.outcome === "accepted"){
+//                 console.log("User want to install the game")
+//             }
+//             deferredPrompt = null
 
-            localStorage.setItem("dbapp", JSON.stringify({isInstalled: true})) === null
-        })
-        .catch(error => console.log(error))
-    })
-}else{
-    installGame.style.display = 'none'
-}
+//             localStorage.setItem("dbapp", JSON.stringify({isInstalled: true})) === null
+//         })
+//         .catch(error => console.log(error))
+//     })
+// }else{
+//     installGame.style.display = 'none'
+// }
 
 // login page
 const homeInputs = document.querySelectorAll(".inputs")
@@ -150,6 +150,7 @@ const tipsLabel = document.querySelector(".ls-tips");
 
 // warning label
 const warningCont = document.querySelector(".warning-screen")
+const sideNotif = document.querySelector(".new-craft-notif")
 
 // SETUP CHARACTER
 const setupCont = document.querySelector(".setup-container")
@@ -175,11 +176,11 @@ const adventurerIcon = document.querySelector(".myquests");
 const profile = document.querySelector(".profile")
 const occupAndTitleCont = document.querySelector(".occupation-titles")
 const leftbackG = document.querySelector(".left-backg")
-
-const profileChoices = document.querySelector(".prof-choices")
+const myStatContainer = document.querySelector(".whole-stats-container")
+const statCloseBtn = document.querySelector(".stat-close")
 const equipedItemsCont = document.querySelector(".equipedItems")
-const upgradeCont = document.querySelector(".upgradeCont")
-const profDetailsCont = document.querySelector(".prof-details")
+// const upgradeCont = document.querySelector(".upgradeCont")
+// const profDetailsCont = document.querySelector(".prof-details")
 const upgradeBtns = document.querySelectorAll(".button-upgrade")
 const invList = document.querySelector(".inv-list")
 const coin = document.querySelector(".coin")
@@ -301,6 +302,11 @@ const itemRewardsList = document.querySelector(".rewards-pictures")
 const coinReward = document.querySelector(".rc")
 const acceptQuestBtn = document.querySelector(".accept-quest-btn")
 
+// ABOUT PAGE
+const aboutCont = document.querySelector(".about-container")
+const abtBackBtn = document.querySelector(".back-btn")
+
+
 // fps
 let divFps = document.querySelector(".fps");
 // tutorial container
@@ -379,6 +385,7 @@ let theCharacterRoot
 let goblinRoot
 let minotaurRoot
 let snakeRoot
+let golemRoot
 let cam
 let shadowGen
 let allsword
@@ -398,6 +405,7 @@ let magicCircle
 let bonFireMesh
 let bedLeaveMesh
 let roadplank
+let dangerPlank
 let smoke
 let fire
 let thePeeble
@@ -517,6 +525,10 @@ class App{
         this.plusDef = 0
         this.plusCore = 0
         this.plusmagic = 0
+        // DAMAGE MULTIPLIED TO FIX
+        this.physicalX = 15
+        this.weaponX = 20
+        this.magX = 30
 
         this.hpRegenInterval
         this.mpRegenInterval
@@ -633,9 +645,15 @@ class App{
         })
         const myStat = document.querySelector(".mystatus")
         myStat.childNodes.forEach(elem => { // HP AND MP ELEMENT
-            if(elem.className && elem.className.includes('hplabel')) elem.innerHTML = `HP: ${Math.floor(data.hp)}/${data.maxHp}`
-            if(elem.className && elem.className.includes('mp')) elem.innerHTML = `MP: ${Math.floor(data.mp)}/${data.maxMp}`
-            if(elem.className && elem.className.includes('exp')) elem.innerHTML = `exp: ${Math.floor(parseInt(data.exp)/parseInt(data.maxExp) * 100)}%`
+            if(elem.className && elem.className.includes('hplabel')) elem.innerHTML = `Health: ${Math.floor(data.hp)}/${data.maxHp}`
+            if(elem.className && elem.className.includes('mp')) elem.innerHTML = `Mana: ${Math.floor(data.mp)}/${data.maxMp}`
+            if(elem.className && elem.className.includes('sp')) elem.innerHTML = `Stamina: ${Math.floor(data.sp)}/${data.maxSp}`
+            if(elem.className && elem.className.includes('exp')) elem.innerHTML = `Exp: ${Math.floor(parseInt(data.exp)/parseInt(data.maxExp) * 100)}%`
+            if(elem.className && elem.className.includes('str')) elem.innerHTML = `Physical Damage: ${this.det.stats.core * this.physicalX}`
+            if(elem.className && elem.className.includes('weaponDmg')) elem.innerHTML = `Plus Weapon Damage: ${this.det.stats.sword * this.physicalX}`
+            if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.recalPhyDefense(0))}`
+            if(elem.className && elem.className.includes('magicDmg')) elem.innerHTML = `Magic Damage: ${Math.floor(this.det.stats.magic * this.magX)}`
+            if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Speed: ${Math.floor(this.det.stats.spd)}`
         })
         let rankName = "none"
         log(this.det.rank)
@@ -713,6 +731,13 @@ class App{
         newBx.style.left = `${13 + Math.random()*40}%`
         document.body.append(newBx);
         newBx.classList.add("scale-show")
+    }
+    showSideNotif(parentElem, notifMessage){
+        sideNotif.style.display = "block"
+        
+        parentElem.append(sideNotif)
+        sideNotif.innerHTML = notifMessage
+        sideNotif.classList.add("sideAnimate")
     }
     openPopUpAction(actionName){
         popupActionCont.style.display = "block"
@@ -994,7 +1019,6 @@ class App{
         this.returnButtons(upgradeBtns)
     }
     async expGain(exp){
-
         let excessExp = 0
         this.det.exp += parseInt(exp)
         if(this.det.exp >= this.det.maxExp){
@@ -1493,9 +1517,8 @@ class App{
             this.toDropMesh = undefined;
         }
         this.canDropHere = true;
-
         this.craftFunc = undefined
-
+        this.myChar._crafting = false
     }
     initializeMesh(toClone, posY, meshName, cb){
         this.toDropMesh = toClone.clone(meshName)
@@ -1577,6 +1600,7 @@ class App{
                 if(requirementsPassed < crft.requirements.length) return crftBx.innerHTML = `<p class="insuf">Insufficient Tools</p>`
                 toCraftCont.style.display = "flex"
                 craftCont.style.display = "none"
+                this.myChar._crafting = true
                 switch(crft.name){
                     case "bonfire":
                         this.initializeMesh(bonFireMesh, -this.yPos, crft.name);
@@ -1637,7 +1661,7 @@ class App{
                             })
                         } 
                     break;
-                    default:
+                    default: // crafting weapon
                         this.craftFunc = () => {
                             toCraftCont.style.display = "none"
                             craftCont.style.display = "none"
@@ -1669,52 +1693,66 @@ class App{
                 const btnName = e.target.className.split(" ")[1]
                 let display
                 
-                if(btnName === "openstatus"){
-                    this._allSounds.itemEquipedS.play()
-                    profile.children[0].style.right = '6%'
-                    profile.children[0].style.top = '-20px'
-                   if(!profile.style.display) profile.style.display = "none"
-                    profile.style.display === "none" ? display = "flex"  : display = "none"
-                    profile.style.display = display
-                    log('my items', this.det.items)
-                    this.setHTMLUI(this.det)
-                    this.setInventory('recource')
-                    this.setEquipedItems()
-                    occupAndTitleCont.style.display = "none"
-                    leftbackG.style.display = "none"
-                    return
-                }
                 this._allSounds.nextBtnS.play()
-                if(btnName === "crafts") this.checkAllMyCrafts()
-                if(btnName === "myquests"){
-                    advCont.style.display = "flex"
-                    const rankDet = ranks.find(rn => rn.rankDig === this.det.rank)
-                    if(!rankDet) return log("not found my rank")
-                    advDet.children[0].innerHTML = `rank: ${rankDet.displayRank}`
-                    advDet.children[1].innerHTML = `kills: ${this.det.monsterKilled}`
-                    advDet.children[2].innerHTML = `cleared: ${this.det.clearedQuests.totalCleared}`
-                    advQuestLists.innerHTML = ''
-                    this.checkItemsForQuest("edibles")
-                    this.det.quests.forEach(myqst => {
-                        log(myqst)
-                        const newDiv = createElement("div", "myquest-bx")
-                        const newImg = createElement("img", "myquest-img")
-                        if(myqst.questPicName !== ""){
-                            newImg.src = `./images/questpics/${myqst.questPicName}.png`
-                        }else{
-                            newImg.src = `./images/loots/${myqst.questTarget.targetName}.png`
-                        }
-                        const qstTtle = createElement("p", "myquest-ttle", myqst.title)
-                        newDiv.append(newImg)
-                        newDiv.append(qstTtle)
-                        advQuestLists.append(newDiv)
-                        
-                        newDiv.addEventListener("click", () => {
-                            rewardInfo = myqst
-                            this.showQuestInfo(true)
+                switch(btnName){
+                    case "openstatus":
+                        this._allSounds.itemEquipedS.play()
+                        profile.children[0].style.right = '6%'
+                        profile.children[0].style.top = '-20px'
+                       if(!profile.style.display) profile.style.display = "none"
+                        profile.style.display === "none" ? display = "flex"  : display = "none"
+                        profile.style.display = display
+                        log('my items', this.det.items)
+                        this.setHTMLUI(this.det)
+                        this.setInventory('recource')
+                        this.setEquipedItems()
+                        occupAndTitleCont.style.display = "none"
+                        leftbackG.style.display = "none"
+                    break
+                    case "crafts":
+                        this.checkAllMyCrafts();
+                    break
+                    case "myquests":
+                        advCont.style.display = "flex"
+                        const rankDet = ranks.find(rn => rn.rankDig === this.det.rank)
+                        if(!rankDet) return log("not found my rank")
+                        advDet.children[0].innerHTML = `rank: ${rankDet.displayRank}`
+                        advDet.children[1].innerHTML = `kills: ${this.det.monsterKilled}`
+                        advDet.children[2].innerHTML = `cleared: ${this.det.clearedQuests.totalCleared}`
+                        advQuestLists.innerHTML = ''
+                        this.checkItemsForQuest("edibles")
+                        this.det.quests.forEach(myqst => {
                             log(myqst)
+                            const newDiv = createElement("div", "myquest-bx")
+                            const divBackImg = createElement("img", "myquest-backimg")
+                            divBackImg.src="./images/setup/scroll.png"
+                            newDiv.append(divBackImg)
+                            const newImg = createElement("img", "myquest-img")
+                            if(myqst.questPicName !== ""){
+                                newImg.src = `./images/questpics/${myqst.questPicName}.png`
+                            }else{
+                                newImg.src = `./images/loots/${myqst.questTarget.targetName}.png`
+                            }
+                            const qstTtle = createElement("p", "myquest-ttle", myqst.title)
+                            const qstDef = createElement("p", "myquest-defi", myqst.def)
+                            const qstDemNumber = createElement("p", "myquest-demand", `required: ` +myqst.demandNumber)
+                            newDiv.append(newImg)
+                            newDiv.append(qstTtle)
+                            newDiv.append(qstDef)
+                            newDiv.append(qstDemNumber)
+    
+                            advQuestLists.append(newDiv)
+                            
+                            newDiv.addEventListener("click", () => {
+                                rewardInfo = myqst
+                                this.showQuestInfo(true)
+                                log(myqst)
+                            })
                         })
-                    })
+                    break
+                    case "mystats":
+                        myStatContainer.classList.remove("my-stat-hidding")
+                    break
                 }
             })
         })
@@ -2140,7 +2178,7 @@ class App{
                                             setTimeout(() => showNotif(`${crft.name} craft learned `, 6000), notifTimeOut);    
                                             notifTimeOut+= 1000
                                         })
-                                        
+                                        this.showSideNotif(craftIcon, "New Craft Added")
                                     }
                                     openGameUI(this.det)
                                     log(this.det)
@@ -2500,7 +2538,7 @@ class App{
             this.cannotBeClick([questCont])
             this.showTransaction("Registering Quest ...", false)
             try {
-                await this.useFetch(`${APIURL}/quests/delete/${rewardInfo._id}`, "DELETE", this.token)
+                await this.delQuestFromMain(rewardInfo._id)
                 const myUpdatedInfo = await this.useFetch(`${APIURL}/characters/myquest/add/${this.det._id}`, "PATCH", this.token, {...rewardInfo, isCleared: false});
                 log(myUpdatedInfo) // In the backend I only save my quests not my life not my positions
                 await this.setUpQuest();
@@ -2534,18 +2572,6 @@ class App{
                 })
                 itemInfoBtns.append(aBtn)
             })
-        })
-        profileChoices.addEventListener("click", e => {
-            log(e.target.className)
-            if(e.target.className === "prof-choices") return
-
-            profDetailsCont.style.display = "none";
-            equipedItemsCont.style.display = "none"
-            upgradeCont.style.display = "none"
-
-            if(e.target.className.includes("myequipeds")) return equipedItemsCont.style.display = "flex"
-            if(e.target.className.includes("statUpgrades")) return upgradeCont.style.display = "flex"
-            if(e.target.className.includes("profDetails")) return profDetailsCont.style.display = "flex"
         })
         toCookList.addEventListener("click", async e => {
             if(e.target.className === 'tocook-list') return log('teturn')
@@ -3130,6 +3156,9 @@ class App{
             this.det.killQuest.push(this.questToTake)
             log(this.questToTake)
         })
+        statCloseBtn.addEventListener("click", e => {
+            myStatContainer.classList.add("my-stat-hidding")
+        })
     }
     // MAKE JOYSTICKSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
     makeThumbArea(name, thickness, color, background, curves){
@@ -3450,6 +3479,20 @@ class App{
         
         
     }
+    gameOver(){
+        setTimeout(() => {
+            this.openStoryWritten(0, ['I Told You Not <br/> To Die', "You Died"], async () => {
+                await this.useFetch(`${APIURL}/characters/delete/${this.det._id}`, "DELETE", this.token)
+                if(this.det.quests.length){
+                    delete this.det.quests[0]._id
+                    await this.useFetch(`${APIURL}/quests/save`, "POST",undefined, this.det.quests[0])              
+                    this.det.quests = []
+                    await this.updateMyDetailsOL(this.det, false)
+                }
+                setTimeout(() => window.location.reload(), 4000)
+            })
+        }, 2000)
+    }
     // ACTIONS WHEN HIT
     playerDeath(player){
         player.mode = "none"
@@ -3458,6 +3501,7 @@ class App{
         // player.meshes[0].parent = null
         const {x,y,z} = player.bx.position
         // player.meshes[0].position = new Vector3(x,0,z)
+        
     }
     stopFarming(thePlayer){
         thePlayer._minning = false
@@ -3499,8 +3543,14 @@ class App{
                 if(monster.monsName.includes("slime")) monsHaveBlood = false
                 if(monster.monsName.includes("ghost")) monsHaveBlood = false
                 if(monsHaveBlood){
-                    
-                    this.createBloodParticle("blood",300, monsFos, "sphere", true, 1, true, undefined)
+                    switch(monster.monsName){
+                        case "golem":
+                            //will not create blood particle
+                        break
+                        default:
+                            this.createBloodParticle("blood",300, monsFos, "sphere", true, 1, true, undefined)
+                        break
+                    }
                 }
             break
             case "throw":
@@ -3508,12 +3558,13 @@ class App{
                 monster.spearStruck.play()
                 if(monster.monsName.includes("slime")) monsHaveBlood = false
                 if(monster.monsName.includes("ghost")) monsHaveBlood = false
+                if(monster.monsName.includes("golem")) monsHaveBlood = false
                 if(monsHaveBlood){
                     this.createBloodParticle("blood",300, monsFos, "sphere", true, 1, true, undefined)
                 }
             break
             case "fist":
-                monster.punchedS.play()
+                // monster.punchedS.play()
             break
         }
         // gumawa ako ng variable na hitTimeOut sa createtionNgMonster
@@ -3654,9 +3705,9 @@ class App{
     }
     async hitByNonMultiAI(body, enemBody, dmgTaken, animName, monsId, effects){
         let myDef = this.det.stats.def*2;
-        // const {x,z} = enemBody.position
-        // body.lookAt(new Vector3(x,body.position.y,z), 0,0,0)
-        this.myChar.weaponCol.position.y = 5
+        const {x,z} = enemBody.position
+        body.lookAt(new Vector3(x,body.position.y,z), 0,0,0)
+        this.myChar.weaponCol.position.y = 9
         
         if(this.det.armor.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.armor.meshId)
@@ -3802,8 +3853,9 @@ class App{
                     mons.targHero = undefined                    
                 })
             }            
-            if(this.currentPlace !== "farmone") this.useFetch(`${APIURL}/characters/delete/${this.det._id}`, "DELETE", this.token)
-            if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
+            
+            //if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
+            this.gameOver()
             return this.playerDeath(this.myChar)
         }
         if(this.myChar._minning || this.myChar._training){
@@ -3814,10 +3866,14 @@ class App{
             // this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
             this.myChar.mode = "weapon"
         }
+        if(this.myChar._crafting){
+            log("our crafting disturbed !")
+            this.cancelCraft()
+        }
         clearTimeout(this.timeOutToSave)
         this.timeOutToSave = setTimeout( async () => {
             await this.updateMyDetailsOL(this.det, false) // kase pag naka on to mag setdeatils siya kaya kung maraming aatake saken pagka bawas ng this det.hp ko at biglang inupdate ang this.det.hp ko bigla babalek yung buhay ko
-        }, 3000)
+        }, 2500)
     
         this.playAnim(this.myChar.anims, animName)
     }
@@ -3899,13 +3955,13 @@ class App{
     }
     recalMeeleDmg(){
         let totalDmg = 0
-        let physicDmg = this.det.stats.core * (15 + this.plusCore)
+        let physicDmg = (this.det.stats.core * this.physicalX) + this.plusCore
         log("my mode " + this.myChar.mode)
         switch(this.myChar.mode){
             case "weapon":
                 log("on weapon damage")
                 if(!this.det.weapon) return log("no weapon")
-                totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * 20)
+                totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * this.weaponX)
                 log(totalDmg)
             break;
             case "fist":
@@ -3915,7 +3971,7 @@ class App{
             case "noneweapon":
                 log("on weapon damage")
                 if(!this.det.weapon) return log("no weapon")
-                totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * 20)
+                totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * this.weaponX)
                 log(totalDmg)
             break;
         }
@@ -3976,7 +4032,7 @@ class App{
                             }
                         })
                     }
-                    
+                    if(this.myChar.mode === "fist") this.myChar.punchedS.play()
                     // if(themons.targHero !== undefined && !themons.isAttacking){
                     //     let theAttacks = 1.5
                     //     if(themons.monsName === "viper") theAttacks = 2.7
@@ -4024,12 +4080,17 @@ class App{
                         log(themons)
                         this.readCheckMyQuest("slay", themons.monsName, themons.monsBreed)
                         await this.expGain(themons.expGain)
-                    } 
+                    }
+                    let criticalMultiplier = 2
                     const mpos = monster.body.position
                     const myposition = this.myChar.bx.position
                     let isCritical = false;
-                    if(this.det.survival.sleep >= 20 && Math.random() > .85) isCritical = true
-                    if(isCritical) myTotalDmg = myTotalDmg + myTotalDmg*Math.random()*2
+                    if(this.det.survival.sleep >= 20 && Math.random()*10 < 8) isCritical = true
+                    if(isCritical){
+                        const critMultiply = Math.floor(Math.random()*(criticalMultiplier+.5));
+                        log('Crit multiplied to ' + critMultiply)
+                        myTotalDmg = myTotalDmg + myTotalDmg*critMultiply
+                    }
                     if(!this.socketAvailable){
                         this.monsterIsHit(monster.monsId, {x: myposition.x, z: myposition.z}, myTotalDmg, {x:mpos.x, z:mpos.z}, this.myChar.mode, isCritical)
                         if(themons.hp <= 0) return log('monster is dead')
@@ -4093,7 +4154,7 @@ class App{
 
         cam.onCollide = m => {
             log('cam colliding with ' + m.name)
-            cam.radius-=.5
+            
             // this.camZoomingIn = true
             // cam.alpha-=Math.PI/2
             // clearTimeout(this.hideMeshTimeOut)
@@ -4120,6 +4181,16 @@ class App{
                     log("cam is stock while loading")
                     cam.alpha = Math.PI
                 }
+                cam.radius-=.5
+                if(m.name.includes("house")){
+                    m.isVisible = false
+                    cam.lowerRadiusLimit = .5
+                    clearTimeout(this.hideMeshTimeOut)
+                    this.hideMeshTimeOut = setTimeout(() => {
+                        m.isVisible = true
+                        cam.lowerRadiusLimit = 4
+                    }, 1000)
+                }
             }
         }
         // cam.exit
@@ -4138,8 +4209,8 @@ class App{
         cam.angularSensibilityX = 1000
         cam.angularSensibilityY = 1000
 
-        cam.lowerRadiusLimit = 5.6 ;
-        cam.upperRadiusLimit = 14.5//6.1
+        cam.lowerRadiusLimit = 5.5;
+        cam.upperRadiusLimit = 14.5
         cam.lowerBetaLimit = .85;
         cam.upperBetaLimit = 1
     }
@@ -4333,6 +4404,9 @@ class App{
         coinReward.innerHTML = rewardInfo.reward.rewardCoin
         isMyQuest ? acceptQuestBtn.style.display = "none" : acceptQuestBtn.style.display = "block"
     }
+    async delQuestFromMain(_questId){
+        await this.useFetch(`${APIURL}/quests/delete/${_questId}`, "DELETE", this.token)
+    }
     async setUpQuest(){
         const response = await fetch(`${APIURL}/quests`)
         this.quests = await response.json();
@@ -4411,13 +4485,16 @@ class App{
         const whoop = new BABYLON.Sound("whoopSlash", "sounds/slashWhoosh.wav", scene,
         null, {volume: .2, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
+        const rockSmashS = new BABYLON.Sound("rockSmashS", "sounds/rockSmashS.mp3", scene,
+        null, {volume: 1, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
+
         const woodCuttingS = new BABYLON.Sound("woodcuttingS", "sounds/woodcuttingS.mp3", scene,
         null, {volume: .4, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
         const minning = new BABYLON.Sound("minning", "sounds/minning.wav", scene,
         null, {volume: .5, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
-        const drawSword = new BABYLON.Sound("whoopSlash", "sounds/drawSword.mp3", scene,
+        const drawSword = new BABYLON.Sound("drawSword", "sounds/drawSword.mp3", scene,
         null, {volume: .7, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
         const sliceFlesh = new BABYLON.Sound("sliceFlesh", "sounds/sliceFlesh.wav", scene,
@@ -4515,7 +4592,8 @@ class App{
             running,
             minning,
             bonfireSound,
-            woodCuttingS
+            woodCuttingS,
+            rockSmashS
         }
  
     }
@@ -4529,20 +4607,23 @@ class App{
         const newP = createElement("p", "story-word opening-closing", arrayOfWords[pageNum])
         storyBoardCont.append(newP)
         pageNum++
-
         intervalWritten = setInterval(() => {
-            if(arrayOfWords.length <= pageNum){
-                log('finished line')
-                if(callBack) callBack()
-                storyBoardCont.classList.add("screenFadeOff");
-                setTimeout(() => storyBoardCont.style.display = "none", 500)
-                return clearInterval(intervalWritten)
-            } 
+
             storyBoardCont.innerHTML = ''
             const theWordElem = createElement("p", "story-word opening-closing", arrayOfWords[pageNum])
             storyBoardCont.append(theWordElem)
+            
+            if(arrayOfWords.length <= pageNum){
+                log('finished line')
+                setTimeout(() => {
+                    if(callBack) callBack()
+                    storyBoardCont.classList.add("screenFadeOff");
+                    setTimeout(() => storyBoardCont.style.display = "none", 1000)
+                }, 4000)
+                return clearInterval(intervalWritten)
+            } 
             pageNum++
-        }, 6000)
+        }, 5000)
         
     }
     userJoinedInitOnce(){
@@ -4612,6 +4693,17 @@ class App{
         this.checkBonFirez()
         this.checkTreasurez()
         this.checkFlowers()
+    }
+    weJoinTheServer(dirT){
+        this.socket.emit("join", {...this.det,
+            _moving: false,
+            _attacking: false,
+            _minning: false,
+            _training: false,
+            _crafting: false,
+            mode: "stand",
+            dirTarg: {x: dirT.x, z: dirT.z}
+        })
     }
     async main(){
         const result = await this.getCharacDetailsOnline()    
@@ -4742,7 +4834,7 @@ class App{
         let toSave = {
             owner: this.userId,
             name: "",
-            stats: {sword: 1, def: 1, core: 1, magic: 1, spd: .01},
+            stats: {sword: 1, def: 1, core: 1, magic: 1},
             weapon: { meshId: makeRandNum(), name: "none", itemType: "sword", plusDef: 1, plusDmg: 1, 
             magRes: 0, plusMag: 0, price: 0},
             helmet: { meshId: makeRandNum(), name: "none", itemType: "helmet", plusDef: 1, plusDmg: 1, 
@@ -4922,11 +5014,12 @@ class App{
         this.activateGlow(1.5, scene)
         this.creationOfFakeShadow(scene)
         light = new DirectionalLight("dirLight", new Vector3(0, -1, -0.3), scene);
-        light.intensity = .5
+        light.intensity = 0
 
         pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 1,0), new BABYLON.Vector3(0, -1, 0), Math.PI+1, 2, scene);
         hemLight = new HemisphericLight("light", new Vector3(0,10,2), scene)
-        hemLight.intensity = 0.7
+        hemLight.intensity = 1
+
         shadowGen = new ShadowGenerator(1024, light);
         
         scene.ambientColor = Color3.FromInts(10, 30, 10);
@@ -4937,7 +5030,9 @@ class App{
         const cam = this.arcCam(scene)
 
         this.createBlock(100,180,{x: 0, z: -83}, 0, scene);
-        this.createBlock(100,180,{x: 0, z: 78}, 0, scene);
+        this.createBlock(100,65,{x: 36, z: 77}, 0, scene);
+        this.createBlock(100,55,{x: -50, z: 77}, 0, scene);
+        // this.createBlock(100,24,{x: -15, z: 83}, -1.1, scene);
         this.createBlock(100,190,{x: -81, z: 0}, Math.PI/2, scene);
         this.createBlock(100,190,{x: 81, z: 0}, Math.PI/2, scene);
 
@@ -4946,10 +5041,10 @@ class App{
         null, {volume: .3, autoplay: true, loop: true})
 
         // update naten muna ang loc naten para di magkagulo sa socketio
-        this.createFog(scene, 0.002)
+        // this.createFog(scene, 0.002)
 
         const Ground = await this.createGround(scene, "./models/", 'swampforest.glb')
-        // this.createSwmpTile(scene)
+        this.createSwmpTile(scene)
 
         const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
         Cliff.meshes[1].parent = null
@@ -4968,9 +5063,10 @@ class App{
         const Sword = await this.importMesh(scene, "./models/", "swords.glb")
         allsword = Sword.meshes[0].getChildren()
         allsword.forEach(swordv => swordv.parent = null)
-
+        
+        await this.createWoodPlank();
+        this.createDangerSign(scene, {x: -3, y:.6, z: 75}, {x: 0,z:0});
         await this.forestCreations(scene)
-
         await this.helmetCreation(scene);
         await this.shieldCreation(scene);
 
@@ -4978,7 +5074,10 @@ class App{
         goblinRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "goblinGreen.glb", scene)
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
+        golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
 
+        // const Golem = await this.importMesh(scene, "./models/mons/", "golem.glb");
+        // Golem.meshes[0].position.z = -31
         // box to follow
         const btf = this.createBoxToFollow(scene)
         this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
@@ -4999,9 +5098,10 @@ class App{
         this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:55}, 0, scene)
 
         this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:92}, -Math.PI/2, scene)
-        this.createClone(Cliff.meshes[1], 'cliff', {x:6,y:0,z:92}, -Math.PI/2, scene)
-        this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:92}, -Math.PI/2, scene)
-
+        const leftClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:35,y:0,z:92}, -Math.PI/2, scene)
+        const rightClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:92}, -Math.PI/2, scene)
+        this.blocks.push(leftClifClone)
+        this.blocks.push(rightClifClone)
         this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:-95}, -Math.PI/2, scene)
         this.createClone(Cliff.meshes[1], 'cliff', {x:6,y:0,z:-110}, -Math.PI/2, scene)
         this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:-95}, -Math.PI/2, scene)
@@ -5028,10 +5128,9 @@ class App{
         await this.createIns("tingrass.glb",{x:-63, y: -.1, z:0}, 900, {xmin: -15, xmax: 15}, {zmin: -73, zmax: 73}, {miny: -.3, maxy: .2})
         await this.createIns("tingrass.glb",{x:63, y: -.1, z:0}, 900, {xmin: -15, xmax: 15}, {zmin: -73, zmax: 73}, {miny: -.3, maxy: .2})
         await this.createIns("tingrass.glb",{x:1, y: -.1, z:57}, 500, {xmin: -75, xmax: 75}, {zmin: -13, zmax: 13}, {miny: -.2, maxy: .2})
-    
         
-        await this.createInstances("grass2",1000, -70, 120, scene);
-        await this.createPeeble("./images/modeltex/rockTexBrown.png", scene, 200, {xmin: -100, xmax: 200}, {zmin: -180, zmax: 350})
+        await this.createInstances("grass2",1200, -70, 70, scene);
+        await this.createPeeble("./images/modeltex/rockTexBrown.png", scene, 50, {xmin: -70, xmax: 70}, {zmin: -70, zmax: 70})
 
         await scene.whenReadyAsync()
         this._scene.dispose()
@@ -5047,14 +5146,7 @@ class App{
         this.allCanPress()
         this.initPressControllers(scene)
 
-        this.socket.emit("join", {...this.det,
-            _moving: false,
-            _attacking: false,
-            _minning: false,
-            _training: false,
-            mode: "stand",
-            dirTarg: {x: 0, z: 0}
-        })
+        this.weJoinTheServer({x:0,z:0})
         this.checkAll();
         
         if(this.prevPlace?.includes('dungeon')){ // dapat mauuna ang createCharacter mo dito kase nag aupdate din ng loc yun
@@ -5079,6 +5171,188 @@ class App{
                    
             await this._dungeon('Normal', 1)
         })
+        // PATH TO HEART LAND
+        const pathToHland = this.createPath(4, {x: 8, z: -84}, scene);
+        this.toRegAction(pathToHland, this.myChar.bx, async () => {
+            this.stopPress(true)
+            this.prevPlace = 'swampforest'
+            this.setUp(true)
+            displayElems([apartInfos], "none")
+            displayElems([aprtLoadingBx, apartCont], "flex")
+            aprtLoadLabel.innerHTML = "Outside..."
+            this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
+            
+            await this.updatePlace('heartland')
+            showLoadingScreen(false, 'wizard')
+            this.resetMeshes()
+            await this._heartLand()
+        })
+        hideLScreen();
+        this.saveMyCurrentLoc();
+
+        const renderThis = () => {
+            this.actionAndMovement(this.btf)
+            this.renderMonsters()
+        }
+        scene.registerBeforeRender(renderThis)
+        if(this.myChar.bx.position.z === 0){
+            this.myChar.bx.position = new Vector3(0,this.yPos, -30)
+            this.saveMyCurrentLoc();
+        } 
+        window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, true)
+        this.registerBlocks(this.myChar, .1);
+
+        Tile.meshes.forEach(mesh => mesh.setEnabled(false))
+        this.checkAll()
+    }
+    async _hiddenLand(){
+       
+        worldChatCont.style.display = "flex"
+        const maxLoad = 2020
+        showLoadingScreen(false, 'wizard', maxLoad)
+        this.setUp(true);loadedMesh++
+
+        const result = await this.getCharacDetailsOnline()
+        this.setDetails(result) ; loadedMesh++
+        this.setHTMLUI(this.det)
+        const scene = new Scene(this._engine);
+
+        scene.actionManager = new ActionManager(scene);
+        this.activateGlow(1.5, scene)
+        this.creationOfFakeShadow(scene)
+        light = new DirectionalLight("dirLight", new Vector3(0, -1, -0.3), scene);
+        light.intensity = .5
+
+        pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 1,0), new BABYLON.Vector3(0, -1, 0), Math.PI+1, 2, scene);
+        hemLight = new HemisphericLight("light", new Vector3(0,10,2), scene)
+        hemLight.intensity = .8
+
+        shadowGen = new ShadowGenerator(1024, light);
+
+        await this._loadCharacterSounds(scene)
+
+        const cam = this.arcCam(scene)
+
+        this.createBlock(100,180,{x: 0, z: -83}, 0, scene);
+        this.createBlock(100,65,{x: 36, z: 77}, 0, scene);
+        this.createBlock(100,55,{x: -50, z: 77}, 0, scene);
+        this.createBlock(100,190,{x: -81, z: 0}, Math.PI/2, scene);
+        this.createBlock(100,190,{x: 81, z: 0}, Math.PI/2, scene);
+
+        // sound
+        new BABYLON.Sound("swampforestSound", "sounds/swampforestS.mp3", scene,
+        null, {volume: .3, autoplay: true, loop: true})
+
+        // update naten muna ang loc naten para di magkagulo sa socketio
+        // this.createFog(scene, 0.002)
+
+        const Ground = await this.createGround(scene, "./models/", 'swampforest.glb')
+        this.createSwmpTile(scene)
+
+        const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
+        Cliff.meshes[1].parent = null
+        Cliff.meshes[1].position = new Vector3(-110.9,0,20)
+        Cliff.meshes[0] = null;
+
+        // SWORDS
+        const Sword = await this.importMesh(scene, "./models/", "swords.glb")
+        allsword = Sword.meshes[0].getChildren()
+        allsword.forEach(swordv => swordv.parent = null)
+        
+        await this.createWoodPlank();
+        this.createDangerSign(scene, {x: -3, y:.6, z: 75}, {x: 0,z:0});
+        await this.forestCreations(scene)
+        await this.helmetCreation(scene);
+        await this.shieldCreation(scene);
+
+        theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
+        goblinRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "goblinGreen.glb", scene)
+        minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
+        snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
+        golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
+
+        // const Golem = await this.importMesh(scene, "./models/mons/", "golem.glb");
+        // Golem.meshes[0].position.z = -31
+        // box to follow
+        const btf = this.createBoxToFollow(scene)
+        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
+        myCharDet = this.myChar; 
+        
+        if(this.prevPlace === 'swampforest') this.myChar.bx.position = new Vector3(0,this.yPos,-200)
+        // npcInfos.forEach(npz => this.createNpc(theCharacterRoot, npz, true, btf))
+
+
+        // CLIFFS 
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:-60.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:0.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:55}, 0, scene)
+
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:-60.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:0.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:55}, 0, scene)
+
+        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:92}, -Math.PI/2, scene)
+        const leftClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:35,y:0,z:92}, -Math.PI/2, scene)
+        const rightClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:92}, -Math.PI/2, scene)
+        this.blocks.push(leftClifClone)
+        this.blocks.push(rightClifClone)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:-95}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:6,y:0,z:-110}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:-95}, -Math.PI/2, scene)
+
+        const Iron = await this.importMesh(scene, "./models/", "iron.glb")
+        Iron.meshes[1].parent = null
+        Iron.meshes[1].position = new Vector3(2,0,0)
+        Iron.meshes[0] = null
+        ironMesh = Iron.meshes[1];
+
+        // const Seed = await this.importMesh(scene, "./models/", "seed.glb")
+        // Seed.meshes[1].parent = null
+        // Seed.meshes[1].position = new Vector3(0,0,0)
+        // seedMesh = Seed.meshes[1]
+
+        const TheTreaz = await this.buildTreazure(scene);
+
+        const Block = await this.importMesh(scene, "./models/", "block.glb")
+        Block.meshes[1].parent = null
+
+        this.runLifeManaStaminaRegen()
+        this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5);
+        
+        await this.createIns("tingrass.glb",{x:0, y: -.1, z:0}, 1000, {xmin: -70, xmax: 70}, {zmin: -200, zmax: 200}, {miny: -.3, maxy: .2})
+        // await this.createIns("tingrass.glb",{x:63, y: -.1, z:0}, 900, {xmin: -15, xmax: 15}, {zmin: -73, zmax: 73}, {miny: -.3, maxy: .2})
+        // await this.createIns("tingrass.glb",{x:1, y: -.1, z:57}, 500, {xmin: -75, xmax: 75}, {zmin: -13, zmax: 13}, {miny: -.2, maxy: .2})
+        
+        await this.createInstances("grass2",1200, -70, 70, scene);
+        await this.createPeeble("./images/modeltex/rockTexBrown.png", scene, 50, {xmin: -70, xmax: 70}, {zmin: -200, zmax: 200})
+
+        await scene.whenReadyAsync()
+        this._scene.dispose()
+        this._scene = scene
+        
+        this.arrangeCam(-1.4, 1.15)
+
+        removeHomePage()
+        loadedMesh = maxLoad
+        openGameUI(this.det)
+        
+        this.showMapName('Swamp Forest', 3800);
+        this.allCanPress()
+        this.initPressControllers(scene)
+
+        this.weJoinTheServer({x:0,z:0})
+        this.checkAll();
+        
+        if(this.prevPlace?.includes('dungeon')){ // dapat mauuna ang createCharacter mo dito kase nag aupdate din ng loc yun
+            log("the prev place is dungeon")
+            const randomX = -5 * Math.random()
+            // this.arrangeMesh(this.myChar.bx.position, {x: randomX, y: this.yPos, z:-27}, {x:0, z: -30})
+            this.myChar.bx.position = new Vector3(randomX, this.yPos, -27)
+            this.arrangeCam(-1.4, 1.15)
+            await this.updateLocOnline({x: 0, z:-30}, {x: randomX, z: -27})
+            log(this.myChar.bx.position)
+        }
+
         // PATH TO HEART LAND
         const pathToHland = this.createPath(4, {x: 8, z: -84}, scene);
         this.toRegAction(pathToHland, this.myChar.bx, async () => {
@@ -5150,12 +5424,51 @@ class App{
         this.createFog(scene,.01)
         this.createBoxToFollow(scene)
 
-        const Ground = await this.importMesh(scene, "./models/", "dungeonNormal.glb")
-        Ground.meshes.forEach(gr => {
-            if(gr.name.includes("root")) return
-            gr.actionManager = new ActionManager(scene)
-            this.blocks.push(gr)
-        })
+        // const Ground = await this.importMesh(scene, "./models/", "dungeonNormal.glb")
+        // Ground.meshes.forEach(gr => {
+        //     if(gr.name.includes("root")) return
+        //     gr.actionManager = new ActionManager(scene)
+        //     this.blocks.push(gr)
+        // })
+
+        const Tile = await this.importMesh(scene, "./models/", "tile.glb");
+        const dWallPosY = 4.5
+        for(var i = -110; i <= 114;i+=7){
+
+            // left wall
+            const tileIns = Tile.meshes[1].createInstance("wall");
+            tileIns.parent = null
+            tileIns.position = new Vector3(-36,dWallPosY,i);
+            tileIns.rotation = new Vector3(0,0,-Math.PI/2)
+            tileIns.checkCollisions = true
+            this.freeze(tileIns);
+
+            // right wall
+            const rightWallIns = Tile.meshes[1].createInstance("wall");
+            rightWallIns.parent = null
+            rightWallIns.position = new Vector3(36,dWallPosY,i);
+            rightWallIns.rotation = new Vector3(0,0,Math.PI/2)
+            rightWallIns.checkCollisions = true
+            this.freeze(rightWallIns);
+
+
+            if(i > -40 && i < 40){
+                const backTile = Tile.meshes[1].createInstance("wall");
+                backTile.parent = null
+                backTile.position = new Vector3(i,dWallPosY,-106.4);
+                backTile.rotation = new Vector3(Math.PI/2,0,0)
+                backTile.checkCollisions = true
+                this.freeze(backTile);
+
+                const otherBackTile = Tile.meshes[1].createInstance("wall");
+                otherBackTile.parent = null
+                otherBackTile.position = new Vector3(i,dWallPosY,105.6);
+                otherBackTile.rotation = new Vector3(-Math.PI/2,0,0)
+                otherBackTile.checkCollisions = true
+                this.freeze(otherBackTile);
+            }
+
+        }
 
         const thePeeble = await this.createPeeble("./images/modeltex/rockTexWhite.png", scene, 300, {xmin: -60, xmax: 120}, {zmin: -250, zmax: 500 });
         thePeeble.position.y+= 1
@@ -5198,51 +5511,51 @@ class App{
             dungeonGate.meshes[0].addRotation(0,Math.PI,0)
         }
 
-        let rocksLeft = -110
-        while(rocksLeft <= 120){
-            const roRotat = Math.random() <= .6
-            const scaleR = .5 + Math.random() * 1
-            let dungNum = Math.floor(Math.random()*4)
-            if(dungNum === 0) dungNum = 1
-            const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksLeft + Math.random()*5}, roRotat && Math.PI *.2, scene, {ran: scaleR})
+        // let rocksLeft = -110
+        // while(rocksLeft <= 120){
+        //     const roRotat = Math.random() <= .6
+        //     const scaleR = .5 + Math.random() * 1
+        //     let dungNum = Math.floor(Math.random()*4)
+        //     if(dungNum === 0) dungNum = 1
+        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksLeft + Math.random()*5}, roRotat && Math.PI *.2, scene, {ran: scaleR})
 
-            this.blocks.push(newRock)
-            rocksLeft+=3
-        }
-        let rocksR = -110
-        while(rocksR <= 120){
-            const roRotat = Math.random() <= .6
-            const scaleR = .5 + Math.random() * 1
-            let dungNum = Math.floor(Math.random()*4)
-            if(dungNum === 0) dungNum = 1
-            const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksR + Math.random() * 4}, roRotat && Math.PI *.2, scene, {ran: scaleR})
+        //     this.blocks.push(newRock)
+        //     rocksLeft+=3
+        // }
+        // let rocksR = -110
+        // while(rocksR <= 120){
+        //     const roRotat = Math.random() <= .6
+        //     const scaleR = .5 + Math.random() * 1
+        //     let dungNum = Math.floor(Math.random()*4)
+        //     if(dungNum === 0) dungNum = 1
+        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksR + Math.random() * 4}, roRotat && Math.PI *.2, scene, {ran: scaleR})
 
-            this.blocks.push(newRock)
-            rocksR+=3
-        };
+        //     this.blocks.push(newRock)
+        //     rocksR+=3
+        // };
 
-        let bigRLeft = -100
-        while(bigRLeft <= 100){
-            const roRotat = Math.random() <= .6
-            const scaleR = 2 + Math.random() * 1
-            let dungNum = Math.floor(Math.random()*4)
-            if(dungNum === 0) dungNum = 1
-            const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRLeft + Math.random()*5}, Math.random()*4, scene, {ran: scaleR})
+        // let bigRLeft = -100
+        // while(bigRLeft <= 100){
+        //     const roRotat = Math.random() <= .6
+        //     const scaleR = 2 + Math.random() * 1
+        //     let dungNum = Math.floor(Math.random()*4)
+        //     if(dungNum === 0) dungNum = 1
+        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRLeft + Math.random()*5}, Math.random()*4, scene, {ran: scaleR})
  
-            this.blocks.push(newRock)
-            bigRLeft+=12
-        }
-        let bigRri = -100
-        while(bigRri <= 100){
-            const roRotat = Math.random() <= .6
-            const scaleR = 2 + Math.random() * 1
-            let dungNum = Math.floor(Math.random()*4)
-            if(dungNum === 0) dungNum = 1
-            const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRri + Math.random() * 4}, Math.random()*4, scene, {ran: scaleR})
+        //     this.blocks.push(newRock)
+        //     bigRLeft+=12
+        // }
+        // let bigRri = -100
+        // while(bigRri <= 100){
+        //     const roRotat = Math.random() <= .6
+        //     const scaleR = 2 + Math.random() * 1
+        //     let dungNum = Math.floor(Math.random()*4)
+        //     if(dungNum === 0) dungNum = 1
+        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRri + Math.random() * 4}, Math.random()*4, scene, {ran: scaleR})
 
-            this.blocks.push(newRock)
-            bigRri+=12
-        };
+        //     this.blocks.push(newRock)
+        //     bigRri+=12
+        // };
 
         if(floorNumber >= 5){
             let crysNums = -10
@@ -5405,8 +5718,10 @@ class App{
             this.createTrap(this.det._id, "earth", {x: -9 + Math.random()*20, y: .2, z: startingTrap}, 2400, trapDmg, 1000, 2)
             startingTrap+=3
         }
+
         this.createBlock(100,100,{x: 0, z: -106}, 0, scene);
         this.createBlock(100,100,{x: 0, z: 106}, 0, scene);
+
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
@@ -5597,25 +5912,48 @@ class App{
         this.runLifeManaStaminaRegen()
 
         this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5)
-        if(this.prevPlace === "swampforest"){
-            this.myChar.bx.position = new Vector3(0,this.yPos,-70)
-            this.myChar.bx.lookAt(new Vector3(0,this.yPos,0),0,0,0)
-            this.arrangeCam(-1.4, 1.15)
+        switch(this.prevPlace){
+            case "guildhouse":
+                this.playerLookAt(this.myChar.bx, {x:0,y:this.yPos,z:0})
+                this.arrangeCam(-1.4, 1.15)
+            break
+            case "room":
+                this.myChar.bx.position = new Vector3(this.prevLoc.x,this.yPos, this.prevLoc.z)
+            break
+            case "swampforest":
+                this.myChar.bx.position = new Vector3(0,this.yPos,-70)
+                this.myChar.bx.lookAt(new Vector3(0,this.yPos,0),0,0,0)
+                this.arrangeCam(-1.4, 1.15)
+            break
+            // NO NEED TO PUT DEFAULT
+            // IN CHARACTER CREATION IT'S ALREADY ASIGNING POS FROM DB
         }
-        if(this.prevPlace === "room"){
-            this.myChar.bx.position = new Vector3(this.prevLoc.x,this.yPos, this.prevLoc.z)
-        }
+        log(`this.prevPlace is ${this.prevPlace}`)
         await this.createInstances("grass2",1000, -70, 120, scene);
         
         let myTargCurr = undefined
         if(this.det.storyQue.some(queName => queName === "firstFriend") && this.det.rank === "none"){
             if(this.det.places.length <= 1){
                 this.myChar.bx.position = new Vector3(9, this.yPos, 13.5)
-                myTargCurr = {x:9, z: 13}
+                myTargCurr = {x:10.4, z: 11.5}
                 this.playerLookAt(this.myChar.bx, myTargCurr)
                 this.arrangeCam(-1.4, -1.15);
                 this.det.x = 9
                 this.det.z = 13.5
+                const nikNpc = simpleNpc.find(npz => npz.name === "niko");
+                if(nikNpc){
+                    closeGameUI()
+                    
+                    const npcInfo = npcInfos.find(npz => npz.name === "niko")
+                    this.targetRecource = nikNpc.bx
+                    this.targDetail = npcInfo.condition(this.det);
+                    pacBtn.click()
+                    this.closePopUpAction()
+                    closeGameUI()
+                }else{
+                    log("niko not found")
+                }
+
             }
         }
         await scene.whenReadyAsync()
@@ -5625,19 +5963,22 @@ class App{
         removeHomePage()
         loadedMesh = maxLoad
         hideLScreen()
-        openGameUI(this.det)
+        if(!this.det.storyQue.some(queName => queName === "firstFriend")){
+            openGameUI(this.det);
+            this.allCanPress()
+        }
         this.showMapName('Heart Land', 2800);
-        this.allCanPress()
         // this.arrangeCam(-1.4, 1.15)
 
-        this.socket.emit("join", {...this.det,
-            _moving: false,
-            _attacking: false,
-            _minning: false,
-            _training: false,
-            mode: "stand",
-            dirTarg: myTargCurr ? myTargCurr : {x: 0, z: 0}
-        })
+        // this.socket.emit("join", {...this.det,
+        //     _moving: false,
+        //     _attacking: false,
+        //     _minning: false,
+        //     _training: false,
+        //     mode: "stand",
+        //     dirTarg: 
+        // })
+        this.weJoinTheServer(myTargCurr ? myTargCurr : {x: 0, z: 0})
         this.checkAll();
         this.initPressControllers(scene)
 
@@ -5778,9 +6119,9 @@ class App{
         this.toRegAction(this.myChar.bx, myBed, () => {
 
             if(this.myChar.mode === "stand"){
-                this.myChar.bx.locallyTranslate(new Vector3(0,0, -.05))
+                this.myChar.bx.locallyTranslate(new Vector3(0,0, -.12))
             }else{
-                this.myChar.bx.locallyTranslate(new Vector3(0,0, -.15))
+                this.myChar.bx.locallyTranslate(new Vector3(0,0, -.24))
             }
         })
         this.toRegAction(this.myChar.detector, myBed, () => {
@@ -6080,6 +6421,9 @@ class App{
                     case 'viper':
                         monsterRoot = snakeRoot
                     break;
+                    case 'golem':
+                        monsterRoot = golemRoot
+                    break;
                 }
                 this.createMonster(monsterRoot, shadowGen, true, mon.monsId, mon.monsName, mon.modelType, mon.pos, mon.spd, mon.hp, mon.maxHp,mon.monsLvl, mon.atkInterval, mon.dmg, scene, mon.targHero, mon.expGain, mon.monsBreed, mon.effects)
             }
@@ -6142,7 +6486,6 @@ class App{
         houzess = []
         players = []
     }
-
     activateSockets(allsword, Seed, treasure){
         // FROM ADMIN
         this.socket.on("time-changed", data => {
@@ -6434,6 +6777,7 @@ class App{
                 theMons.isChasing = false
                 theMons.isAttacking = false
                 theMons.targHero = undefined
+                log("targ not here")
             }else{
                 this.monsterAttack(theMons.monsId, theMons.monsName, data.pos, theMons.targHero, data.animaName)
             }
@@ -6501,8 +6845,8 @@ class App{
                     this.socket.emit('playerDied', {_id: this.det._id, killer: data._id})
                     setTimeout(() => {
                         this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
-                        window.location.reload()
-                    }, 30000)
+                    }, 10000)
+                    this.gameOver()
                 }
                 this._attackTimeout = setTimeout(() => {
                     this.allCanPress()
@@ -6697,7 +7041,6 @@ class App{
             this.countActivePl()
         })
     }
-
     renderMonsters(){
         Monsterz.forEach(mons => {
             if(mons.isChasing && !mons.isHit){
@@ -6722,8 +7065,6 @@ class App{
         if(this.camZoomingIn && this.cam){
             this.cam.radius-=.7
         }
-        
-           
         this.myChar.weaponCol.locallyTranslate(new Vector3(0,.3,0))        
 
         players.forEach(playerDet => {
@@ -6742,13 +7083,15 @@ class App{
                         playerDet.bx.locallyTranslate(new Vector3(0,0,this.walkSpeed * (this._engine.getDeltaTime()/1000) ))
                         playerDet.moveActionName = 'walk'
                     break;
-                    case "weapon":                         
-                        playerDet.bx.locallyTranslate(new Vector3(0,0,this.runSpeed * (this._engine.getDeltaTime()/1000) ))
+                    case "weapon":
+                                             
+                        playerDet.bx.locallyTranslate(new Vector3(0,0,playerDet.spd * (this._engine.getDeltaTime()/1000) ))
                         playerDet.moveActionName = `running.${playerDet.mode}`
                         playerDet.myshieldz.forEach(mesh => mesh.position.x = -1)                         
                     break;
-                    case "fist":                            
-                        playerDet.bx.locallyTranslate(new Vector3(0,0,this.runSpeed * (this._engine.getDeltaTime()/1000) ))
+                    case "fist":
+                        log(playerDet.spd)                         
+                        playerDet.bx.locallyTranslate(new Vector3(0,0,playerDet.spd * (this._engine.getDeltaTime()/1000) ))
                         playerDet.moveActionName = `running.${playerDet.mode}` 
                         playerDet.myshieldz.forEach(mesh => mesh.position.x = -1)                        
                     break;
@@ -6975,16 +7318,24 @@ class App{
 
         document.addEventListener("keyup", e => {
 
-            if(!this._canpress || !canPress || this.det.hp <=0) return log("you are dead")
+            if(!this._canpress || !canPress || this.det.hp <=0) return log("you are dead or canPress false")
             const keyPressed = e.key.toLowerCase()
 
-            if(keyPressed === " "){
+            if(keyPressed === "p"){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
-                this.obtain("hukla", "x2", false)
-                this.checkAll()
-                log(this.det)
+                // this.obtain("hukla", "x2", false)
+                // this.checkAll()
+                // log(this.det)
                 this.det.coins+= 400
-                this.det.lvl++                   
+                this.det.lvl++
+                // this.det.stats.spd+=.5
+                const meSelf = players.find(pl => pl._id ===this.det._id)
+                if(meSelf){
+                    meSelf.spd += 1
+                    log(meSelf.spd)
+                    
+                    this._statPopUp("+spd +coins +lvl", 100);
+                }
             } 
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
@@ -7295,25 +7646,42 @@ class App{
         //     landTile.thinInstanceSetMatrixAt(landTile, fins)
         // }
     }
-    createSwmpTile(scene){
-        const landTile = this.createFloor("./images/modeltex/groundTex.png", scene, {x: 0, z: 0}, true, {h: 15, w: 15}, .04)
-        let tileMax = 700;
-        const bigLandTile = this.createFloor("./images/modeltex/swmpTex1.png", scene, {x: 0, z: 0}, true, {h: 25, w: 25})
+    createDangerSign(scene, pos, dirTarg){
+        if(!roadplank || !dangerPlank) return log("planks not yet made")
+        const newPlank = roadplank.clone("sign");
+        newPlank.parent = null;
+        newPlank.position = new Vector3(pos.x,pos.y,pos.z);
 
-        // for(var startingNum = 0; startingNum <= tileMax; startingNum++){
-        //     const randX = BABYLON.Scalar.RandomRange(-80,80)
-        //     const randZ = BABYLON.Scalar.RandomRange(-80,80)
-        //     const fins = new Matrix.Translation(randX,0,randZ);
-        //     landTile.thinInstanceAdd(fins)
-        //     landTile.thinInstanceSetMatrixAt(landTile, fins)
-        // }
+        const newSignBoard = dangerPlank.clone("signBoard");
+        newSignBoard.parent = newPlank
+        newSignBoard.rotationQuaternion = null
+        newSignBoard.position=new Vector3(0,.7,-.06);
+        newSignBoard.addRotation(0,Math.PI,0)
+        window.addEventListener("keydown", e => {
+            if(e.key === "u") newSignBoard.addRotation(0,0,.5)   
+        })
+
+        this.putFakeShadow(newPlank, false, -.45)
+    }
+    createSwmpTile(scene){
+        const landTile = this.createFloor("./images/modeltex/grassGround.png", scene, {x: 0, z: 0}, true, {h: 15, w: 15}, .04)
+        let tileMax = 300;
+        // const bigLandTile = this.createFloor("./images/modeltex/swmpTex1.png", scene, {x: 0, z: 0}, true, {h: 5, w: 5})
+
         for(var startingNum = 0; startingNum <= tileMax; startingNum++){
-            const randX = BABYLON.Scalar.RandomRange(-86,86)
-            const randZ = BABYLON.Scalar.RandomRange(-86,86)
+            const randX = BABYLON.Scalar.RandomRange(-30,30)
+            const randZ = BABYLON.Scalar.RandomRange(80,180)
             const fins = new Matrix.Translation(randX,0,randZ);
-            bigLandTile.thinInstanceAdd(fins)
-            bigLandTile.thinInstanceSetMatrixAt(bigLandTile, fins)
+            landTile.thinInstanceAdd(fins)
+            landTile.thinInstanceSetMatrixAt(landTile, fins)
         }
+        // for(var startingNum = 0; startingNum <= tileMax; startingNum++){
+        //     const randX = BABYLON.Scalar.RandomRange(-10,10)
+        //     const randZ = BABYLON.Scalar.RandomRange(80,110)
+        //     const fins = new Matrix.Translation(randX,0,randZ);
+        //     bigLandTile.thinInstanceAdd(fins)
+        //     bigLandTile.thinInstanceSetMatrixAt(bigLandTile, fins)
+        // }
     }
     createHLPlanks(){
         // entrance to half way
@@ -7421,6 +7789,11 @@ class App{
         roadplank.parent = null
         WoodPlank.meshes[0].dispose()
 
+        const DangerSign = await this.importMesh(scene, "./models/", "dangerSign.glb");
+        dangerPlank = DangerSign.meshes[0];
+        dangerPlank.parent = null
+        dangerPlank.rotationQuaternion = null
+        // DangerSign.meshes[0].dispose()
     }
     createRoadPlank(pos, rotateSide){
         const leftPlank = roadplank.clone("leftPlank")
@@ -7997,16 +8370,18 @@ class App{
             // this.targDetail = undefined
         })
     }
-    putFakeShadow(meshBody){
+    putFakeShadow(meshBody, sizeShadow, posY){
         const newFakeShadow = fakeShadow.createInstance("fakeShadow")
         newFakeShadow.parent = null
         newFakeShadow.rotationQuaternion = null;
         newFakeShadow.parent = meshBody
         newFakeShadow.position = new Vector3(0,-this.yPos+.03,0)
+        if(posY) newFakeShadow.position = new Vector3(0,posY,0)
+        if(sizeShadow) {
+            newFakeShadow.scaling = new Vector3(sizeShadow,.1,sizeShadow)
+        }
     }
     createCharacter(det, theCharacterRoot, scene, shadowGen, castShadow, isMine, allswords, allhelmets, allshields, light, detectorSize){
-        log(`${det.name} weapon is ` + det.weapon)
-        log(`${det.name} armor is ` + det.armor)
         const body = MeshBuilder.CreateBox(`box.${det._id}`, {size: .2, height: 1.7}, scene)
         body.position = new Vector3(det.x,this.yPos,det.z); 
         body.checkCollisions = true
@@ -8063,6 +8438,7 @@ class App{
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
             const {notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS} = this._allSounds
+            
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
             consumeS.attachToMesh(body)
@@ -8245,6 +8621,8 @@ class App{
         }else{
             myshieldz.forEach(swordmesh =>swordmesh.isVisible = false)
         }
+
+        // const rockParticles = this.createBloodParticle("rocktexture", 10, false, "sphere", true, false, false, soundColl)
         const toPush = {
             _id: det._id,
             name: det.name,
@@ -8254,6 +8632,7 @@ class App{
             _attacking: false,
             _minning: det._minning ? det._minning : false,
             _training: det._training ? det._training : false,
+            _crafting: det._crafting ? det._crafting : false,
             mode: det.mode === undefined ? 'stand' : det.mode,
             status: [], // bashed(will be moved backwards)
             moveActionName: "none",
@@ -8426,17 +8805,14 @@ class App{
         meshes[0].position = new Vector3(0,0,0)
 
         const grass = BABYLON.Mesh.MergeMeshes([meshes[1], meshes[2]], true, true, undefined, false, true);
-
+        grass.position = new Vector3(0,0,0)
         grass.freezeWorldMatrix();
         grass.material.freeze()
         // grass.doNotSyncBoundingInfo = true;
 
         for(var i = 0;i <= count;i ++){
-
-            const randomX = Math.random() * until
-            const randomZ = Math.random() * until
-            const newX = from + randomX
-            const newZ = from  + randomZ
+            const newX = BABYLON.Scalar.RandomRange(from, until)
+            const newZ = BABYLON.Scalar.RandomRange(from, until)
             const fins = new Matrix.Translation(newX,0,newZ);
             grass.thinInstanceAdd(fins)
             grass.thinInstanceSetMatrixAt(grass, fins)
@@ -8510,7 +8886,7 @@ class App{
     
     createHouse(meshId, houseNo, toClone, loc, scene, rotat, houseDet){
         const newHouse = toClone.clone(`house.${meshId}`)
-        log(`will create ${newHouse.name}`)
+
         newHouse.parent = null
         newHouse.position = new Vector3(loc.x,loc.y,loc.z)
         newHouse.scaling = new Vector3(1,1,1)
@@ -9008,6 +9384,7 @@ class App{
                 this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
                 weapMesh.parent = mons.rootMesh
                 weapMesh.position = new Vector3(0,0,0)
+                
                 switch(mons.monsName){
                     case "goblin":
                         weapMesh.position = new Vector3(0,.5 + Math.random()*.3,0)
@@ -9029,8 +9406,7 @@ class App{
                     break
                 }
                 weapMesh.lookAt(new Vector3(mypos.x, .5, mypos.z),0,0,0,BABYLON.Space.WORLD)
-                weapMesh.addRotation(Math.PI,0,0);                
-              
+                weapMesh.addRotation(Math.PI,0,0);
                 log(this.flyingWeaponz.length)
             })
         })
@@ -9122,6 +9498,7 @@ class App{
         let attackingInterval
         let isLookingInterval
         let intervalWillAttack
+        let onCollideTimeOut
 
         const scaleR = .3 * Math.random()
         const randomSec = 3000 + (5000 * Math.random())
@@ -9132,7 +9509,15 @@ class App{
         body.rotation.y = Math.random() * 4
         body.visibility = .9
 
-        const punchedS = this._allSounds.punched.clone()
+        let punchedS
+        switch(monsName){
+            case "golem":
+                punchedS = this._allSounds.rockSmashS.clone()
+            break;
+            default:
+                punchedS = this._allSounds.punched.clone()
+            break
+        }
         const sliceFleshS = this._allSounds.sliceFlesh.clone()
         const sliceHitS = this._allSounds.sliceHit.clone();
         const spearStruck = this._allSounds.spearStruckS.clone();
@@ -9179,18 +9564,21 @@ class App{
                 log("is eater")
                 rMeshSize = {size: 1, height: 1}
             break
+            case "golem":
+                rMeshSize = {size: .7, height: 1.4}
+                this.putFakeShadow(body, 7)
+            break
         }
         const meshes = entries.rootNodes
         entries.rootNodes[0].getChildren().forEach(mes => {
             mes.name = mes.name.split(" ")[2]
-            if(mes.name.includes("body") && castShadow) shadowGen.getShadowMap().renderList.push(mes)
+            // if(mes.name.includes("body") && castShadow) shadowGen.getShadowMap().renderList.push(mes)
             if(mes.name.includes("armor")){
                 if(mes.name.includes(armorName)){
                     mes.isVisible = true
                 }else mes.dispose()
             }
             if(mes.name === "Armature"){
-                
                 mes.getChildren().forEach(arm => {
                     if(arm.name.includes("rootBone")) {
                         // log(`${monsName} have rootBone`)
@@ -9201,6 +9589,11 @@ class App{
                                     log("minotaur spine is assigned")
                                     rBone = bns.getChildren()[0]
                                 }
+                            })
+                        }
+                        if(monsName.includes("golem")){
+                            arm.getChildren().forEach(bns => {
+                                if(bns.name.includes("lowerSpine")) rBone = bns
                             })
                         }
                     }
@@ -9220,7 +9613,7 @@ class App{
         meshes[0].scaling = new Vector3(1 + scaleR,1 + scaleR,1 + scaleR)
         meshes[0].parent = body
         meshes[0].position = new Vector3(0,-1,0)
-        
+        if(monsName === "golem") meshes[0].rotationQuaternion = null
         // ACTION MANAGERS
         body.actionManager = new ActionManager(scene)
         enemyDetection.actionManager = new ActionManager(scene)
@@ -9242,6 +9635,10 @@ class App{
             case "goblin":
                 monsSoundHit = this._allSounds.goblinHitS.clone(`hitSound.${monsName}`)
             break
+            case "golem":
+                namePosY = 2.3
+                healthPosY = 2.1
+            break;
         }
         
         const nameMesh = this.createMonsName(namePosY, monsId, monsName,body)
@@ -9298,6 +9695,7 @@ class App{
                     Monsterz = Monsterz.map(monsx => monsx.monsId === monsId ? {...monsx, targHero: this.det._id, isChasing: true, isAttacking: false} : monsx)
                     if(this.socketAvailable){
                         log("is online will chase")
+                        clearTimeout(onCollideTimeOut)
                         this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
                     }else{
                         theMons.isAttacking = false
@@ -9325,19 +9723,23 @@ class App{
                 trigger: ActionManager.OnIntersectionExitTrigger,
                 parameter: this.myChar.bx
             }, e => {
-                const bdypos = body.position
-                monsHealthPlane.isVisible = false;
-                if(this.socketAvailable){
-                    const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                    if(!theMons) return log("exiting this monster is not found")
-                    if(theMons.targHero === this.det._id) this.socket.emit("monsWillStop", {monsId, targHero: this.det._id, pos: {x: bdypos.x, z: bdypos.z}})
-                }else{
-                    const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                    if(!theMons) return log("cannot leave undefined monster")
-                    if(theMons.targHero === this.det._id){
-                        Monsterz = Monsterz.map(mon => mon.monsId === theMons.monsId ? {...mon, isChasing: false, isAttacking: false, targHero: undefined} : mon)
-                    }
-                }
+                // const bdypos = body.position
+                // monsHealthPlane.isVisible = false;
+                // if(this.socketAvailable){
+                //     const theMons = Monsterz.find(mons => mons.monsId === monsId)
+                //     if(!theMons) return log("exiting this monster is not found")
+                //     clearTimeout(onCollideTimeOut)
+                //     onCollideTimeOut = setTimeout(() => {
+                //         if(theMons.targHero === this.det._id) this.socket.emit("monsWillStop", {monsId, targHero: this.det._id, pos: {x: bdypos.x, z: bdypos.z}})
+                //     }, 500)
+                    
+                // }else{
+                //     const theMons = Monsterz.find(mons => mons.monsId === monsId)
+                //     if(!theMons) return log("cannot leave undefined monster")
+                //     if(theMons.targHero === this.det._id){
+                //         Monsterz = Monsterz.map(mon => mon.monsId === theMons.monsId ? {...mon, isChasing: false, isAttacking: false, targHero: undefined} : mon)
+                //     }
+                // }
             }
         ))
         atkDetection.actionManager.registerAction(new ExecuteCodeAction(
@@ -9367,8 +9769,24 @@ class App{
                         this.letsAttack(theIdOfPlayer, ourDet, monsId, dmg)
                     }, atkInterval)
                 }else{
-                    log(theMons.targHero)
+                    log("Mons targHero " + theMons.targHero)
                     log("not my target")
+                    if(theMons.targHero === undefined){
+                        log(" but my targ is undefined then I will attack");
+                        theMons.isChasing = false
+                        theMons.isAttacking = true
+                        this.letsAttack(theIdOfPlayer, theMons, monsId, dmg)
+                        clearInterval(intervalWillAttack)
+                        intervalWillAttack = setInterval( () => {
+                            const ourDet = Monsterz.find(mondz => mondz.monsId === monsId)
+                            if(!ourDet){
+                                log(`${monsName} must be dead`)
+                                clearInterval(intervalWillAttack)
+                            }
+                            this.letsAttack(theIdOfPlayer, ourDet, monsId, dmg)
+                        }, atkInterval)
+                    }
+
                 }
             }
         ))
@@ -9406,7 +9824,7 @@ class App{
                 if(!theMons) return log("cannot find the monster")
                 if(this.det.hp <= 0) return log("this player is dead")
                 const theIdOfPlayer = this.myChar.bx.name.split(".")[1]
-                punchedS.setPlaybackRate(.9+Math.random()*.2)
+                punchedS.setPlaybackRate(1+Math.random()*.2)
                 punchedS.play()
                 this.socketAvailable && this.socket.emit("playerIsHit", {_id: theIdOfPlayer, monsId, animName: 'hitcenter',dmg})
 
@@ -9466,305 +9884,6 @@ class App{
         enemy.anims.forEach(anim => anim.name === '0Idle' && anim.play(true))
         Monsterz.push(enemy);
         // log("created " + monsName)
-    }
-    createMeeleeNonMulti(monsRoot, shadowGen, monsId, monsName, modelType, pos, spd, hp, maxHp, monsLvl, atkInterval, dmg, wepsize, expGain, scene, monsBreed){
-        
-        if(!scene) return log('the scene is disposed')
-        let hitTimeOut
-        let isLookingInterval
-        let intervalWillAttack
-        let willChaseTimeout
-
-        let mySpd = spd
-        const scaleR = .3 * Math.random()
-        const randomSec = 3000 + (5000 * Math.random())
-
-        let body
-        let enemyDetection
-        let atkDetection
-        let weapon = MeshBuilder.CreateBox(`weapon.${monsId}`, {depth:wepsize.depth, height: .6, width: wepsize.width}, scene)
-
-        switch(monsName){
-            case "eater":
-                body = MeshBuilder.CreateBox(`${monsName}.${monsId}`, {size: 2.4, height: 2}, this.scene)
-                enemyDetection = MeshBuilder.CreateBox(`enemyDetection.${monsId}`, {size: 20, height: .6}, scene)
-                atkDetection = MeshBuilder.CreateBox(`atkDetection.${monsId}`, {depth: 3.8, height: .6, width: 2.5}, scene)
-                weapon.position.z += 2
-                break
-            default:
-                
-                body = MeshBuilder.CreateBox(`${monsName}.${monsId}`, {size: .3, height: 2}, this.scene)
-                enemyDetection = MeshBuilder.CreateBox(`enemyDetection.${monsId}`, {size: 7, height: .6}, scene)
-                atkDetection = MeshBuilder.CreateBox(`atkDetection.${monsId}`, {depth: .8, height: .6, width: .5}, scene)
-                weapon.position.z += 1
-                break
-        }        
-        body.position = new Vector3(pos.x,1,pos.z);
-        body.rotation.y = Math.random() * 4
-        
-        enemyDetection.parent = body
-        enemyDetection.isVisible = false
-        
-        atkDetection.parent = body
-        atkDetection.position.z += .4
-        atkDetection.isVisible = false
-
-        weapon.parent = body
-        
-        let entries = monsRoot.instantiateModelsToScene();
-        log(monsName)
-        log(entries)
-        entries.animationGroups.forEach(ani => ani.name = ani.name.split(" ")[2])
-
-        const meshes = entries.rootNodes
-        entries.rootNodes[0].getChildren().forEach(mes => {
-            mes.name = mes.name.split(" ")[2]
-            // if(mes.name.includes("body") && castShadow) shadowGen.getShadowMap().renderList.push(mes)
-            // if(mes.getChildren()[2]) shadowGen.addShadowCaster(mes.getChildren()[2])
-            // shadowGen.addShadowCaster(mes)
-        })
-
-        meshes[0].scaling = new Vector3(1 + scaleR,1 + scaleR,1 + scaleR)
-        meshes[0].parent = body
-        meshes[0].position = new Vector3(0,-1,0)
-        
-        entries.skeletons[0].dispose()
-
-        // SOUNDS ATTACHMENTS
-        const punchedS = this._allSounds.punched.clone()
-        const sliceFleshS = this._allSounds.sliceFlesh.clone()
-        const sliceHitS = this._allSounds.sliceHit.clone()
-        const spearStruck = this._allSounds.spearStruckS.clone();
-
-        punchedS.attachToMesh(body)
-        sliceHitS.attachToMesh(body)
-        sliceFleshS.attachToMesh(body)
-        spearStruck.attachToMesh(body)
-        sliceFleshS.setPlaybackRate(1.2)
-        
-        // ACTION MANAGERS
-        body.actionManager = new ActionManager(scene)
-        enemyDetection.actionManager = new ActionManager(scene)
-        atkDetection.actionManager = new ActionManager(scene)
-        weapon.actionManager = new ActionManager(scene)
-
-        const monsNameMesh = this.createMonsName(1.3, monsId, monsName, body)
-        const {robHealthGui, monsHealthPlane} = this.createMonsHealthBar(1, monsId, body, hp, maxHp)
-
-        enemyDetection.isVisible = false
-        atkDetection.isVisible = false
-        body.isVisible = false
-        weapon.isVisible = false
-        monsHealthPlane.isVisible = false       
-        monsNameMesh.isVisible = false 
-
-        const animationGroups = entries.animationGroups
-        let monsSoundHit = undefined
-        let monsSoundDied = undefined
-        if(Monsterz.length){
-            Monsterz.forEach(mon => {
-                mon.body.actionManager.registerAction(new ExecuteCodeAction(
-                    {
-                        trigger: ActionManager.OnIntersectionEnterTrigger,
-                        parameter: body
-                    }, e => {                        
-                        const myfos = this.myChar.bx.position
-                        const bodyfos = body.position
-                        mon.body.lookAt(new Vector3(bodyfos.x,mon.body.position.y,bodyfos.z),0,0,0)
-                        mon.body.locallyTranslate(new Vector3(Math.random()*.3,0,-Math.random()*.6))
-                        mon.body.lookAt(new Vector3(myfos.x,mon.body.position.y,myfos.z),0,0,0)
-                    }
-                ))
-            })
-        }
-        // ACTION MANAGERS
-        this.toRegAction(body, this.myChar.bx, () => {
-            body.locallyTranslate(new Vector3(Math.PI*.1,0,-.1))
-        })
-        enemyDetection.actionManager.registerAction(new ExecuteCodeAction(
-            {
-                trigger: ActionManager.OnIntersectionEnterTrigger,
-                parameter: this.myChar.bx
-            }, e => {
-                const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                if(!theMons) return log("cannot find the monster")
-        
-                if(this.det.hp <= 0) return log("this player is dead")
-                monsHealthPlane.isVisible = true
-                monsNameMesh.isVisible = true
-                theMons.targHero = this.det._id
-                theMons.isChasing = true
-                switch (monsName) {
-                    case 'slime':
-                            this._meeleAtk = "kick"
-                        break;
-                    case 'goblin':
-                        this._meeleAtk = "punch"
-                    break;
-                    case 'ghost':
-                        if(this.currentPlace.includes('dungeon')){
-                            log('yes you are in dungeon')
-                            const floorNum = this.currentPlace.split(".")[1]
-                            log('floor number' + floorNum)
-                            meshes[0].visibility = .3
-                        }
-                    break          
-                    default:
-                    break;
-                }
-            }
-        ))
-        enemyDetection.actionManager.registerAction(new ExecuteCodeAction(
-            {
-                trigger: ActionManager.OnIntersectionExitTrigger,
-                parameter: this.myChar.bx
-            }, e => {
-                const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                if(!theMons) return log("cannot find the monster")
-                clearTimeout(willChaseTimeout)
-                theMons.targHero = undefined
-                theMons.isChasing = false
-                this.stopAnim(animationGroups, "running")
-                monsHealthPlane.isVisible = false
-                monsNameMesh.isVisible = false
-            }
-        ))
-        let attackNum = 1
-        const monsAttack = () => {
-            let attackName
-            if(attackNum === 2) attackNum = 0
-            switch (monsName) {
-                case 'slime':
-                        attackName = 'attack'
-                    break;
-                case 'goblin':
-                        attackName = `attack${attackNum}`
-                    break;
-                case 'ghost':
-                        attackName = `attack${attackNum}`
-                case 'eater':
-                        attackName = `attack${attackNum}`
-                break;
-                default:
-                break;
-            }
-            attackNum++
-
-            this.playAnim(animationGroups, attackName)
-            if(monsName !== 'slime') weapon.position.y = -2.9
-        }
-        atkDetection.actionManager.registerAction(new ExecuteCodeAction(
-            {
-                trigger: ActionManager.OnIntersectionEnterTrigger,
-                parameter: this.myChar.bx
-            }, e => {
-                const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                if(!theMons) return log("cannot find the monster")
-                if(this.det.hp <= 0) return log("this player is dead")  
-                // let attackingMonsLength = 0
-                // Monsterz.forEach(mon => {
-                //     if(mon.isAttacking) attackingMonsLength++
-                // })
-
-                // theMons.body.locallyTranslate(new Vector3(attackingMonsLength/2,0,0))
-                // const myfos = this.myChar.bx.position
-                // theMons.body.lookAt(new Vector3(myfos.x,theMons.body.position.y,myfos.z),0,0,0)
-
-                theMons.isChasing = false
-                log(theMons.isChasing)
-                theMons.isAttacking = true
-                this.stopAnim(animationGroups, "running")
-                monsAttack()
-                clearTimeout(willChaseTimeout)
-                clearInterval(intervalWillAttack)
-                intervalWillAttack = setInterval( () => {
-                    log("attacked")
-                    if(this.det.hp <= 0){
-                        log("user is dead")
-                        return clearInterval(intervalWillAttack)  
-                    }
-                    monsAttack()                 
-                }, atkInterval)                
-            }
-        ))
-        atkDetection.actionManager.registerAction(new ExecuteCodeAction(
-            {
-                
-                trigger: ActionManager.OnIntersectionExitTrigger,
-                parameter: this.myChar.bx
-            }, e => {
-                const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                if(!theMons) return log("cannot find the monster")
-                clearInterval(intervalWillAttack)
-                clearTimeout(willChaseTimeout)
-                willChaseTimeout = setTimeout(() => {
-                    theMons.isChasing = true
-                    theMons.isAttacking = false
-                }, 500)
-           
-            }
-        ))
-        weapon.actionManager.registerAction(new ExecuteCodeAction(
-            {
-                trigger: ActionManager.OnIntersectionEnterTrigger,
-                parameter: this.myChar.bx
-            }, e => {
-                const theMons = Monsterz.find(mons => mons.monsId === monsId)
-                if(!theMons) return log("cannot find the monster")
-                if(theMons.monsName === "slime"){
-                    if(botMoving || this.myChar._moving) return log("cannot be attack while moving")
-                }
-                punchedS.play()
-                if(this.det.hp <= 0) {
-                    clearInterval(intervalWillAttack)
-                    return log("player is dead")
-                };
-                this.hitByNonMultiAI(this.myChar.bx, body, dmg, 'hitcenter', theMons.monsId)
-            }
-        ))
-        if(monsName === 'slime'){
-            const myrootbone = entries.rootNodes[0].getChildren()[0].getChildren()[1]
-            weapon.parent = myrootbone
-            weapon.position.y = 3.6
-            weapon.position.z = -1
-            monsSoundDied = this._allSounds.slimeDeathS.clone(`hitSound.${monsName}`)
-            monsSoundDied.attachToMesh(body)
-        }
-
-        const standBy = () => {
-            clearInterval(intervalWillAttack)
-            enemyDetection.dispose()
-            atkDetection.dispose()
-            weapon.dispose()
-        }
-        const enemy = {
-            monsBreed,
-            monsSoundDied,
-            monsSoundHit,
-            monsId, monsLvl,
-            body, monsName,
-            enemyDetection,
-            atkDetection,
-            weapon,
-            monsHealthPlane,
-            robHealthGui,
-            anims: animationGroups,
-            hp, maxHp, spd: mySpd,
-            isChasing: false,
-            isAttacking: false,
-            isHit: false,
-            targHero: undefined,
-            intervalWillAttack,
-            standBy, hitTimeOut,
-            expGain,
-            punchedS,
-            sliceHitS,
-            sliceFleshS,
-            spearStruck
-        }
-        enemy.anims.forEach(anim => anim.name === '0Idle' && anim.play(true))
-        Monsterz.push(enemy)
-        loadedMesh++
     }
     renderMonsActions(me, monsId, robHealthGui,body, hp){
         if(me.hp <= 0){
@@ -10093,11 +10212,14 @@ continueBtn.addEventListener("click", async e => {
         sessionStorage.removeItem("dungeonborn")
     }
 })
+const myGameLogo = document.querySelector(".db-logo")
 navChoices.forEach(navBtn => {
     navBtn.addEventListener("click", async e => {
         const classN = e.target.className.split(" ")[1]
         if(classN === undefined) return
         loginPage.style.display = "flex"
+        log(classN)
+        
         switch(classN){
             case "gotoreg":
             homeInputs.forEach(inp => inp.value = '')
@@ -10105,6 +10227,7 @@ navChoices.forEach(navBtn => {
             registerBtn.style.display = "block"
             allRegClass.forEach(elemnt => elemnt.style.display = "block")
             log(classN)
+            myGameLogo.classList.add("db-placeup")
             break;
             case "gotologin":
             homeInputs.forEach(inp => inp.value = '')
@@ -10112,10 +10235,14 @@ navChoices.forEach(navBtn => {
             loginBtn.style.display = "block"
             allRegClass.forEach(elemnt => elemnt.style.display = "none")
             log(classN)
+            myGameLogo.classList.add("db-placeup")
+            break;
+            case "gotoabout":
+                aboutCont.style.display="flex"
             break;
         }
 
-    })
+    }) 
 })
 // login page
 backToHomeBtns.forEach(backBtn => {
@@ -10123,6 +10250,7 @@ backToHomeBtns.forEach(backBtn => {
         homeInputs.forEach(inp => inp.value = '')
         checkIfRecordExist()
         loginPage.style.display = "none"
+        myGameLogo.classList.remove("db-placeup")
     })
 })
 
@@ -10184,6 +10312,10 @@ registerBtn.addEventListener("click", async () => {
         log(error)
     }
 
+})
+abtBackBtn.addEventListener("click", () => {
+    log('registered')
+    aboutCont.style.display="none"
 })
 
 function loadingBtn(theElem){

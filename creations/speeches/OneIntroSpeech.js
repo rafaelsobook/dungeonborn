@@ -9,11 +9,11 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
-        message: "I'm One and We are connected to each other just like a bluetooth in your world"
+        message: "I'm One, The Creator of this world"
     },
     {
         name: "One",
-        message: "You wished to be summoned to be reborn, Rejoice For I heard You "
+        message: "You wished to be summoned to be reborn, I saw you in different Dimensions "
     },
     {
         name: '',
@@ -21,27 +21,27 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
+        message: "You were once dead"
+    },
+    {
+        name: "",
+        message: "I think ... You're right. I can't seen to remember anything ..."
+    },
+    {
+        name: "One",
         message: "While wondering In Space And Time. I heard your voice in the mist of none ..."
     },
     {
         name: "One",
-        message: "Be Glad For I Have heard you and decided to respawn you ..."
-    },
-    {
-        name: '',
-        message: "You don't have to do that actually ...."
+        message: "I Have heard you and decided to respawn you ..."
     },
     {
         name: "One",
-        message: "Say Your last words then..."
+        message: "And actually, I might need your help to maintain the balance of this World"
     },
     {
-        name: '',
-        message: "Oh NO ! NO ! I take it back, I'm glad to be here as well. Thank you whoever you are"
-    },
-    {
-        name: "One",
-        message: "I am One, Just One and only One, And also I need your help to maintain the balance"
+        name: "",
+        message: "I am typically a nobody, but I'll try what I can"
     },
     {
         name: "One",
@@ -49,11 +49,11 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
-        message: "It also have its own problems, but unlike yours in this world they have ... "
+        message: "It also have its own calamities, but unlike yours in this world they have ... "
     },
     {
         name: "One",
-        message: "Demon Lords, Dragons, Magic Beasts, and ofcouse some others that you may not understand for now"
+        message: "Demon Lords, Dragons, Magic Beasts, And some others that you may not understand for now"
     },
     {
         name: '',
@@ -69,7 +69,7 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
-        message: "If you are willing to help, just maybe I can give you an extra boost so you can protect yourself even in the wrong situation"
+        message: "If you are willing to help, I can give you an extra boost so you can protect yourself even in the wrong situation"
     },
     {
         name: '',

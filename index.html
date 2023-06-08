@@ -15,7 +15,7 @@
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
-
+    <p class="new-craft-notif">new craft learned</p>
     <p class="map-name remove-map"></p> 
     
     <div class="craft-btns-cont">
@@ -151,21 +151,24 @@
     </div>
 
     <div class="home-page">
-        <div class="copyright">Ⓒ dungeonBorn 2023 beta test</div>
-        <div class="backgrounds-container"></div>
-        <img src="./images/wallpaper/wall3.jpg" class="wallpaperz" />
+        <div class="copyright">Ⓒ dungeonBorn 2023 beta</div>
+        <!-- <img src="./images/wallpaper/wall3.jpg" class="wallpaperz" /> -->
         <nav>
             <div class="nav-choices">
-                <button class="nav-choice"> <span class="slog">A</span>bout</button>
-                <button class="nav-choice" id="installGame">Install</button>
+                <!-- <button class="nav-choice gotoabout"> <span class="slog">A</span>bout</button>
+                <button class="nav-choice" id="installGame">Install</button> -->
+                <button class="nav-choice"><span class="game-font">Overview</span></button>
+                <button class="nav-choice"><span class="game-font">Story</span></button>
+                <button class="nav-choice"><span class="game-font">News</span></button>
             </div>
             
-            <div class="nav-choices">
+            <div class="nav-choices dark-nav">
                 <button class="nav-choice gotoreg desk"> <span class="slog">R</span>egister</button>
                 <button class="nav-choice gotologin desk"> <span class="slog">L</span>ogin</button>
             </div>
         </nav>
-        <p class="logo back-to-home"><span class="slog">D</span>ungeon <span class="slog">B</span>orn</p>
+        <!-- <p class="logo back-to-home"><span class="slog">D</span>ungeon <span class="slog">B</span>orn</p> -->
+        <img src="./images/UI/dblogo.png" alt="" class="db-logo db-placeup">
         <button class="homepage-btn" id="continue">continue</button>
         <div class="login-container">
             <div class="login-background"></div>
@@ -215,7 +218,81 @@
             </div>
         </div>
     </div>
+    <!-- // my-stat-hidding -->
+    <div class="whole-stats-container my-stat-hidding">
+        <div class="human-body">
+            <img src="./images/UI/humanBody.png" alt="" class="hb-body">
+            <img src="./images/UI/magcircle.png" alt="" class="hb-star">
+        </div>
+        <div class="upgradeCont">
+            <div class="points-bx">
+                <p class="label-pnts">Upgrade Stats</p>
+                <p class="points">points: 1</p>
+            </div>
+        
+            <div class="eqpdbx">
+                <div class="sep-bx">
+                    <img src="./images/setup/swordpic.png" class="eqpd sword" />
+                    <p class="stat-label">Weapon Mastery</p>
+                </div>
+                <div class="sep-bx" id="sword">
+                    <button class="button-upgrade">+</button>
+                    <p class="eqpd-int sword">1</p>
+                </div>
+            </div>
+            <div class="eqpdbx" >
+                <div class="sep-bx">
+                    <img src="./images/setup/armor.png" class="eqpd armor" />
+                    <p class="stat-label">Body Defense</p>
+                </div>
+                <div class="sep-bx" id="def">
+                    <button class="button-upgrade">+</button>
+                    <p class="eqpd-int def">1</p>
+                </div>
+            </div>
+            <div class="eqpdbx" >
+                <div class="sep-bx">
+                    <img src="./images/setup/muscles.png" class="eqpd cloth" />
+                    <p class="stat-label">Physical Strength</p>
+                </div>
+                <div class="sep-bx" id="core">
+                    <button class="button-upgrade">+</button>
+                    <p class="eqpd-int core">1</p>
+                </div>
+            </div>
+            <div class="eqpdbx" >
+                <div class="sep-bx">
+                    <img src="./images/setup/magic.png" class="eqpd pants" />
+                    <p class="stat-label">Sorcery</p>
+                </div>
+                <div class="sep-bx" id="magic">
+                    <button class="button-upgrade">+</button>
+                    <p class="eqpd-int magic">1</p>
+                </div>
+            </div>
+            
+        </div>
+        <div class="prof-details">
+            <!-- <img src="./images/setup/scroll.png" alt="" class="prof-backg"> -->
+            <div class="lvl-rank">
+                <p class="lvl">Lvl. 1</p>
+                <p class="rank">Rank: F</p>
+            </div>
 
+            <div class="mystatus">
+                <p class="mystat-label hplabel">Health: 22/120</p>
+                <p class="mystat-label mp">Mana: 402/100</p>
+                <p id="statExp" class="mystat-label sp">Stamina: 0%</p>
+                <p id="statExp" class="mystat-label exp">Exp: 0%</p>
+                <p id="statExp" class="mystat-label str"></p>
+                <p id="statExp" class="mystat-label weaponDmg"></p>
+                <p id="statExp" class="mystat-label deftotal"></p>
+                <p id="statExp" class="mystat-label magicDmg"></p>
+                <p id="statExp" class="mystat-label speed"></p>
+            </div>
+        </div>
+        <button class="stat-close">close</button>
+    </div>
     <div class="guild-cont">
         <p class="guild-title"></p>
         <button class="guild-btn claimReward">claim rewards</button>
@@ -304,6 +381,10 @@
             <img src="./images/UI/guildbook.png" class="rui-img" />
             <p class="rui-caps">quests</p>
         </button>
+        <button class="rui-btn mystats">
+            <img src="./images/UI/magcircle.png" class="rui-img" />
+            <p class="rui-caps">stats</p>
+        </button>
         <!-- <div class="action-controller-cont">
             <button class="rui-btn stand">
                 <img class="rui-img" src="./images/UI/standpic.png" />
@@ -357,23 +438,6 @@
                 </div>
             </div>
             <div class="armory-status stat-bx">
-                <div class="prof-choices">
-                    <button class="prf-btn myequipeds">Armory</button>
-                    <button class="prf-btn statUpgrades">Upgrades</button>
-                    <button class="prf-btn profDetails">Details</button>
-                </div>
-                <div class="prof-details">
-                    <div class="lvl-rank">
-                        <p class="lvl">Lvl. 1</p>
-                        <p class="rank">Rank: F</p>
-                    </div>
-    
-                    <div class="mystatus">
-                        <p class="mystat-label hplabel">HP: 22/120</p>
-                        <p class="mystat-label mp">MP: 402/100</p>
-                        <p id="statExp" class="mystat-label exp">exp: 0%</p>
-                    </div>
-                </div>
                 <div class="equipedItems">
                     <div class="armor-set forweapon">
                         <div class="arms-bx">
@@ -447,7 +511,7 @@
                     </div>
                 </div>
 
-                <div class="upgradeCont">
+                <!-- <div class="upgradeCont">
                     <div class="points-bx">
                         <p class="label-pnts">Upgrade Stats</p>
                         <p class="points">points: 1</p>
@@ -478,7 +542,7 @@
                         <button class="button-upgrade">+</button>
                     </div>
                     
-                </div>
+                </div> -->
 
             </div>
         </div>
@@ -551,6 +615,31 @@
                 <button class="admin-btn" id="adminCreate">create</button>
             </div>
         </div>
+    </div>
+    <div class="about-container">
+        <div class="content">
+            <section class="intro-center">
+                <img src="./images/UI/dblogo.png" alt="" class="about-logo">
+                <h5 class="ic-ttle">Welcome Adventurers</h5>
+                <p class="ic-def">Are You Ready To Embark Your New Journey</p>
+            </section>
+            <section class="intro-content">
+                <img src="./images/wallpaper/wall3.jpg" alt="" class="ic-img">
+                <div class="ic-ttle-def">
+                    <h1 class="ic-ttle">Explore And Risk Everything</h1>
+                    <p class="ic-def">DungeonBorn is the ultimate action RPG based
+                        in browser. <br />
+                        Experience with endless evil to slaughter, countless 
+                        abilities to master, nightmarish dungeons, and legendary 
+                        loot. Embark on the campaign solo or with friends, through beautifully dark settings, or explore a shared world where 
+                        players can meet in towns to trade, team up to battle 
+                        world bosses, or descend into ARENA to test 
+                        other players skills.
+                    </p>
+                </div>
+            </section>
+        </div>
+        <button class="back-btn">Back</button>
     </div>
     <p class="lvl-up-message"></p>
 
