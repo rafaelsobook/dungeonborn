@@ -636,7 +636,9 @@ class App{
     }
     setHTMLUI(data){
         const { sword, def, core, magic} = data.stats
-        const labelsOfStats = document.querySelectorAll(".eqpd-int")     
+        const labelsOfStats = document.querySelectorAll(".eqpd-int")
+        const myApts = [];
+        this.det.aptitude.forEach(apts => myApts.push(apts.name)) 
         labelsOfStats.forEach(statpwr => {
             if(statpwr.className.includes('sword')) statpwr.innerHTML = `Lvl ${sword}`
             if(statpwr.className.includes('def')) statpwr.innerHTML = `Lvl ${def}`
@@ -654,7 +656,9 @@ class App{
             if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.recalPhyDefense(0))}`
             if(elem.className && elem.className.includes('magicDmg')) elem.innerHTML = `Magic Damage: ${Math.floor(this.det.stats.magic * this.magX)}`
             if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Speed: ${Math.floor(this.det.stats.spd)}`
+            if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" ")}`
         })
+
         let rankName = "none"
         log(this.det.rank)
         if(this.det.rank !== "none"){
