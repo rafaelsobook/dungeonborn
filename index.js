@@ -394,6 +394,7 @@ let allhelmets
 let allshields
 let Seed
 let wholeTree
+let oldHouseMesh
 let treasure
 let stamFlower
 let herbleaves
@@ -658,7 +659,7 @@ class App{
             if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Speed: ${Math.floor(this.det.stats.spd)}`
             if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" ")}`
         })
-
+        log(this.det.aptitude)
         let rankName = "none"
         log(this.det.rank)
         if(this.det.rank !== "none"){
@@ -742,6 +743,10 @@ class App{
         parentElem.append(sideNotif)
         sideNotif.innerHTML = notifMessage
         sideNotif.classList.add("sideAnimate")
+        setTimeout(() => {
+            sideNotif.style.display = "none"
+            sideNotif.classList.remove("sideAnimate")
+        }, 3500)
     }
     openPopUpAction(actionName){
         popupActionCont.style.display = "block"
@@ -1909,27 +1914,30 @@ class App{
             this.myChar.mode = "noneweapon"
             this.stopAnim(this.myChar.anims, "running", true)
             this.playAnim(this.myChar.anims, "throw")
-            log(this.myChar.swordz)
+
             const myCurSword = this.myChar.swordz.find(swrd => swrd.name.split(".")[1] === this.det.weapon.name)
             if(!myCurSword) return log("current sword not found")
             const weaponDetail = this.det.items.find(itm => itm.meshId === this.det.weapon.meshId)
             if(!weaponDetail) return log("weapon not found")
             myCurSword.addRotation(Math.PI,0,0)
+            log("cur sowrd " + myCurSword )
+            if(this.socketAvailable) this.socket.emit("action-willthrow", {_id:this.det._id, weaponName: this.det.weapon.name})
+            
             setTimeout(() => this.myChar.whoopS.play(), 900)
             setTimeout( async () => {
-                
                 const infrontPos = this.getMyPos(this.myChar.bx, 1)
                 const infrontPosX2 = this.getMyPos(this.myChar.bx, 3)
                 let myDmg = this.recalMeeleDmg()
                 myDmg = myDmg * 5
                 log('damage of spear ' + myDmg)
-                
-                const mySphereAbsPos = myCurSword.getAbsolutePosition()
-                this.createFlyingWeapon(this.myChar.bx.position, myDmg, this.myChar.mode, myCurSword, infrontPos, infrontPosX2, weaponDetail)
-                log(`my mode after throwing the spear ${this.myChar.mode}`)
-                this.hideAllSword(this.myChar.swordz)
-                this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
-                
+                const myPpos = this.myChar.bx.position
+                if(this.socketAvailable){
+                    this.socket.emit("will-throw", { _id: this.det._id, myFosNow: {x: myPpos.x, z: myPpos.z} , mode:this.myChar.mode, dmg: myDmg, frontPos: {x:infrontPos.x,z:infrontPos.z}, dirTa: { x: infrontPosX2.x,z:infrontPosX2.z}, weaponDetail, curPlace: this.currentPlace})
+                }else{
+                    this.createFlyingWeapon(this.myChar.bx.position, myDmg, this.myChar.mode, myCurSword, infrontPos, infrontPosX2, weaponDetail, this.det._id)
+                    this.hideAllSword(this.myChar.swordz)
+                    this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
+                }
                 setTimeout(() => this.setMode("fist"), 400)
                 // this.myChar.swordz = this.myChar.swordz.filter(swrd => swrd.name.split(".")[1] !== this.det.weapon.name)
                 const theItem = this.det.items.find(itm => itm.meshId === this.det.weapon.meshId)
@@ -2182,7 +2190,7 @@ class App{
                                             setTimeout(() => showNotif(`${crft.name} craft learned `, 6000), notifTimeOut);    
                                             notifTimeOut+= 1000
                                         })
-                                        this.showSideNotif(craftIcon, "New Craft Added")
+                                        this.showSideNotif(craftIcon, "Craft Added")
                                     }
                                     openGameUI(this.det)
                                     log(this.det)
@@ -2620,10 +2628,10 @@ class App{
             switch(this.targDetail.title){
                 case "registration":
                     if(this.det.rank !== "none") return log("already registered " + this.det.rank);
-                    const speech = [{name: 'reception', message: "place your hand on the book"},
-                    {name: 'reception', message: "Let's see if you can be an Adventurer"},
+                    const speech = [{name: 'reception', message: "To Register ...place hand on the book"},
+                    {name: 'reception', message: "Registering you through your mana is essential"},
                     {name: 'reception', message: "we will check if you have an aptitude for magic"},
-                    {name: 'reception', message: "Just wait and we will see ...."},
+                    {name: 'reception', message: "It will take some time ... "},
                     ]
                     closeGameUI()
                     this.stopPress()
@@ -2656,9 +2664,9 @@ class App{
                                     this.det.aptitude.forEach(apt => myAptNames.push(apt.name))
                                     const secondSpeech =[
                                         {name: "reception", message: "Thank you for your cooperation ..."},
-                                        {name: "reception", message: `Your magic aptitude is ${myAptNames.join(" ")}, Impressive !`},
+                                        {name: "reception", message: `Your magic aptitude is ${myAptNames.join(" ")}, Impressive ${myAptNames.length === 1 && myAptNames[0] === "dark" && "It's rare to see this type"} !`},
                                         {name: "reception", message: "You are now an official Adventurer of our guild"},
-                                        {name: "reception", message: "For now you will start in rank F"},
+                                        {name: "reception", message: "You will start in lowest Rank, Rank F"},
                                         {name: "reception", message: "You can be promoted upto A or if you are that great"},
                                         {name: "reception", message: "You can be a rank S adventurer someday, Goodluck ..."},
                                         {name: "reception", message: "You can Inquire and check the quests in here ..."},
@@ -4730,8 +4738,10 @@ class App{
                     await this._heartLand()
                 break;
                 case "guildhouse":
-                    
-                await this._goToGuildHouse() 
+                    await this._goToGuildHouse() 
+                break
+                case "hiddenland":
+                    await this._hiddenLand() 
                 break
             }
             if(this.det.currentPlace.includes('dungeon')){
@@ -5047,7 +5057,7 @@ class App{
         // update naten muna ang loc naten para di magkagulo sa socketio
         // this.createFog(scene, 0.002)
 
-        const Ground = await this.createGround(scene, "./models/", 'swampforest.glb')
+        const Ground = await this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
         this.createSwmpTile(scene)
 
         const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
@@ -5162,7 +5172,13 @@ class App{
             await this.updateLocOnline({x: 0, z:-30}, {x: randomX, z: -27})
             log(this.myChar.bx.position)
         }
-
+        if(this.prevPlace === "hiddenland"){
+            log("the prev place is Hidden LAnd")
+            
+            this.myChar.bx.position = new Vector3(-8, this.yPos, 80)
+            this.arrangeCam(-1.4, 1.15)
+            await this.updateLocOnline({x: -8, z:50}, {x: -8, z: 85})
+        }
         // PATH TO DUNGEON
         const path = this.createPath(8,  {x: 0, z:-10.7}, scene)
         this.toRegAction(path, this.myChar.bx, async () => {
@@ -5190,6 +5206,22 @@ class App{
             showLoadingScreen(false, 'wizard')
             this.resetMeshes()
             await this._heartLand()
+        })
+        // PATH TO HIDDEN LAND
+        const pathToHidden = this.createPath(6, {x: -6.8, z: 87}, scene);
+        this.toRegAction(pathToHidden, this.myChar.bx, async () => {
+            this.stopPress(true)
+            this.prevPlace = 'swampforest'
+            this.setUp(true)
+            displayElems([apartInfos], "none")
+            displayElems([aprtLoadingBx, apartCont], "flex")
+            aprtLoadLabel.innerHTML = "Outside..."
+            this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
+            
+            await this.updatePlace('hiddenland')
+            showLoadingScreen(false, 'wizard')
+            this.resetMeshes()
+            await this._hiddenLand()
         })
         hideLScreen();
         this.saveMyCurrentLoc();
@@ -5237,7 +5269,7 @@ class App{
 
         const cam = this.arcCam(scene)
 
-        this.createBlock(100,180,{x: 0, z: -83}, 0, scene);
+        this.createBlock(100,180,{x: 0, z: -100}, 0, scene);
         this.createBlock(100,65,{x: 36, z: 77}, 0, scene);
         this.createBlock(100,55,{x: -50, z: 77}, 0, scene);
         this.createBlock(100,190,{x: -81, z: 0}, Math.PI/2, scene);
@@ -5250,9 +5282,13 @@ class App{
         // update naten muna ang loc naten para di magkagulo sa socketio
         // this.createFog(scene, 0.002)
 
-        const Ground = await this.createGround(scene, "./models/", 'swampforest.glb')
+        const Ground = await this.createGround(scene, "./images/modeltex/hiddenlandTex4.jpg",200)
+        Ground.diffuseTex.uScale = 28
+        Ground.diffuseTex.vScale = 28
         this.createSwmpTile(scene)
 
+        this.createSwamps("./images/modeltex/grassGround.png", scene, {x: 0, z: 0}, 100,{min: -25, max:25}, {min: -95,max: -130})
+        
         const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
         Cliff.meshes[1].parent = null
         Cliff.meshes[1].position = new Vector3(-110.9,0,20)
@@ -5261,7 +5297,10 @@ class App{
         // SWORDS
         const Sword = await this.importMesh(scene, "./models/", "swords.glb")
         allsword = Sword.meshes[0].getChildren()
-        allsword.forEach(swordv => swordv.parent = null)
+        allsword.forEach(swordv => {
+            swordv.parent = null
+            swordv.position.y = 100
+        })
         
         await this.createWoodPlank();
         this.createDangerSign(scene, {x: -3, y:.6, z: 75}, {x: 0,z:0});
@@ -5282,7 +5321,7 @@ class App{
         this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar; 
         
-        if(this.prevPlace === 'swampforest') this.myChar.bx.position = new Vector3(0,this.yPos,-200)
+        if(this.prevPlace === 'swampforest') this.myChar.bx.position = new Vector3(0,this.yPos,-80)
         // npcInfos.forEach(npz => this.createNpc(theCharacterRoot, npz, true, btf))
 
 
@@ -5298,11 +5337,10 @@ class App{
         this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:92}, -Math.PI/2, scene)
         const leftClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:35,y:0,z:92}, -Math.PI/2, scene)
         const rightClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:92}, -Math.PI/2, scene)
-        this.blocks.push(leftClifClone)
-        this.blocks.push(rightClifClone)
-        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:-95}, -Math.PI/2, scene)
-        this.createClone(Cliff.meshes[1], 'cliff', {x:6,y:0,z:-110}, -Math.PI/2, scene)
-        this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:-95}, -Math.PI/2, scene)
+        
+        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:-110}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:35,y:0,z:-110}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:-110}, -Math.PI/2, scene)
 
         const Iron = await this.importMesh(scene, "./models/", "iron.glb")
         Iron.meshes[1].parent = null
@@ -5323,12 +5361,12 @@ class App{
         this.runLifeManaStaminaRegen()
         this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5);
         
-        await this.createIns("tingrass.glb",{x:0, y: -.1, z:0}, 1000, {xmin: -70, xmax: 70}, {zmin: -200, zmax: 200}, {miny: -.3, maxy: .2})
+        await this.createIns("tingrass.glb",{x:0, y: -.1, z:0}, 1000, {xmin: -80, xmax: 80}, {zmin: -80, zmax: 80}, {miny: -.3, maxy: .2})
         // await this.createIns("tingrass.glb",{x:63, y: -.1, z:0}, 900, {xmin: -15, xmax: 15}, {zmin: -73, zmax: 73}, {miny: -.3, maxy: .2})
         // await this.createIns("tingrass.glb",{x:1, y: -.1, z:57}, 500, {xmin: -75, xmax: 75}, {zmin: -13, zmax: 13}, {miny: -.2, maxy: .2})
         
         await this.createInstances("grass2",1200, -70, 70, scene);
-        await this.createPeeble("./images/modeltex/rockTexBrown.png", scene, 50, {xmin: -70, xmax: 70}, {zmin: -200, zmax: 200})
+        await this.createPeeble("./images/modeltex/rockTexBrown.png", scene, 50, {xmin: -70, xmax: 70}, {zmin: -80, zmax: 80})
 
         await scene.whenReadyAsync()
         this._scene.dispose()
@@ -5340,38 +5378,33 @@ class App{
         loadedMesh = maxLoad
         openGameUI(this.det)
         
-        this.showMapName('Swamp Forest', 3800);
+        this.showMapName('Hidden Land', 3800);
         this.allCanPress()
         this.initPressControllers(scene)
 
         this.weJoinTheServer({x:0,z:0})
         this.checkAll();
-        
-        if(this.prevPlace?.includes('dungeon')){ // dapat mauuna ang createCharacter mo dito kase nag aupdate din ng loc yun
-            log("the prev place is dungeon")
-            const randomX = -5 * Math.random()
-            // this.arrangeMesh(this.myChar.bx.position, {x: randomX, y: this.yPos, z:-27}, {x:0, z: -30})
-            this.myChar.bx.position = new Vector3(randomX, this.yPos, -27)
-            this.arrangeCam(-1.4, 1.15)
-            await this.updateLocOnline({x: 0, z:-30}, {x: randomX, z: -27})
-            log(this.myChar.bx.position)
-        }
 
-        // PATH TO HEART LAND
-        const pathToHland = this.createPath(4, {x: 8, z: -84}, scene);
-        this.toRegAction(pathToHland, this.myChar.bx, async () => {
+        for(var plankzqnty = -35;plankzqnty < 30; plankzqnty+=1 + Math.random()*.8){
+            this.createRoadPlank({x: plankzqnty, z: 85}, Math.random()*.2)
+            this.createRoadPlank({x: plankzqnty, z: 78}, Math.random()*.2)
+        }
+        
+        // PATH TO SWAMPFOREST
+        const pathToSwamp = this.createPath(6, {x: -6, z: -99}, scene);
+        this.toRegAction(pathToSwamp, this.myChar.bx, async () => {
             this.stopPress(true)
-            this.prevPlace = 'swampforest'
+            this.prevPlace = 'hiddenland'
             this.setUp(true)
             displayElems([apartInfos], "none")
             displayElems([aprtLoadingBx, apartCont], "flex")
             aprtLoadLabel.innerHTML = "Outside..."
             this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
-            
-            await this.updatePlace('heartland')
+            await this.updatePlace('swampforest')
             showLoadingScreen(false, 'wizard')
             this.resetMeshes()
-            await this._heartLand()
+            isLoading = true
+            await this._swampForest()
         })
         hideLScreen();
         this.saveMyCurrentLoc();
@@ -5387,9 +5420,6 @@ class App{
         } 
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, true)
         this.registerBlocks(this.myChar, .1);
-
-        Tile.meshes.forEach(mesh => mesh.setEnabled(false))
-        this.checkAll()
     }
     async _dungeon(dungeonType, floorNum, haveBoss){
         
@@ -5824,7 +5854,7 @@ class App{
 
         cam = this.arcCam(scene)
 
-        this.createGround(scene, "./models/", 'swampforest.glb')
+        await this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
 
         // this.createHeartLandTile(scene)
 
@@ -5833,7 +5863,6 @@ class App{
         allHouses = medHouse.meshes[0].getChildren();
 
         await this.createWoodPlank();
-
         this.createHLPlanks()
         
         // SWORDS
@@ -5844,13 +5873,11 @@ class App{
         await this.shieldCreation(scene);
 
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
-        log(allhelmets)
         // box to follow && character
         const btf = this.createBoxToFollow(scene)
         this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar
 
-        
         npcInfos.forEach(npz => {
             const notYetTalked = this.det.storyQue.some(stryName => stryName === "firstFriend")
             if(npz.name === "niko" && !notYetTalked) return
@@ -6004,7 +6031,6 @@ class App{
         const pathToOutside = this.createPath(3,{x: 0, z: -82.5}, scene)
         this.toRegAction(pathToOutside, this.myChar.bx, async () => {
             this.stopPress(true)
-
             this.prevPlace = 'heartland'
             this.setUp(true)
             displayElems([apartInfos], "none")
@@ -6057,7 +6083,6 @@ class App{
         this.checkAll()
     }
     async _goToRoom(houseName){
-        
         displayElems([apartCont, aprtLoadingBx], "none")
         displayElems([apartInfos], "flex")
         log(houseName)
@@ -6084,6 +6109,7 @@ class App{
         if(isOnlyStarting) isInTutorialMode = true
 
         await this._loadCharacterSounds(scene)
+        this.creationOfFakeShadow(scene)
 
         this.runLifeManaStaminaRegen()
         const cam = this.arcCam(scene)
@@ -6091,6 +6117,28 @@ class App{
 
         const theHouse = await this.importMesh(scene, "./models/", "medRooms.glb")
         theHouse.meshes.forEach(mesh => mesh.receiveShadows = true)
+        
+        oldHouseMesh = MeshBuilder.CreateBox("house", { width: 9, height: .15, depth: 12}, scene)
+        oldHouseMesh.position = new Vector3(0,-.075,2.4)
+        const oldHouseMat = new StandardMaterial("oldHouseMat", scene)
+        const diffuseTex = new Texture("./images/modeltex/planks.jpg", scene)
+        oldHouseMat.diffuseTexture = diffuseTex
+        oldHouseMesh.material = oldHouseMat
+        oldHouseMat.specularColor = new Color3(0,0,0)
+        diffuseTex.vScale = 6
+        diffuseTex.uScale = 6
+        await this.createWoodPlank(scene);
+
+        this.createWoodTall({x: -4.2, y:1.5, z:-3.5}, 2.5, 1.5, { x: -3.7, z: 3})
+        this.createWoodTall({x: 3.7, y:1.5, z:-3.5}, 2.5, 1.5, { x: 3.7, z: 3})
+
+        this.createWoodTall({x: -4.2, y:1.5, z:8}, 2.5, 1.5, { x: -3.7, z: 3})
+        this.createWoodTall({x: 3.7, y:1.5, z:8}, 2.5, 1.5, { x: 3.7, z: 3})
+        this.createWoodTall({x: 1.7, y:1.5, z:8}, 2.5, 1.5, { x: 1.7, z: 3})
+        
+        this.createWoodTall({x: -4.2, y:1, z:7}, 3.5, 2, { x: -3.7, z: 7}, {x: 0, z: .7})
+        this.createWoodTall({x: 4, y:1, z:5}, 3.5, 2, { x: 3.7, z: 5}, {x: 0, z: -.7})
+        this.createWoodTall({x: 4, y:1, z:2}, 3.5, 2, { x: 3.7, z: 2}, {x: 0, z: .7})
 
         let myBed
         const theBed = await this.importMesh(scene, "./models/", "medBedss.glb")
@@ -6108,11 +6156,15 @@ class App{
         })
         if(myBed === undefined) return log("bed not found ")
         myBed.position = new Vector3(2.9,0,5)
-        
+
+        const theDoor = await this.importMesh(scene, "./models/", "smallDoor.glb")
+        theDoor.meshes[0].position = new Vector3(1.9,0,-3.55)
+        theDoor.meshes[0].rotationQuaternion = null
         // SWORDS
         const Sword = await this.importMesh(scene, "./models/", "swords.glb")
         const allsword = Sword.meshes[0].getChildren()
         allsword.forEach(mesh => mesh.parent = null)
+
         await this.helmetCreation(scene);
         await this.shieldCreation(scene);
 
@@ -6174,7 +6226,6 @@ class App{
             this.myChar.mode = "onground"
             this.myChar.bx.position = new Vector3(0,1.2,0);
         }
-
         this.createBlock(2,180,{x: 0, z: -3.5}, 0, scene);
         this.createBlock(2,180,{x: 0, z: 8}, 0, scene);
         this.createBlock(2,190,{x: -4, z: 2}, Math.PI/2, scene);
@@ -6638,6 +6689,45 @@ class App{
                 }
             })
         })
+        this.socket.on("user-throw", data => {
+            const thePlayer = players.find(pl => pl._id === data._id)
+            if(!thePlayer) return log("player not found")
+            if(data.curPlace !== this.currentPlace) return log("the Spear thrown is not from here")
+            const curSword = thePlayer.swordz.find(swrd => swrd.name.split(".")[1] === data.weaponDetail.name)
+            if(!curSword) return log("cur sword not found")
+            
+            this.createFlyingWeapon(data.myFosNow, data.dmg, data.mode, curSword, data.frontPos, data.dirTa, data.weaponDetail, data._id)
+            this.hideAllSword(thePlayer.swordz)
+            this.keepSword(thePlayer.rootSword, thePlayer.rootBone)
+        })
+        this.socket.on("action-throwing", data => {
+            if(data._id !== this.det._id){
+                log("a hero will throw")
+                const theFleyer = players.find(pl => pl._id === data._id)
+                if(!theFleyer) return log('player throwing not found')
+                let plCurSword
+                players.forEach(pl => {
+                    if(pl._id === data._id){
+                        plCurSword = pl.swordz.find(swrd => swrd.name.split(".")[1] === data.weaponName)
+                        if(plCurSword) plCurSword.addRotation(Math.PI,0,0)
+                        pl.mode = "noneweapon"
+                        pl._attacking = true
+                        this.stopAnim(pl.anims, "running", true)
+                        this.playAnim(pl.anims, "throw")
+                    }
+                })
+                log(theFleyer.mode)
+                setTimeout(() => {
+                    players.forEach(pl => {
+                        if(pl._id === data._id){
+                            pl.mode = "fist"
+                            pl._attacking = false
+                        }
+                    })
+                    if(plCurSword) plCurSword.addRotation(-Math.PI,0,0)
+                }, 500)
+            }
+        })
         this.socket.on("userIsMinning", data => {
             if(data._id === this.det._id) return
             players.forEach(player => {
@@ -6808,6 +6898,9 @@ class App{
             log('treasurez', this.Treasures)
         })
         this.socket.on("hitByHero", data => {
+            const thePlayer = players.find(pl => pl._id === data.targHero)
+            const personpos = thePlayer.bx.position
+            this.createBloodParticle("blood", 200, {x: personpos.x, y:personpos.y+Math.random()*.5,z:personpos.z}, "sphere", true, 1, true, false)
             if(data.targHero == this.det._id){
                 clearTimeout(this._attackTimeout) // para di mag timeout keypress all
                 this.myChar.weaponCol.position.y = 4.5
@@ -6844,25 +6937,26 @@ class App{
                 this.socket.emit("showDeductLifeInPublic", {_id: this.det._id, hp: this.det.hp, maxHp: this.det.maxHp})
                 if(this.det.hp <=0){
                     log('game over')
+                    this.myChar.mode = "none";
                     this.stopMyCharacter()
                     this.playerDeath(this.myChar)
                     this.socket.emit('playerDied', {_id: this.det._id, killer: data._id})
                     setTimeout(() => {
                         this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
                     }, 10000)
-                    this.gameOver()
+                    return this.gameOver()
                 }
                 this._attackTimeout = setTimeout(() => {
                     this.allCanPress()
                     this.myChar.mode = curMode
                 }, 500)
-                return log("I am hit by a hero updating life")
+                log("I am hit by a hero updating life")
+            }else{
+                if(!thePlayer) return log("player that is hit not here")
+                log(thePlayer.name + " got hit")
+                this.hitByHero(thePlayer, data)        
+                this.animStopAll(thePlayer, ['running', 'walking', 'walk', 'slash.1']) 
             }
-            const thePlayer = players.find(pl => pl._id === data.targHero)
-            if(!thePlayer) return log("player that is hit not here")
-            log(thePlayer.name + " got hit")
-            this.hitByHero(thePlayer, data)        
-            this.animStopAll(thePlayer, ['running', 'walking', 'walk', 'slash.1']) 
         })
         this.socket.on("deductLifeInMesh", data => {
             if(data._id === this.det._id) return log("this is mine no need to deduct mesh life")
@@ -7189,7 +7283,7 @@ class App{
             if(weapnz.mesh.name === "sharpRock"){
                 weapnz.mesh.locallyTranslate(new Vector3(0,28*(this._engine.getDeltaTime()/1000),0))
             }else{
-                weapnz.mesh.locallyTranslate(new Vector3(0,-.9*(this._engine.getDeltaTime()/1000),28*(this._engine.getDeltaTime()/1000)))
+                weapnz.mesh.locallyTranslate(new Vector3(0,-.08*(this._engine.getDeltaTime()/1000),24*(this._engine.getDeltaTime()/1000)))
             }
             
         })
@@ -7341,6 +7435,9 @@ class App{
                     this._statPopUp("+spd +coins +lvl", 100);
                 }
             } 
+            if(keyPressed === " "){
+                log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
+            } 
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
                 const freeCam = new FreeCamera("asfka", new Vector3(myFosNow.x, 2, myFosNow.z))
@@ -7354,7 +7451,7 @@ class App{
             if(keyPressed === "m") log(Monsterz)
             if(keyPressed === "q") this.myChar.bx.locallyTranslate(new Vector3(0,0,2))
             clearTimeout(this.savingTimeout)
-            log(moveNums)
+            
             switch(keyPressed){
                 case "w":
                     moveNums.straight = 0
@@ -7667,14 +7764,26 @@ class App{
 
         this.putFakeShadow(newPlank, false, -.45)
     }
-    createSwmpTile(scene){
-        const landTile = this.createFloor("./images/modeltex/grassGround.png", scene, {x: 0, z: 0}, true, {h: 15, w: 15}, .04)
-        let tileMax = 300;
+    createSwamps(direct, scene, startPos, tileMax, xNum, zNum){
+        const landTile = this.createFloor(direct, scene, startPos, true, {h: 15, w: 15}, .04)
         // const bigLandTile = this.createFloor("./images/modeltex/swmpTex1.png", scene, {x: 0, z: 0}, true, {h: 5, w: 5})
 
         for(var startingNum = 0; startingNum <= tileMax; startingNum++){
-            const randX = BABYLON.Scalar.RandomRange(-30,30)
-            const randZ = BABYLON.Scalar.RandomRange(80,180)
+            const randX = BABYLON.Scalar.RandomRange(xNum.min,xNum.max)
+            const randZ = BABYLON.Scalar.RandomRange(zNum.min,zNum.max)
+            const fins = new Matrix.Translation(randX,0,randZ);
+            landTile.thinInstanceAdd(fins)
+            landTile.thinInstanceSetMatrixAt(landTile, fins)
+        }
+    }
+    createSwmpTile(scene){
+        const landTile = this.createFloor("./images/modeltex/grassGround.png", scene, {x: 0, z: 0}, true, {h: 15, w: 15}, .04)
+        let tileMax = 100;
+        // const bigLandTile = this.createFloor("./images/modeltex/swmpTex1.png", scene, {x: 0, z: 0}, true, {h: 5, w: 5})
+
+        for(var startingNum = 0; startingNum <= tileMax; startingNum++){
+            const randX = BABYLON.Scalar.RandomRange(-25,25)
+            const randZ = BABYLON.Scalar.RandomRange(85,120)
             const fins = new Matrix.Translation(randX,0,randZ);
             landTile.thinInstanceAdd(fins)
             landTile.thinInstanceSetMatrixAt(landTile, fins)
@@ -7798,6 +7907,8 @@ class App{
         dangerPlank.parent = null
         dangerPlank.rotationQuaternion = null
         // DangerSign.meshes[0].dispose()
+        roadplank.position.y = 100
+        dangerPlank.position.y = 100
     }
     createRoadPlank(pos, rotateSide){
         const leftPlank = roadplank.clone("leftPlank")
@@ -7815,6 +7926,14 @@ class App{
       
         if(rotateSide)rightPlank.addRotation(0,rotateSide,0)
         this.blocks.push(topPlank)
+    }
+    createWoodTall(pos,scaleUp, woodFat, dirTarg, rotat){
+        const { x,y,z } = dirTarg
+        const tallWood = roadplank.clone("wood");
+        tallWood.position = new Vector3(pos.x,pos.y,pos.z)
+        tallWood.scaling = new Vector3(woodFat,scaleUp,woodFat)
+        tallWood.lookAt(new Vector3(x,tallWood.position.y,z),0,0,0)
+        if(rotat)tallWood.addRotation(rotat.x,0,rotat.z)
     }
     createPSystem(theJson,scene){
 
@@ -7942,6 +8061,7 @@ class App{
         fakeShadowMat.specularColor = new Color3(0,0,0)
         fakeShadowMat.diffuseTexture.hasAlpha = true;
         fakeShadowMat.useAlphaFromDiffuseTexture = true;
+        fakeShadow.position.y = 100
     }
     createBloodParticle(imgTex,capac, monsFos, particleType, willStart, targStop, willDisposeOnStop, emitterMesh){
         const myParticleSystem = new BABYLON.ParticleSystem(`bloodParticle.${makeRandNum()}`, capac)
@@ -8432,7 +8552,7 @@ class App{
             camTarg.parent = body
             camTarg.isVisible = false
             camTarg.position = new Vector3(0,.7,0);
-            light.parent = camTarg;
+            // light.parent = camTarg;
             
             this.myBar = this.createBar(1.4,.04, det._id, body, 0, 300)
 
@@ -8720,10 +8840,11 @@ class App{
         magicCircle.isVisible = false
         magicCircle.visibility = .2
     }
-    async createGround(scene, directory, meshName){
+    async createGround(scene, directory, size){
         const groundMat = new StandardMaterial("groundMat", scene)
-        const groundMesh = MeshBuilder.CreateGround("ground", {width: 200, height: 200}, scene)
-        groundMat.diffuseTexture = new Texture("./images/modeltex/swampFTex.jpg", scene)
+        const groundMesh = MeshBuilder.CreateGround("ground", {width: size, height: size}, scene)
+        const diffuseTex = new Texture(directory, scene)
+        groundMat.diffuseTexture = diffuseTex
         groundMesh.material = groundMat
 
         groundMat.specularColor = new Color3(0,0,0)
@@ -8734,7 +8855,7 @@ class App{
         // Ground.meshes[1].name = "ground"
         // groundMat.freeze()
         // Ground.meshes[1].freezeWorldMatrix()
-        return groundMesh
+        return{groundMesh, diffuseTex}
     }
     createFireWithSmoke(scene){
         const fireSys = this.createPSystem(normalFireJson,scene)
@@ -9106,7 +9227,6 @@ class App{
     }
     createFlower(theMesh, data){
         const newMesh = theMesh.clone(`flower.${data.meshId}`)
-        
         newMesh.position = new Vector3(data.pos.x,0,data.pos.z)
         newMesh.rotation = new Vector3(0,Math.random()*4,0)
 
@@ -9358,9 +9478,9 @@ class App{
 
         return newCircle
     }
-    createFlyingWeapon(mypos, weapDmg, myMode, weaponMesh, pos, dirTarg, weaponDetail){
-        const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .3}, this._scene)
-        weapMesh.position = new Vector3(pos.x,pos.y,pos.z)
+    createFlyingWeapon(mypos, weapDmg, myMode, weaponMesh, pos, dirTarg, weaponDetail, ownerId){
+        const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .3}, this._scene) // size : .3
+        weapMesh.position = new Vector3(pos.x,1.6,pos.z)
         weapMesh.isVisible = false
         this.playerLookAt(weapMesh, dirTarg)
         weapMesh.locallyTranslate(new Vector3(.3,0,0))
@@ -9383,7 +9503,18 @@ class App{
             this.toRegAction(weapMesh, mons.rootMesh, () => {
                 const isStillFlying = this.flyingWeaponz.find(flywep =>flywep.meshId === weapId)
                 if(!isStillFlying) return log("the spear is already stabbed")
-                this.monsterIsHit(mons.monsId, mypos, weapDmg, mons.body.getAbsolutePosition(), "throw", true)
+                
+                if(!this.socketAvailable){
+                    this.monsterIsHit(mons.monsId, mypos, weapDmg, mons.body.getAbsolutePosition(), "throw", true)
+                }else{
+                    const mpos = mons.body.getAbsolutePosition()
+                    // babawasan niya yung buhay ng monster
+                    this.socket.emit("monsterIsHit", {monsId: mons.monsId, dmgTaken: weapDmg, 
+                    _id: ownerId,
+                    pos: {x: mpos.x, z: mpos.z}, mypos: {x: mypos.x, z: mypos.z}, mode: "throw", isCritical: true})
+                }
+                
+                
                 log(mons.monsName + "is Hit")
                 this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
                 weapMesh.parent = mons.rootMesh
@@ -9417,8 +9548,6 @@ class App{
         const woodImpS = this._allSounds.woodCuttingS.clone()
         woodImpS.attachToMesh(weapMesh)
         woodImpS.stop()
-                    
-        log(weaponDetail)
         this.toRegAction(weapMesh, this.myChar.bx, () => {
             this.targDetail = weaponDetail
             this.targetRecource = weapMesh
@@ -9454,9 +9583,7 @@ class App{
                     this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
                 })
             }
-            
         })
-
         log(this._scene.getMeshByName("ground"))
         this.flyingWeaponz.push({mesh: weapMesh, meshId: weapId})
         setTimeout(() => {
@@ -9556,6 +9683,7 @@ class App{
         switch(monsName){
             case "goblin":
                 rMeshSize = {size: 2, height: 8}
+                this.putFakeShadow(body, 2)
             break
             case "viper":
                 rMeshSize = {size: .5, height: 3}
@@ -9563,10 +9691,12 @@ class App{
             case "minotaur":
                 log("minaaa")
                 rMeshSize = {size: .6, height: 2}
+                this.putFakeShadow(body, 4)
             break
             case "eater":
                 log("is eater")
                 rMeshSize = {size: 1, height: 1}
+                this.putFakeShadow(body, 4)
             break
             case "golem":
                 rMeshSize = {size: .7, height: 1.4}
@@ -9640,8 +9770,8 @@ class App{
                 monsSoundHit = this._allSounds.goblinHitS.clone(`hitSound.${monsName}`)
             break
             case "golem":
-                namePosY = 2.3
-                healthPosY = 2.1
+                namePosY = 3.1
+                healthPosY = 3
             break;
         }
         

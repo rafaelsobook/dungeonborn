@@ -196,19 +196,14 @@ nav {
     top: 80%;
     left: 50%;
     transform: translate(-50%, -50%) scale(1);
-    padding: 10px 0;
-    font-size: 1.5rem;
-    border: none;
-    color: #dbdbdb;
-    background: linear-gradient(to Bottom, #1a1e41, #252947, #161930, #030311);
-    padding: 2px 30px;
     cursor: pointer;
-    font-family: $scrollfont;
-    font-weight: 600;
-    opacity: 0.9;
-    border: 1px solid #dbdbdb;
-    border-radius: 4px;
-    box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.6);
+    width: 20%;
+    filter: brightness(0.3);
+    transition: 0.3s ease-in-out;
+  }
+  .homepage-btn:hover {
+    filter: brightness(1);
+    transition: 0.3s ease-in-out;
   }
   .homepage-btn:active {
     transform: translate(-50%, -50%) scale(0.95);
@@ -2835,22 +2830,17 @@ nav {
   .cancel-doing {
     @include centerFix(3);
     top: 80%;
-    background: linear-gradient(
-      to left,
-      transparent,
-      rgba(31, 24, 24, 0.74),
-      rgba(31, 24, 24, 0.84),
-      rgba(31, 24, 24, 0.74),
-      transparent
-    );
-    width: 35%;
-    padding: 10px;
-    font-family: $tipsFont;
+    padding: 2px 30px;
     font-size: 1.3rem;
     text-align: center;
-    color: rgb(214, 214, 214);
     cursor: pointer;
-    border: none;
+    color: #dbdbdb;
+    font-weight: 800;
+    background: linear-gradient(to Bottom, #1a1e41, #252947, #161930, #030311);
+    font-family: $scrollfont;
+    border: 1px solid #dbdbdb;
+    box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
   }
   .cancel-doing:active {
     opacity: 0.5;
@@ -3519,13 +3509,12 @@ nav {
   height: 15px;
   transform: rotate(45deg);
   background: rgb(249, 173, 76);
-
   z-index: -1;
 }
 .sideAnimate {
   transition: 1s;
   left: 50%;
-  animation: 1s slidingLeft ease-in-out forwards;
+  animation: 3s slidingLeft ease-in-out forwards;
   opacity: 0;
 }
 
@@ -3534,9 +3523,17 @@ nav {
     left: 50%;
     opacity: 0;
   }
-  100% {
-    left: -70%;
+  20% {
+    left: -75%;
     opacity: 1;
+  }
+  95% {
+    left: -77%;
+    opacity: 1;
+  }
+  100% {
+    left: 50%;
+    opacity: 0;
   }
 }
 
