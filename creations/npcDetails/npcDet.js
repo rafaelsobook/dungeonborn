@@ -401,6 +401,28 @@ const npcInfos = [
         speech: [{name: 'jericho', message: "I hope this crafts will help you in your journey"}, {name: 'jericho', message: "Enjoy Adventuring ! Be Safe there ..."}],
         errSpeech: [{name: "jericho", message: "hmmm ... I don't know what crafts are in my mind right now"}]
     },
+    {
+        _id: 'npc23542', 
+        name: "Bart", 
+        x: 17, 
+        z: 56,
+        nType: 'standby', 
+        gender: 'male', 
+        toWear: {hair: "antaenus", cloth: "grand", pants: "brown", boots: "silver", hairColor: {r: 0.25,g: 0.08,b:0.08} }, 
+        displayW: {name: "none", isHide: false},
+        armor: {name: "none"},
+        helmet: {name: "farmerhat"},
+        place: "heartland",
+        _moving: false,
+        _attacking: false,
+        _minning: false,
+        _training: false,
+        mode: 'stand',
+        spd: .1,
+        condition: "none",
+        dirTarg: {x: 14, z: 53},
+        speech: [{name: 'Bart', message: "It is not safe to travel right now, due to monsters"}, {name: 'Bart', message: "We wait for the guild to comply ..."}]
+    },
 ]
 
 

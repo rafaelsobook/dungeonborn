@@ -125,7 +125,6 @@ let deferredPrompt
 // }else{
 //     installGame.style.display = 'none'
 // }
-
 // login page
 const homeInputs = document.querySelectorAll(".inputs")
 homeInputs.forEach(inp => inp.value = '')
@@ -301,11 +300,13 @@ const rankFloat = document.querySelector(".rank-float")
 const itemRewardsList = document.querySelector(".rewards-pictures")
 const coinReward = document.querySelector(".rc")
 const acceptQuestBtn = document.querySelector(".accept-quest-btn")
+// TOP ADVENTURER DETAILS
+const topAdventurersCont = document.querySelector(".alladventurer-detail-cont")
+const toplist = document.querySelector(".adc-list")
 
 // ABOUT PAGE
 const aboutCont = document.querySelector(".about-container")
 const abtBackBtn = document.querySelector(".back-btn")
-
 
 // fps
 let divFps = document.querySelector(".fps");
@@ -547,6 +548,11 @@ class App{
         this.floatingMeshes = []
         this.flyingWeaponz = []
 
+        //  bashed power
+        this.minBash = 1.033
+        this.midBash = 2.060
+        this.bigBash = 3.097
+
         // FOR ACTIONS
         this.hideMeshTimeOut // for camera when coliiding with rocks
         this._attackTimeout // to disable to attack = true after 500ms
@@ -570,10 +576,6 @@ class App{
         this._weaponAtk = "slash.0" // slash.0 slash.1
         this._meeleAtk = "meelee0" // kick // meelee0 melee1
 
-        //  bashed power
-        this.minBash = .033
-        this.midBash = .060
-        this.bigBash = .097
 
         // ACQUIRING ITEMS
         this.timeOutForClearingLists
@@ -918,6 +920,51 @@ class App{
         inviMesh.locallyTranslate(new Vector3(0,0,localT))
         const absPos = inviMesh.getAbsolutePosition()
         return absPos
+    }
+    async showAdventurerRecord(){
+        topAdventurersCont.classList.remove("my-stat-hidding")
+        const allAdventurers = await this.useFetch(`${APIURL}/characters`, "GET", this.token)
+        let onlyAdventurers = []
+        allAdventurers.forEach(plyrs => {
+            if(plyrs.rank !== "none"){
+                const plCurrPoints = plyrs.clearedQuests.currPoints
+                const plCleared = plyrs.clearedQuests.totalCleared
+                const {rankDig, displayRank} = ranks.find(rnks => rnks.rankDig === plyrs.rank)
+                const adventurerDet = {
+                    lvl: plyrs.lvl,
+                    name: plyrs.name,
+                    plCurrPoints,
+                    plCleared,
+                    rankNum: parseInt(rankDig),
+                    rankDisplay: displayRank,
+                    killed: plyrs.monsterKilled
+                }
+                onlyAdventurers.push(adventurerDet)
+            }
+        })
+        log(onlyAdventurers)
+        toplist.innerHTML = ''
+        onlyAdventurers.sort(function(a, b){
+            return b.rankNum-a.rankNum
+        });
+        onlyAdventurers.forEach((plyrs, idx) => {
+            const bx = createElement("div", "adc-bx");
+            const plName = createElement("p", "adc-name", `${idx+1}. ${plyrs.name}`)
+
+            const infoVx = createElement("div", "adc-infobx");
+            const pLvl = createElement("div", "adc-caps", `Lvl. ${plyrs.lvl}`);
+            const pRank = createElement("div", "adc-caps", `Rank ${plyrs.rankDisplay}`);
+            const pCleared = createElement("div", "adc-caps", `Quest Cleared: ${plyrs.plCleared}`);
+            bx.append(plName)
+            bx.append(infoVx)
+            infoVx.append(pLvl)
+            infoVx.append(pRank)
+            infoVx.append(pCleared)
+            toplist.append(bx)
+        })
+    
+        
+        log(onlyAdventurers)
     }
     async updateMyDetailsOL(toSave, updateLocal){
         try {
@@ -2611,7 +2658,7 @@ class App{
                     break
                 }
                 await this.addToInventory({...itemDet, name: theFoodName, qnty: 1})
-                this.obtain(foodDn, 1, false)
+                this.obtain(theFoodDN, 1, false)
             }, 4500)
         });
         cancelBuy.addEventListener("click", e => apartCont.style.display = "none")
@@ -2664,7 +2711,7 @@ class App{
                                     this.det.aptitude.forEach(apt => myAptNames.push(apt.name))
                                     const secondSpeech =[
                                         {name: "reception", message: "Thank you for your cooperation ..."},
-                                        {name: "reception", message: `Your magic aptitude is ${myAptNames.join(" ")}, Impressive ${myAptNames.length === 1 && myAptNames[0] === "dark" && "It's rare to see this type"} !`},
+                                        {name: "reception", message: `Your magic aptitude is ${myAptNames.join(" ")}... Impressive !`},
                                         {name: "reception", message: "You are now an official Adventurer of our guild"},
                                         {name: "reception", message: "You will start in lowest Rank, Rank F"},
                                         {name: "reception", message: "You can be promoted upto A or if you are that great"},
@@ -2744,6 +2791,7 @@ class App{
                         this.det.clearedQuests.currPoints+=myqst.addPoints
                     break
                 }
+                log(`my currpoints ${this.det.clearedQuests.currPoints}`)
                 this._allSounds.coinReceivedS.play()
                 if(this.det.clearedQuests.currPoints >= 100){
                     //increase rank
@@ -2756,13 +2804,13 @@ class App{
                     this.det.clearedQuests.currPoints=0
                     this.det.clearedQuests.totalCleared+=1
                     const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
-                    if(myCurRank) showChartMesssage("Congratulations", `You are promoted to Rank ${myCurRank.displayRank}`, "center", "center", "center")
+                    this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 2000);
                 }
             })
             await this.updateMyDetailsOL(this.det, true);
+            this.setHTMLUI(this.det)
             log("Update All My Details")
             openGameUI(this.det)
-            
         })
         craftImgs.forEach(btn => {
             btn.addEventListener("click", e => {
@@ -3096,6 +3144,7 @@ class App{
                 
                 return itemInfoBtns.append(aBtn)
             }
+            log(theItemDetail)
             const throwBtn = createElement("button", "throw item-infobtn", "Throw", async () => {
                 itemInfoCont.style.display = "none"
                 await this.deductItem(theItemDetail.meshId, 1)
@@ -5885,6 +5934,13 @@ class App{
         })
         await this.createMerchant(scene, {x: -7,y:0,z:53.5}, {x: -1.8, z: 52})
 
+        const wagon = await this.importMesh(scene, "./models/", "wagon.glb")
+        wagon.meshes[1].parent = null
+        wagon.meshes[1].position = new Vector3(15,0,59);
+        wagon.meshes[1].rotationQuaternion = null
+        wagon.meshes[1].lookAt(new Vector3(-25.33,0,69), 0,0,0)
+        this.blocks.push(wagon.meshes[1])
+        this.putFakeShadow(wagon.meshes[1], 8, .07)
         // const feetSmoke = this.createFeetSmoke(explodingSmoke, .03,.5, 1000, 0,this.myChar.bx)
         // feetSmoke.stop()
         // setTimeout(() => {
@@ -6342,6 +6398,9 @@ class App{
             questCont.classList.add("trans-close")
         })
 
+        this.createAdventurerBoard(bulletinBoard.meshes[1], {x:-6.3, y:.8, z:2.01}, Math.PI/2)
+        this.createTextMesh(makeRandNum(), 'Top Adventurers', 'white', {x:-6, y: 2.5, z:2} , 40, scene, false, false)
+
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
@@ -6532,7 +6591,8 @@ class App{
                             this.createFlower(herbleaves, tre, this._scene);
                         break
                     }
-                    
+                }else{
+                    log("A flower has been made")
                 }
             })
         }
@@ -7289,7 +7349,7 @@ class App{
         })
         // all bashed will be put here
         this.bashed.forEach(det => {
-            det.mesh.locallyTranslate(new Vector3(0,0,-det.bashPower))
+            det.mesh.locallyTranslate(new Vector3(0,0,-det.bashPower*(this._engine.getDeltaTime()/1000)))
         })
         simpleNpc.forEach(npz => {
             if(npz._moving){
@@ -8269,6 +8329,19 @@ class App{
         barMesh.parent = parentMesh
         return {bar, barMesh, outlineBar}
     }
+    createAdventurerBoard(toClone, pos, rotatY){
+        const topGuildBoard = toClone.clone("topAdventurers");
+        topGuildBoard.parent = null
+        topGuildBoard.position = new Vector3(pos.x,pos.y,pos.z)
+        topGuildBoard.addRotation(0,rotatY,0);
+
+        this.toRegAction(this.myChar.detector, topGuildBoard, async () => {
+           await this.showAdventurerRecord()
+        })
+        this.toRegActionExit(this.myChar.detector, topGuildBoard, () => {
+            topAdventurersCont.classList.add("my-stat-hidding")
+         })
+    }
     createPath(size, pos, scene){
         const path = MeshBuilder.CreateBox(`path`, {size}, scene)
         const theY = size/2
@@ -8394,18 +8467,33 @@ class App{
             ani.dispose()
         })
         let meshes = []
+        let rHead
         entries.rootNodes[0].getChildren().forEach(mes => {
             mes.name = mes.name.split(" ")[2]
             if(mes.name !== "Armature") meshes.push(mes)
+            if(mes.name === "Armature"){
+                mes.getChildren().forEach(mes => {
+                    if(mes.name.includes("rbone")) rHead = mes.getChildren()[0].getChildren()[0].getChildren()[0]
+                })     
+            }
         })
-        
+        allhelmets.forEach(helm => {
+            if(det.helmet){
+                if(helm.name.split(".")[1] === det.helmet.name){
+                    const clonedHelmet = helm.clone(`${helm.name}`)
+                    clonedHelmet.parent = rHead
+                    clonedHelmet.position = new Vector3(0,0,0);
+                }
+            }
+        })
+
         entries.rootNodes[0].parent = body
         entries.rootNodes[0].position.y -= this.yPos
         entries.rootNodes[0].rotationQuaternion = null
         entries.skeletons[0].dispose()
 
         const {hair, cloth, pants, boots, hairColor} = det.toWear
-        const theHair = this.suitUpdate(meshes, hair, cloth, pants, boots, hairColor, scene, light)
+        this.suitUpdate(meshes, hair, cloth, pants, boots, hairColor, scene, light)
 
         const nameMesh = this.createNameDisplay(1.3, det._id, det.name, body, 60)
 
@@ -8524,7 +8612,6 @@ class App{
         entries.animationGroups.forEach(ani => ani.name = ani.name.split(" ")[2])
         let meshes = []
         let rHead;
-
         entries.rootNodes[0].getChildren().forEach(mes => {
             mes.name = mes.name.split(" ")[2]
             if(mes.name !== "Armature") meshes.push(mes);
@@ -8533,7 +8620,6 @@ class App{
                     if(mes.name.includes("rbone")) rHead = mes.getChildren()[0].getChildren()[0].getChildren()[0]
                 })     
             }
-            
         })
         const {lifeGui, playerHealthMesh} = this.createPlayerHealthBar(1.1,det._id,body, det.hp,det.maxHp, scene)
 
@@ -8596,7 +8682,6 @@ class App{
         const woodCuttingS = this._allSounds.woodCuttingS.clone()
         const diedS = this._allSounds.characDeathS.clone()
         const spearStruck = this._allSounds.spearStruckS.clone();
-
 
         runningS.attachToMesh(body)
         punchedS.attachToMesh(body)
@@ -9103,6 +9188,7 @@ class App{
                 parameter: newOre
             },e => {
                if(this.myChar._minning){
+                    this.myChar.minningS.setPlaybackRate(1+Math.random()*.3)
                     this.myChar.minningS.play()
                }
             }
@@ -9169,6 +9255,7 @@ class App{
                 parameter: newPlane
             },e => {
                if(this.myChar._training){
+                    this.myChar.minningS.setPlaybackRate(1+Math.random()*.3)
                     this.myChar.woodCuttingS.play()
                }
             }
@@ -9480,7 +9567,7 @@ class App{
     }
     createFlyingWeapon(mypos, weapDmg, myMode, weaponMesh, pos, dirTarg, weaponDetail, ownerId){
         const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .3}, this._scene) // size : .3
-        weapMesh.position = new Vector3(pos.x,1.6,pos.z)
+        weapMesh.position = new Vector3(pos.x,1.4,pos.z)
         weapMesh.isVisible = false
         this.playerLookAt(weapMesh, dirTarg)
         weapMesh.locallyTranslate(new Vector3(.3,0,0))
