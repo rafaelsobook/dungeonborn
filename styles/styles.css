@@ -2744,7 +2744,8 @@ nav {
   transition: 0.2s;
 }
 
-.chat-min-btn {
+.chat-min-btn,
+.worldicon {
   position: absolute;
   top: -15px;
   right: -25px;
@@ -2758,6 +2759,28 @@ nav {
           transform: translate(0, 0);
   -webkit-transition: 0.5s;
   transition: 0.5s;
+}
+
+.worldicon {
+  -webkit-transform: translate(10px, 150px);
+          transform: translate(10px, 150px);
+  top: -10px;
+  right: -35px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  -webkit-filter: invert(1);
+          filter: invert(1);
+  pointer-events: none;
+  -webkit-transition: 0.3s ease-in-out;
+  transition: 0.3s ease-in-out;
+}
+
+.vanish {
+  -webkit-transition: 0.3s ease-in-out;
+  transition: 0.3s ease-in-out;
+  opacity: 0;
 }
 
 .slide-down {

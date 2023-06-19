@@ -467,7 +467,6 @@ function showChartMesssage(ttleOfChart, theMessage, justifyStyle, alignStyle, te
     divBx.append(pTitle)
     divBx.append(pDesc)
     tutorialCont.append(divBx)
-
 }
 class App{
     constructor(userdet){
@@ -675,7 +674,7 @@ class App{
         lvlAndName.innerHTML = `lvl ${this.det.lvl} ${this.det.name}`
     }
     countActivePl(){
-        plOnline.innerHTML = `players: ${players.length}`
+        plOnline.innerHTML = `players online: ${players.length}`
     }
     showScrollMess(ttle, mess){
         scrollCont.style.display = "flex"
@@ -947,7 +946,9 @@ class App{
         onlyAdventurers.sort(function(a, b){
             return b.rankNum-a.rankNum
         });
+        let listOfAdvs = 0
         onlyAdventurers.forEach((plyrs, idx) => {
+            if(listOfAdvs >= 5) return
             const bx = createElement("div", "adc-bx");
             const plName = createElement("p", "adc-name", `${idx+1}. ${plyrs.name}`)
 
@@ -961,9 +962,9 @@ class App{
             infoVx.append(pRank)
             infoVx.append(pCleared)
             toplist.append(bx)
+            listOfAdvs++
         })
     
-        
         log(onlyAdventurers)
     }
     async updateMyDetailsOL(toSave, updateLocal){
@@ -1078,8 +1079,6 @@ class App{
         let excessExp = 0
         this.det.exp += parseInt(exp)
         if(this.det.exp >= this.det.maxExp){
-
-            this._statPopUp('level up', 500, '#f5f5f5')
             excessExp = this.det.exp - this.det.maxExp
             this.det.exp = excessExp
             this.det.maxExp = this.det.maxExp*2
@@ -1092,6 +1091,8 @@ class App{
             log(this.det)
             this.setHTMLUI(this.det)
             await this.updateMyDetailsOL(this.det, false)
+            this.showTransaction(`Level Is Raised To ${this.det.lvl}`, 1500)
+            this._allSounds.congratsS.play()
             return log(this.det)
         }
         log('exp gained ' + this.det.exp)
@@ -1137,7 +1138,7 @@ class App{
     createMessage(data){
         if(!this.socketAvailable) return log("multiplayer off")
         const plBx = createElement('div', 'pl-bx')
-        const plName = createElement('p', 'pl-name', `${data.name}`)
+        const plName = createElement('p', 'pl-name', `${data.name} (${data.place})`)
         const plMess = createElement('p', 'pl-message', `${data.message}`)
         plBx.append(plName)
         plBx.append(plMess)
@@ -1238,7 +1239,7 @@ class App{
             }
             const pricebtn = createElement("button", "shopitem-btn", item.price, async () => {
                 const toSave = {...item, meshId: makeRandNum(), qnty: 1}
-                if(item.price > this.det.coins) return alert('insufficient coins')
+                if(item.price > this.det.coins) return this.showTransaction("Not Enough Coins", 800)
                 shopList.classList.add("cannot-click")
                 this.showTransaction(`Buying ${item.name} ...`, false)
                 log("can buy this " + toSave.name)
@@ -2384,7 +2385,7 @@ class App{
                     openGameUI(this.det)
                     this.myChar.mode = 'stand'
                     this.allCanPress()
-                    
+                    if(!this.targDetail.meshId) return this._statPopUp("Cannot Pick", 300, 'crimson');
                     const isStillThere = this.AllFlowerz.find(fl => fl.meshId === this.targDetail.meshId)
                     if(!isStillThere) return this._statPopUp("Flower Already Gone", 300, 'crimson');
                     const itemRecDet = records.find(rec => rec.name === this.targDetail.name)
@@ -2657,7 +2658,7 @@ class App{
                         theFoodDN = 'minotaur meat'
                     break
                 }
-                await this.addToInventory({...itemDet, name: theFoodName, qnty: 1})
+                await this.addToInventory({...itemDet, meshId:makeRandNum(), name: theFoodName, qnty: 1})
                 this.obtain(theFoodDN, 1, false)
             }, 4500)
         });
@@ -2723,7 +2724,7 @@ class App{
                                     setTimeout( async () => {
                                         await this.updateMyDetailsOL({...this.det, rank: "0"}, true);
                                         showNotif('Adventurer Unlocked', 3000);
-                                        this._allSounds.notifS.play()
+                                        this._allSounds.congratsS.play()
                                         openGameUI(this.det);
                                         this.allCanPress()
                                         this.openPopUpAction("speak")
@@ -2957,17 +2958,14 @@ class App{
                     }
                     this._allSounds.consumeS.setPlaybackRate(.9 + Math.random()*.2)
                     this._allSounds.consumeS.play()
-                    if(this.det.hp > this.det.maxHp) this.det.hp = this.det.maxHp
+                    if(this.det.hp > this.det.maxHp) this.det.hp = this.det.maxHp-1
                     this.updateSurvival_UI()
-                    if(this.det.hp > this.det.maxHp){
-                        let todeduct = this.det.hp-this.det.maxHp
-                        this.det.hp-= todeduct+1
-                    }
-                    if(this.det.survival.hunger > 100) this.det.survival.hunger = 99
+
+                    if(this.det.survival.hunger > 100) this.det.survival.hunger = 100
                     
                     this.updateLifeManaSpGUI()
                     this.updateLifeMesh();
-   
+                    log(theItemDetail.meshId)
                     await this.deductItem(theItemDetail.meshId, 1)      
                     itemInfoCont.style.display = "none";
                 })
@@ -3158,18 +3156,22 @@ class App{
             })
         })
         chatMinBtn.addEventListener('click', e => {
+            const worldIcon = document.querySelector(".worldicon")
             if(worldChatCont.className.includes('slide-left')){
                 worldChatCont.classList.remove('slide-left')
                 chatMinBtn.innerHTML = '<<'
                 chatMinBtn.classList.remove('slide-down')
+                
+                worldIcon.classList.add("vanish")
                 return
             }
+            worldIcon.classList.remove("vanish")
             worldChatCont.classList.add('slide-left');
             chatMinBtn.innerHTML = '>>'
             chatMinBtn.classList.add('slide-down')
         })
         sendBtn.addEventListener("click", e => {
-            this.sendMessage(this.det.name,messageInp.value)
+            this.sendMessage(this.det.name, messageInp.value)
             messageInp.value = ''
         })
         modeOptCont.addEventListener("click", e => {
@@ -3409,8 +3411,6 @@ class App{
         }
     }
     playerLookAt(body, targ){
-        log("dirTarg X " + targ.x)
-        log("dirTarg Z " + targ.z)
         const {x,z} = targ
         body.lookAt(new Vector3(x, body.position.y ,z),0,0,0)
     }
@@ -4302,6 +4302,7 @@ class App{
         this.guards = []
         this.Trees = []
         this.Treasures = []
+        this.AllFlowerz = []
         this.Ores = []
         this.Orbs = []
         this.Seedz = []
@@ -4608,7 +4609,10 @@ class App{
         null, {volume: .4, autoplay: isInTutorialMode ? true : false, loop: false})
 
         const celesMelody = new BABYLON.Sound("celesMelody", "sounds/celesMelody.mp3", scene,
-        null, {volume: .4, autoplay: false, loop: false})
+        null, {volume: .4, autoplay: false, loop: false});
+
+        const congratsS = new BABYLON.Sound("congratsS", "sounds/congratsS.mp3", scene,
+        null, {volume: .5, autoplay: false, loop: false})
 
         const running = new BABYLON.Sound("footstep", "sounds/running.wav", scene,
         null, {volume: .4, spatialSound: false, maxDistance: 20, autoplay: false, loop: false})
@@ -4654,7 +4658,8 @@ class App{
             minning,
             bonfireSound,
             woodCuttingS,
-            rockSmashS
+            rockSmashS,
+            congratsS
         }
  
     }
@@ -4705,6 +4710,7 @@ class App{
             theFlowerz = data.flowerz
 
             this.checkAll()
+            plOnline.innerHTML = `players online: ${data.uzers.length}`
             // if(theLootz.length){
             //     theLootz.forEach(loot => {
             //         const isMade = this.lootz.some(buto => buto.meshId === loot.meshId)
@@ -4720,7 +4726,9 @@ class App{
             //     })
             // }
         })
+        
         this.socket.on("deliver-reload", idFromTcp => {
+            // means opening same account at the same time in different browsers
             if(this.det._id === idFromTcp) return window.location.reload()
         })
     }
@@ -6066,7 +6074,7 @@ class App{
         //     dirTarg: 
         // })
         this.weJoinTheServer(myTargCurr ? myTargCurr : {x: 0, z: 0})
-        this.checkAll();
+        // this.checkAll();
         this.initPressControllers(scene)
 
         this.createBlock(100,180,{x: 0, z: -81.5}, 0, scene);
@@ -6476,6 +6484,7 @@ class App{
             if(player._id === this.det._id) return log("This id is yours... will return !")
             const exist = this._scene.getMeshByName(`box.${player._id}`)
             if(exist) return log(`player ${player._id} player MESH already exist ! will not create`)
+            this.createMessage({name: player.name, place: player.currentPlace, message: "has Joined !"})
             if(player.currentPlace !== this.currentPlace) return log("a user is in different place")
             this.createCharacter(player, theCharacterRoot, this._scene, shadowGen, false, false, allsword, allhelmets, allshields, light, 1.7)
         })
@@ -6504,11 +6513,13 @@ class App{
     }
     checkHouzes(){
         if(isLoading) return log("still loading")
+        if(!allHouses) return log("houses main mesh not ready")
         theHouzes.forEach(hous => {
             if(hous.place !== this.currentPlace) return log("house is not here")
             const isMade = houzess.some(hou => hou.meshId === hous.meshId)
             if(isMade) log("this house is made")
             if(!isMade ){
+                log(hous)
                 const dPos = hous.pos.split(",")
                 const hX = parseInt(dPos[0])
                 const hZ = parseInt(dPos[1])
@@ -6576,6 +6587,7 @@ class App{
     }
     checkFlowers(){
         if(isLoading) return log("still loading ...")
+        if(this.currentPlace === "heartland") return
         if(theFlowerz.length){
             theFlowerz.forEach(tre => {
                 if(tre.place !== this.currentPlace) return log(`flower is in ${tre.place} return ...`)
@@ -7343,7 +7355,7 @@ class App{
             if(weapnz.mesh.name === "sharpRock"){
                 weapnz.mesh.locallyTranslate(new Vector3(0,28*(this._engine.getDeltaTime()/1000),0))
             }else{
-                weapnz.mesh.locallyTranslate(new Vector3(0,-.08*(this._engine.getDeltaTime()/1000),24*(this._engine.getDeltaTime()/1000)))
+                weapnz.mesh.locallyTranslate(new Vector3(0,0,25*(this._engine.getDeltaTime()/1000)))
             }
             
         })
@@ -8647,7 +8659,7 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const {notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS} = this._allSounds
+            const {notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
             
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
@@ -8656,6 +8668,7 @@ class App{
             coinReceivedS.attachToMesh(body)
             nextBtnS.attachToMesh(body)
             notifS.attachToMesh(body)
+            congratsS.attachToMesh(body)
         }
         const myswordz = []
         const myhelmetz = []
@@ -8878,7 +8891,7 @@ class App{
         }
         if(det.mode === undefined) this.keepSword(rootSword, rootBone)
 
-        this.createMessage({name: det.name, message: "has Joined !"})
+        // this.createMessage({name: det.name, message: "has Joined !"})
         players.push(toPush)
         
         log(`${det.name} mesh created !`)
@@ -9095,8 +9108,9 @@ class App{
     }
     
     createHouse(meshId, houseNo, toClone, loc, scene, rotat, houseDet){
+        log(toClone)
         const newHouse = toClone.clone(`house.${meshId}`)
-
+        
         newHouse.parent = null
         newHouse.position = new Vector3(loc.x,loc.y,loc.z)
         newHouse.scaling = new Vector3(1,1,1)
@@ -9569,8 +9583,9 @@ class App{
         const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .3}, this._scene) // size : .3
         weapMesh.position = new Vector3(pos.x,1.4,pos.z)
         weapMesh.isVisible = false
+        log(dirTarg)
         this.playerLookAt(weapMesh, dirTarg)
-        weapMesh.locallyTranslate(new Vector3(.3,0,0))
+        weapMesh.locallyTranslate(new Vector3(.1,0,-.5))
         weapMesh.actionManager = new ActionManager(this._scene)
         const weapId = makeRandNum()
         const clonedWeapon = weaponMesh.clone("cloned")
@@ -9635,6 +9650,7 @@ class App{
         const woodImpS = this._allSounds.woodCuttingS.clone()
         woodImpS.attachToMesh(weapMesh)
         woodImpS.stop()
+        weapMesh.addRotation(.05,0,0)
         this.toRegAction(weapMesh, this.myChar.bx, () => {
             this.targDetail = weaponDetail
             this.targetRecource = weapMesh
@@ -9651,6 +9667,7 @@ class App{
             this.toRegAction(weapMesh, theGround, () => {
                 log("is hit the ground")
                 this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
+                weapMesh.locallyTranslate(new Vector3(0,0,-.3))
             })
         }
         this._scene.meshes.forEach(mesh => {
@@ -9662,12 +9679,14 @@ class App{
 
                     woodImpS.play()
                     this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
+                    weapMesh.locallyTranslate(new Vector3(0,0,-.3))
                 })
             }
             if(mesh.name.includes("block")) {
                 this.toRegAction(weapMesh, mesh, () => {
                     log("is hit the cliff")
                     this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
+                    weapMesh.locallyTranslate(new Vector3(0,0,-.3))
                 })
             }
         })

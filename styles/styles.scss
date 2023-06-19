@@ -1969,7 +1969,8 @@ nav {
   transform: translateX(-101%);
   transition: 0.2s;
 }
-.chat-min-btn {
+.chat-min-btn,
+.worldicon {
   position: absolute;
   top: -15px;
   right: -25px;
@@ -1981,6 +1982,22 @@ nav {
   cursor: pointer;
   transform: translate(0, 0);
   transition: 0.5s;
+}
+.worldicon {
+  transform: translate(10px, 150px);
+  top: -10px;
+  right: -35px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  filter: invert(1);
+  pointer-events: none;
+  transition: 0.3s ease-in-out;
+}
+.vanish {
+  transition: 0.3s ease-in-out;
+  opacity: 0;
 }
 .slide-down {
   transform: translate(10px, 200px);
