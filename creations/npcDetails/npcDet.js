@@ -180,10 +180,10 @@ const npcInfos = [
         x: 40,
         z: -14,
         toWear: {hair: "aegon", cloth: "grand", pants: "brown", boots: "classic", hairColor: {r: 0.065,g: 0.02,b:0.07} },
-        displayW: {name: "normal", isHide: false},
+        displayW: {name: "none", isHide: false},
         armor: {name: "none"},
         place: "heartland",
-        maxDistance: { x: -10, z: -16, chaceToStop: 8},
+        maxDistance: { x: 2, z: -15, chaceToStop: 8},
         _moving: true,
         spd: .1,
         condition: function (player) {
@@ -195,7 +195,7 @@ const npcInfos = [
             
             return this.secSpeech
         },
-        dirTarg: {x: -5, z: 0},
+        dirTarg: {x: 2, z: -15},
         speech: [{name: 'aegon', message: "I'm thinking something ..."}, {name: 'aegon', message: "Should I go explore the dungeon ..."}, {name: 'aegon', message: "I heard people never came back after going there ..."}],
         secSpeech: [{name: 'aegon', message: "I can feel your strength ..."}, {name: 'aegon', message: "Maybe you're already above level 5"}, {name: 'barney', message: "I wish I can be as strong as you ... hays"}],
     },
@@ -422,6 +422,72 @@ const npcInfos = [
         condition: "none",
         dirTarg: {x: 14, z: 53},
         speech: [{name: 'Bart', message: "It is not safe to travel right now, due to monsters"}, {name: 'Bart', message: "We wait for the guild to comply ..."}]
+    },
+    {...npcDet,
+        _id: `npc${randomNum()}`,
+        name: 'markus',
+        nType: "standby",
+        x: 0,
+        z: 2,
+        toWear: {hair: "antaenus", cloth: "grand", pants: "magios", boots: "sinbad", hairColor: {r: .7,g: .2,b:0}},
+        displayW: {name: "staffofmare", isHide: false},
+        armor: {name: "none"},
+        helmet: {name: "mawhat"},
+        place: "heartland",
+        maxDistance: { x: 50, z: 0, chaceToStop: 1},
+        _moving: true,
+        spd: .1,
+        condition: "none",
+        // condition: function(player){
+        //     let toReturn = {theSpeech: undefined, additionalDet: undefined}
+        //     let toLearn = [];
+        //     let crftNames = []
+
+        //     if(player.storyQue.some(stry => stry === "taskFromMarkus")){
+        //         return {theSpeech: this.taskSpeech(), additionalDet: undefined}
+        //     }
+        //     if(player.storyQue.some(stry => stry === "receiveFirstSkill")){
+        //         return {theSpeech: this.wellDoneSpeech(), additionalDet: undefined}
+        //     }
+        //     if(!player.mycrafts.length) return {theSpeech: this.speechForBonfire, additionalDet: [AllCrafts[0]]}
+            
+        //     AllCrafts.forEach(crft => {
+        //         if(crft.name === "bonfire") return
+        //         if(crft.rqrdLvl <= player.lvl){
+        //             const isLearned = player.mycrafts.some(mycrft => mycrft.name === crft.name)
+        //             if(isLearned) return
+        //             crftNames.push(crft.name)
+        //             toLearn.push(crft);
+        //         }
+        //     })
+
+        //     if(!toLearn.length) return {theSpeech: this.speech, additionalDet: undefined}
+            
+        //     return {theSpeech: this.nextSpeech(crftNames), additionalDet: toLearn}
+        // },
+        dirTarg: {x: -50, z: -20},
+        speechForBonfire: [{name: 'jericho', message: "Are you a traveler, I've never seen you here ..."},{name: 'jericho', message: "For your safety, I will teach you a craft ..."}, {name: 'jericho', message: "For now I'll teach you how to make a bonfire, a useful craft for survival"},{name: 'jericho', message: "If you are out in the wild you can simply craft it so evil spirits will not attempt to touch you"}],
+        wellDoneSpeech: function (crftNames) { return [{name: "jericho", message: "You are good out there ..."}, {name: "jericho", message: `Let me teach you a new craft ...`},{name: "jericho", message: `learn how to craft ${crftNames.length > 1 ? crftNames.join(" and ") : crftNames[0]}`}] },
+        speech: [{name: 'markus', message: "I'm just wondering around here, looking for a place to train my magic"}, {name: 'markus', message: "I must defeat those demons if ever they stumble here again ..."}],
+        errSpeech: [{name: "jericho", message: "hmmm ... I don't know what crafts are in my mind right now"}],
+        taskSpeech: function(player){
+            return [
+            {name: "markus", message: "I have been waiting for you .."},
+            {name:player.name, message: "You know me ?"},
+            {name:"markus", message: "Pretty well ... I know your not from here"},
+            {name:"markus", message: "I sense him in you ... the person who can create world and dungeons"},
+            {name:player.name, message: "I don't know him that much, No wonder he can summon me from another world"},
+            {name:"markus", message: "Summon ? From what ? Another world ?"},
+            {name:player.name, message: "Oh sorry nothing ... I was on my way to somewhere now. Goodbye !"},
+            {name:"markus", message: "Interesting fellow ... Hmmm, What if ..."},
+            {name:"markus", message: "What if ... I teach you some skill in exchange for a small task ?"},
+            {name:player.name, message: "Skill ?? You mean magic ?"},
+            {name: "markus", message: "Yeah You haven't heard of it before ? There are diffrent types .."},
+            {name: "markus", message: "Offensive magic, magic for defense and a lot more"},
+            {name: "markus", message: "If you accomplish a task for me, I will teach you"},
+            {name: "markus", message: "If you accomplish a task for me, What do you say ?"},
+            ]
+        }
     },
 ]
 

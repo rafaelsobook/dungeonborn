@@ -2790,8 +2790,10 @@ class App{
                         this.det.coins+=myqst.reward.rewardCoin
                         this.obtain('coin', myqst.reward.rewardCoin, false)
                         this.det.clearedQuests.currPoints+=myqst.addPoints
+                        
                     break
                 }
+                this.det.clearedQuests.totalCleared+=1
                 log(`my currpoints ${this.det.clearedQuests.currPoints}`)
                 this._allSounds.coinReceivedS.play()
                 if(this.det.clearedQuests.currPoints >= 100){
@@ -2802,8 +2804,7 @@ class App{
                     this.det.rank = parseInt(this.det.rank)+1
                     this.det.rank = this.det.rank.toString()
 
-                    this.det.clearedQuests.currPoints=0
-                    this.det.clearedQuests.totalCleared+=1
+                    this.det.clearedQuests.currPoints=0;
                     const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
                     this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 2000);
                 }
@@ -3756,7 +3757,6 @@ class App{
                         item.cState-= todeduct
                         this.det.shield.cState-= todeduct
                     }
-                    
                 })
             break;
         }
@@ -4024,6 +4024,8 @@ class App{
                 if(!this.det.weapon) return log("no weapon")
                 totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * this.weaponX)
                 log(totalDmg)
+                const minDurability = this.det.weapon.durability/3
+                if(this.det.weapon.cState <= minDurability) totalDmg = totalDmg/2
             break;
             case "fist":
                 log("on fist damage")
@@ -4084,15 +4086,7 @@ class App{
                     log(`the monster targ is ${themons.targHero}`)
          
                     this.focusOn = monster.body
-                    if(this.det.weapon.name !== "none"){
-                        this.det.items.forEach(itm => {
-                            if(itm.meshId === this.det.weapon.meshId){
-                                log("my sword got deducted")
-                                this.reduceDurability(itm, myTotalDmg/4)
-                                log(itm.cState)
-                            }
-                        })
-                    }
+
                     if(this.myChar.mode === "fist") this.myChar.punchedS.play()
                     // if(themons.targHero !== undefined && !themons.isAttacking){
                     //     let theAttacks = 1.5
@@ -4111,6 +4105,7 @@ class App{
                     //     }
                         
                     // }
+                    
                     if(themons.hp <= myTotalDmg){
                         this.focusOn = null
                         this.det.monsterKilled++
@@ -4144,6 +4139,7 @@ class App{
                     }
                     let criticalMultiplier = 2
                     const mpos = monster.body.position
+                    this.createTextMesh(makeRandNum(), myTotalDmg, "red", {x: mpos.x, y: mpos.y,z: mpos.z}, 80, this._scene, true, false)
                     const myposition = this.myChar.bx.position
                     let isCritical = false;
                     if(this.det.survival.sleep >= 20 && Math.random()*10 < 8) isCritical = true
@@ -4159,6 +4155,27 @@ class App{
                         // babawasan niya yung buhay ng monster
                         this.socket.emit("monsterIsHit", {monsId: monster.monsId, dmgTaken: myTotalDmg, _id: this.det._id,
                         pos: {x: mpos.x, z: mpos.z}, mypos: {x: myposition.x, z: myposition.z}, mode: this.myChar.mode, isCritical })
+                    }
+                    // reduce or broke your item if it reaches 0 cState
+                    if(this.det.weapon.name !== "none"){
+                        const myWeaponDet = this.det.items.find(itm => itm.meshId === this.det.weapon.meshId)
+                        if(myWeaponDet){
+                            log("my sword durability got deducted")
+                            this.reduceDurability(myWeaponDet, myTotalDmg/4)
+                            log(`item cState ${myWeaponDet.cState}`)
+                            if(myWeaponDet.cState <= 0){
+                                this.det.weapon.meshId = "none"
+                                this.det.weapon.name = "none"
+                                this.hideAllSword(this.myChar.swordz)
+                                this._allSounds.brokenS.play()
+                                // this.det.items = this.det.items.filter(alitm => alitm.meshId !== itm.meshId)
+                                await this.deductItem(myWeaponDet.meshId,1)
+                                this._statPopUp("Item Broke", 100, "red")
+                                this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
+                                this.setMode("fist", 0)
+                                this.checkIfHaveWeapon();
+                            }
+                        }
                     }
                 }
             ))
@@ -4547,6 +4564,9 @@ class App{
         const whoop = new BABYLON.Sound("whoopSlash", "sounds/slashWhoosh.wav", scene,
         null, {volume: .2, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
+        const brokenS = new BABYLON.Sound("brokenS", "sounds/brokenS.mp3", scene,
+        null, {volume: .5, spatialSound: false, autoplay: false, loop: false})
+
         const rockSmashS = new BABYLON.Sound("rockSmashS", "sounds/rockSmashS.mp3", scene,
         null, {volume: 1, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
@@ -4632,6 +4652,7 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            brokenS,
             spearStruckS,
             notifS,
             characDeathS,
@@ -6051,6 +6072,13 @@ class App{
 
             }
         }
+
+        const Statue = await this.importMesh(scene, "./models/", "statueOfHero.glb")
+        Statue.meshes[0].position = new Vector3(-0.7, 1, -15.12);
+        Statue.meshes[0].scaling = new Vector3(2,2,2)
+        this.putFakeShadow(Statue.meshes[0], 6, -.45)
+        this.blocks.push(Statue.meshes[1])
+        this.freeze(Statue.meshes[1])
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
@@ -6114,36 +6142,38 @@ class App{
         this.registerBlocks(this.myChar, .09)
         Tree.meshes[0].position.y = 100
         // CREATING THE GUILD HOUSE
-        allHouses.forEach(allh => {
-            if(allh.name === "house2"){
-                allh.checkCollisions = true
-                allh.position = new Vector3(0,0,90);
-                allh.scaling = new Vector3(1.3,1.3,1.3)
-                const guildEntrance = MeshBuilder.CreateGround('guildEntr', {height: 2, width: 2}, scene)
-                guildEntrance.position = new Vector3(0,.5,57);
-                guildEntrance.visibility = false
+        allHouses.forEach(allh => allh.position.y += 100)
 
-                this.createTextMesh(makeRandNum(), "GuilD", "white", {x: 0, y: 3, z: 56.2 }, 100, scene, false)
-                this.toRegAction(this.myChar.bx, guildEntrance, () => {
-                    this.openPopUpAction("info")
-                    this.targetRecource ='guildhouse'
-                    const myF = this.myChar.bx.position
-                    this.prevLoc = {x: myF.x, z:myF.z}
-                })
-                this.toRegActionExit(this.myChar.bx, guildEntrance, () => {
-                    this.closePopUpAction()
-                    this.targetRecource = undefined
-                })
-                this.toRegAction(this.myChar.bx, allh, () => {
-                    this.stopPress(true)
-                    this.bump(this.myChar);
-                    const mypos = this.myChar.bx.position
-                    this.socketAvailable && this.socket.emit('userBump', {_id: this.det._id, pos:{ x: mypos.x, z: mypos.z }, 
-                    dirTarg: {x: this.btf.position.x, z: this.btf.position.z} })
-                    setTimeout(() => this.allCanPress, 2000)
-                })
-            }else allh.position.y += 100
+        const TheGuildHL = await this.importMesh(scene, "./models/", "guildHouseHL.glb")
+        const guildHL = TheGuildHL.meshes[1];guildHL.rotationQuaternion = null
+        log(guildHL )
+        guildHL.parent = null;
+        // TheGuildHL.meshes[0].dispose();
+        guildHL.checkCollisions = true
+        guildHL.position = new Vector3(0,0,61);
+        const guildEntrance = MeshBuilder.CreateGround('guildEntr', {height: 3, width: 2}, scene)
+        guildEntrance.position = new Vector3(0,.5,57.5);
+        guildEntrance.visibility = false
+        this.createTextMesh(makeRandNum(), "Guild", "white", {x: 0, y: 3, z: 56.2 }, 100, scene, false)
+        this.toRegAction(this.myChar.bx, guildEntrance, () => {
+            this.openPopUpAction("info")
+            this.targetRecource ='guildhouse'
+            const myF = this.myChar.bx.position
+            this.prevLoc = {x: myF.x, z:myF.z}
         })
+        this.toRegActionExit(this.myChar.bx, guildEntrance, () => {
+            this.closePopUpAction()
+            this.targetRecource = undefined
+        })
+        this.toRegAction(this.myChar.bx, guildHL, () => {
+            this.stopPress(true)
+            this.bump(this.myChar);
+            const mypos = this.myChar.bx.position
+            this.socketAvailable && this.socket.emit('userBump', {_id: this.det._id, pos:{ x: mypos.x, z: mypos.z }, 
+            dirTarg: {x: this.btf.position.x, z: this.btf.position.z} })
+            setTimeout(() => this.allCanPress, 2000)
+        })
+
         this.checkAll()
     }
     async _goToRoom(houseName){
@@ -6407,7 +6437,7 @@ class App{
         })
 
         this.createAdventurerBoard(bulletinBoard.meshes[1], {x:-6.3, y:.8, z:2.01}, Math.PI/2)
-        this.createTextMesh(makeRandNum(), 'Top Adventurers', 'white', {x:-6, y: 2.5, z:2} , 40, scene, false, false)
+        this.createTextMesh(makeRandNum(), 'Top Adventurers Board', 'white', {x:-6, y: 2.5, z:2} , 40, scene, false, false)
 
         await scene.whenReadyAsync()
         this._scene.dispose()
@@ -8581,6 +8611,17 @@ class App{
                     log("I will speak to the craftsman")
                     log(`he will teach me `, additionalDet)
                 break;
+                case "markus":
+                    this.targDetail = theSpeech;
+                    if(additionalDet !== undefined){
+                        this.craftToLearn = additionalDet
+                    }else{
+                        this.craftToLearn = undefined
+                    }
+                    
+                    log("I will speak to the craftsman")
+                    log(`he will teach me `, additionalDet)
+                break
                 default:
                     
                     this.targDetail = det.condition(this.det);
@@ -8659,7 +8700,7 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const {notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+            const {brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
             
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
@@ -8669,6 +8710,7 @@ class App{
             nextBtnS.attachToMesh(body)
             notifS.attachToMesh(body)
             congratsS.attachToMesh(body)
+            brokenS.attachToMesh(body)
         }
         const myswordz = []
         const myhelmetz = []

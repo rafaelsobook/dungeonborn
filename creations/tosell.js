@@ -16,8 +16,8 @@ const toSell = [
         desc: "sword used for hunting boar and small monsters",
         price: 3800,
         plusDmg: 15,
-        cState: 4000,
-        durability:4000,
+        cState: 50,
+        durability:50,
     },
     { 
         name: 'dragonSpear',
@@ -36,8 +36,8 @@ const toSell = [
         desc: "A Pointed Spear useful for throwing, good for hunting",
         price: 800,
         plusDmg: 10,
-        cState: 4000,
-        durability:4000,
+        cState: 50,
+        durability:50,
     },
     { 
         name: 'dgerSpear',
