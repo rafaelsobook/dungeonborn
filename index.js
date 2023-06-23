@@ -1563,7 +1563,7 @@ class App{
     }
     checkItemsForQuest(questType){
         this.det.items.forEach(itm => {
-            this.readCheckMyQuest(questType, itm.name, undefined)
+            this.readCheckMyQuest(questType, itm, undefined)
         })
     }
     cancelCraft(){
@@ -1817,9 +1817,14 @@ class App{
             const btnName = e.target.className
             if(!btnName.includes("mode-btn")) return log("not a mode btn")
             let modeName
+            myCharDet.runningS.setPlaybackRate(1.2)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
             if(btnName.includes("swordpic")){
                 if(this.det.weapon.name === "none") return
+                myCharDet.runningS.setPlaybackRate(1.2)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
                 if(this.myChar.mode === "stand" || this.myChar.mode === "fist"){
+
                     this.myChar.mode = "none"
                     myCharDet.mode = "none"
                     this.stopAnim(this.myChar.anims, "running", true);
@@ -1843,6 +1848,7 @@ class App{
                 modeName = "weapon"
             }
             if(btnName.includes("handpic")){
+                
                 this.changeAtkBtnImg()
                 if(this.myChar.mode === "stand"){
                     this.playAnim(this.myChar.anims, "fromstand")
@@ -1856,7 +1862,9 @@ class App{
                 }
                 
             }
-            if(btnName.includes("walkpic")){
+            if(btnName.includes("walkpic")){    
+                myCharDet.runningS.setPlaybackRate(.9)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.5)
                 this.stopAnim(this.myChar.anims, "fight.idle")
                 if(this.myChar.mode === "weapon"){
                     log("yes it is weapon")
@@ -1894,6 +1902,7 @@ class App{
                     })
                 }  
             }
+            log(this.currentPlace)
 
             this.disableRightBtns(1400, false)
         })
@@ -2770,6 +2779,7 @@ class App{
             let intervalGap = 500
             this.transCloseElem(guildCont, 1000);
             claimBtn.style.display = "none"
+            let itemReq = undefined
             clearedQuestz.forEach(myqst => {
                 this.det.quests = this.det.quests.filter(qst => qst._id !== myqst._id)
 
@@ -2793,10 +2803,20 @@ class App{
                         
                     break
                 }
+                if(myqst.questTarget.targetType === "edibles"){
+                    const theItem = this.det.items.find(itm => itm.name === myqst.questTarget.targetName)
+                    if(!theItem) log("item to be deduc is not found")
+                    if(theItem){
+                        log("need to deduct this item on your items")
+                        itemReq = { details: theItem, qnty: myqst.demandNumber}
+                    }
+                }
                 this.det.clearedQuests.totalCleared+=1
                 log(`my currpoints ${this.det.clearedQuests.currPoints}`)
                 this._allSounds.coinReceivedS.play()
-                if(this.det.clearedQuests.currPoints >= 100){
+                const pointLimit = (parseInt(this.det.rank)+1) * 100
+                log("point limit is " + pointLimit)
+                if(this.det.clearedQuests.currPoints >= pointLimit){
                     //increase rank
                     log(this.det.rank)
                     // const myrankDig = ranks.find(rnk => rnk.displayRank === this.det.rank)
@@ -2806,13 +2826,18 @@ class App{
 
                     this.det.clearedQuests.currPoints=0;
                     const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
-                    this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 2000);
+                    setTimeout(() => {
+                        this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 3000);
+                    }, 2500)
                 }
             })
+            this.showTransaction("Quest Complete", 2500)
             await this.updateMyDetailsOL(this.det, true);
+            if(itemReq) await this.deductItem(itemReq.details.meshId, itemReq.qnty)
             this.setHTMLUI(this.det)
-            log("Update All My Details")
             openGameUI(this.det)
+            this.showTransaction("quest completed", 2000)
+            this._allSounds.smallCongratsS.play()
         })
         craftImgs.forEach(btn => {
             btn.addEventListener("click", e => {
@@ -3656,7 +3681,7 @@ class App{
             this.playAnim(monster.anims, randN > 5 ? 'hit' : "hit1")
             this.addToBash({_id: monster.monsId, mesh: monster.body, bashPower: this.bigBash})
             const monsFos = monster.body.position
-            this.createTextMesh(makeRandNum(), "critical", "red", {x: monsFos.x, y: monsFos.y, z: monsFos.z }, 91, this._scene, true, false)
+            this.createTextMesh(makeRandNum(), `critical ${dmgTaken}`, "red", {x: monsFos.x, y: monsFos.y, z: monsFos.z }, 91, this._scene, true, false)
         } 
         if(monster.hp <= 0){
             clearTimeout(monster.intervalWillAttack)
@@ -3986,33 +4011,33 @@ class App{
             this.obtain(itemDetail.name, 1, false)
         }, dura)
     }
-    readCheckMyQuest(typeOfQuest, questTargetName, breedOrRarity){
+    async readCheckMyQuest(typeOfQuest, questTarg, breedOrRarity){
         switch(typeOfQuest){
             case "slay":
             this.det.quests.forEach(myqst => {
-                if(myqst.questTarget.targetName === questTargetName){
+                if(myqst.questTarget.targetName === questTarg){
                     log("quest located")
                     if(myqst.questTarget.targetType === breedOrRarity){
-                        if(myqst.isCleared) return log("quest is already cleared for this" + questTargetName)
+                        if(myqst.isCleared) return log("quest is already cleared for this" + questTarg)
                         log("same name and same breed of enemy")
                         myqst.currentNumber++
                         if(myqst.currentNumber >= myqst.demandNumber) myqst.isCleared = true
-                        log("quest Updated")
-                        log(this.det.quests)
+                        showNotif("Quest Cleared", 2000)
                     }
                 }
             })
             break;
             case "edibles":
-                const theItemQuest = this.det.quests.find(myqst => myqst.questTarget.targetName === questTargetName)
+                const theItemQuest = this.det.quests.find(myqst => myqst.questTarget.targetName === questTarg.name)
                 if(!theItemQuest) return log("no quest with this");
                 
-                if(theItemQuest.isCleared) return log("quest is already cleared for this" + questTargetName)
+                if(theItemQuest.isCleared) return log("quest is already cleared for this" + questTarg.name)
                 
-                theItemQuest.currentNumber++
+                theItemQuest.currentNumber = questTarg.qnty
                 if(theItemQuest.currentNumber >= theItemQuest.demandNumber) theItemQuest.isCleared = true
             break;
         }
+        await this.updateMyDetailsOL(this.det, false)
     }
     recalMeeleDmg(){
         let totalDmg = 0
@@ -4139,7 +4164,7 @@ class App{
                     }
                     let criticalMultiplier = 2
                     const mpos = monster.body.position
-                    this.createTextMesh(makeRandNum(), myTotalDmg, "red", {x: mpos.x, y: mpos.y,z: mpos.z}, 80, this._scene, true, false)
+                    
                     const myposition = this.myChar.bx.position
                     let isCritical = false;
                     if(this.det.survival.sleep >= 20 && Math.random()*10 < 8) isCritical = true
@@ -4147,6 +4172,8 @@ class App{
                         const critMultiply = Math.floor(Math.random()*(criticalMultiplier+.5));
                         log('Crit multiplied to ' + critMultiply)
                         myTotalDmg = myTotalDmg + myTotalDmg*critMultiply
+                    }else{
+                        this.createTextMesh(makeRandNum(), myTotalDmg, "red", {x: mpos.x, y: mpos.y,z: mpos.z}, 80, this._scene, true, false)
                     }
                     if(!this.socketAvailable){
                         this.monsterIsHit(monster.monsId, {x: myposition.x, z: myposition.z}, myTotalDmg, {x:mpos.x, z:mpos.z}, this.myChar.mode, isCritical)
@@ -4567,6 +4594,9 @@ class App{
         const brokenS = new BABYLON.Sound("brokenS", "sounds/brokenS.mp3", scene,
         null, {volume: .5, spatialSound: false, autoplay: false, loop: false})
 
+        const woodFloorS = new BABYLON.Sound("woodFloorS", "sounds/woodFloorS.mp3", scene,
+        null, {volume: .3, spatialSound: false, autoplay: false, loop: false})
+
         const rockSmashS = new BABYLON.Sound("rockSmashS", "sounds/rockSmashS.mp3", scene,
         null, {volume: 1, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
@@ -4634,8 +4664,11 @@ class App{
         const congratsS = new BABYLON.Sound("congratsS", "sounds/congratsS.mp3", scene,
         null, {volume: .5, autoplay: false, loop: false})
 
+        const smallCongratsS = new BABYLON.Sound("smallCongratsS", "sounds/smallCongratsS.mp3", scene,
+        null, {volume: .7, autoplay: false, loop: false})
+
         const running = new BABYLON.Sound("footstep", "sounds/running.wav", scene,
-        null, {volume: .4, spatialSound: false, maxDistance: 20, autoplay: false, loop: false})
+        null, {volume: .4, spatialSound: false, autoplay: false, loop: false})
         running.setPlaybackRate(1.2)
 
         const minotaurS = new BABYLON.Sound("footstep", "sounds/minotaurS.mp3", scene,
@@ -4652,6 +4685,8 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            woodFloorS,
+            smallCongratsS,
             brokenS,
             spearStruckS,
             notifS,
@@ -6533,7 +6568,7 @@ class App{
         if(isLoading) return log("still loading ...")
         if(theTreez.length){
             theTreez.forEach(tre => {
-                if(tre.place !== this.currentPlace) return log(`tree is in ${tre.place} return ...`)
+                if(tre.place !== this.currentPlace) return
                 const isMade = this.Trees.some(puno => puno.meshId === tre.meshId)
                 if(!isMade){
                     this.createTree(wholeTree, tre, scene)
@@ -7451,15 +7486,19 @@ class App{
                 
                 switch(this.myChar.mode){
                     case "weapon":
+                        
                         this.myChar.moveActionName = 'running.weapon'
-                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play(0,0,2.1)
+                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break;
                     case "fist":
+                        
                         this.myChar.moveActionName = 'running.fist'
-                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play(0,0,2.1)
+                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break;
                     case "stand":
-                        this.myChar.moveActionName = 'walk'
+                        
+                        myCharDet.runningS.setPlaybackRate(.8)
+                        if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break
                 }
             }
@@ -8700,7 +8739,7 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const {brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+            const {smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
             
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
@@ -8711,6 +8750,7 @@ class App{
             notifS.attachToMesh(body)
             congratsS.attachToMesh(body)
             brokenS.attachToMesh(body)
+            smallCongratsS.attachToMesh(body)
         }
         const myswordz = []
         const myhelmetz = []
@@ -8730,7 +8770,7 @@ class App{
 
         const whoopS = this._allSounds.whoop.clone()
         const drawSwordS = this._allSounds.drawSword.clone()
-        const runningS = this._allSounds.running.clone()
+        let runningS = this._allSounds.running.clone()
         const minningS = this._allSounds.minning.clone()
         const punchedS = this._allSounds.punched.clone()
         const sliceHitS = this._allSounds.sliceHit.clone()
@@ -8746,7 +8786,11 @@ class App{
         minningS.attachToMesh(rootSword)
         woodCuttingS.attachToMesh(rootSword)
         spearStruck.attachToMesh(body)
-
+        log(this.currentPlace)
+        if(this.currentPlace === "guildhouse" || this.currentPlace.includes('apartment')){
+            runningS = this._allSounds.woodFloorS.clone()
+            runningS.attachToMesh(body)
+        }
         meshes.forEach(mesh => {
             if(mesh.name.includes("body") && castShadow) shadowGen.addShadowCaster(mesh)
             if(mesh.name.includes('armor')) armorz.push(mesh)            
@@ -9150,7 +9194,6 @@ class App{
     }
     
     createHouse(meshId, houseNo, toClone, loc, scene, rotat, houseDet){
-        log(toClone)
         const newHouse = toClone.clone(`house.${meshId}`)
         
         newHouse.parent = null
