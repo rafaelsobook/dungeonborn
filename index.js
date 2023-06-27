@@ -806,6 +806,7 @@ class App{
         setTimeout(() => {
             mapNameLabel.classList.add("remove-map")
         }, dura)
+        this.setProperSound()
     }
     disableRightBtns(dura, isPermanent){
         rightUIBtns.forEach(btn => {
@@ -1091,7 +1092,7 @@ class App{
             log(this.det)
             this.setHTMLUI(this.det)
             await this.updateMyDetailsOL(this.det, false)
-            this.showTransaction(`Level Is Raised To ${this.det.lvl}`, 1500)
+            this.showTransaction(`Level Raised To ${this.det.lvl}`, 1500)
             this._allSounds.congratsS.play()
             return log(this.det)
         }
@@ -1818,7 +1819,7 @@ class App{
             if(!btnName.includes("mode-btn")) return log("not a mode btn")
             let modeName
             myCharDet.runningS.setPlaybackRate(1.2)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+            if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
             if(btnName.includes("swordpic")){
                 if(this.det.weapon.name === "none") return
                 myCharDet.runningS.setPlaybackRate(1.2)
@@ -1864,7 +1865,7 @@ class App{
             }
             if(btnName.includes("walkpic")){    
                 myCharDet.runningS.setPlaybackRate(.9)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.5)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
                 this.stopAnim(this.myChar.anims, "fight.idle")
                 if(this.myChar.mode === "weapon"){
                     log("yes it is weapon")
@@ -1902,7 +1903,6 @@ class App{
                     })
                 }  
             }
-            log(this.currentPlace)
 
             this.disableRightBtns(1400, false)
         })
@@ -2248,6 +2248,7 @@ class App{
                                             notifTimeOut+= 1000
                                         })
                                         this.showSideNotif(craftIcon, "Craft Added")
+                                        this._allSounds.smallCongratsS.play()
                                     }
                                     openGameUI(this.det)
                                     log(this.det)
@@ -2372,7 +2373,8 @@ class App{
                         break
                     }
                 }
-                return
+                
+                return myCharDet.runningS.setPlaybackRate(.85)
             }
             if(this.targetRecource.name.includes("scroll")){
                 this.playAnim(this.myChar.anims, "pickup")
@@ -2739,6 +2741,7 @@ class App{
                                         this.openPopUpAction("speak")
                                         this.targetRecource = 'guild'
                                         this.targDetail = { title: "checkquest" }
+                                        this.setHTMLUI(this.det)
                                     }, 3000)
                                 }, 5000)
                             }, 4000)
@@ -2828,15 +2831,15 @@ class App{
                     const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
                     setTimeout(() => {
                         this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 3000);
+                        this._allSounds.congratsS.play()
                     }, 2500)
                 }
             })
-            this.showTransaction("Quest Complete", 2500)
             await this.updateMyDetailsOL(this.det, true);
             if(itemReq) await this.deductItem(itemReq.details.meshId, itemReq.qnty)
             this.setHTMLUI(this.det)
             openGameUI(this.det)
-            this.showTransaction("quest completed", 2000)
+            showNotif("quest cleared", 2000)
             this._allSounds.smallCongratsS.play()
         })
         craftImgs.forEach(btn => {
@@ -3981,7 +3984,6 @@ class App{
         }
     }
     bump(player){
-
         player.mode = "none"
         this.animStopAll(player, ['walk', 'running'])
         player.bx.locallyTranslate(new Vector3(0,0,-.15))
@@ -3996,6 +3998,7 @@ class App{
             this._enableKeyPessTimeout = setTimeout(() => {
                 this.allCanPress()
             }, 1500)
+            this.setProperSound()
         }
     }
     resetPlusBuffs(){
@@ -4318,6 +4321,11 @@ class App{
         cam.upperRadiusLimit = 14.5
         cam.lowerBetaLimit = .85;
         cam.upperBetaLimit = 1
+        if(this.currentPlace === "guildhouse" || this.currentPlace?.includes("apartment")){
+            cam.lowerRadiusLimit = 3.5;
+            cam.upperRadiusLimit = 4
+            log("we are in guild or apartment")
+        }
     }
     resetMeshes(){
         theCharacterRoot = undefined
@@ -4585,6 +4593,8 @@ class App{
         log("place updated ! " + this.det.currentPlace)
         // this.det.places.forEach(place => log(place))
         // this.currentPlace = 'heartland'
+
+        this.setProperSound()
         return data
     }
     async _loadCharacterSounds(scene){
@@ -4718,6 +4728,24 @@ class App{
             congratsS
         }
  
+    }
+    setProperSound(){
+        switch(this.myChar.mode){
+            case "stand":
+                myCharDet.runningS.setPlaybackRate(.9)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
+            break;
+            case "none":
+                myCharDet.runningS.setPlaybackRate(.9)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
+            break;
+            default:
+                myCharDet.runningS.setPlaybackRate(1.2)
+                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+            break;
+        }
+        log("Our Current place is " + this.currentPlace)
+        log("Set The Proper Sound for " + this.myChar.mode)
     }
     openStoryWritten(startWord, arrayOfWords, callBack){
         let intervalWritten
@@ -5947,8 +5975,8 @@ class App{
         const explodingSmoke = this.createExplodingSmoke()
         this.creationOfFakeShadow(scene)
         // sound
-        const heartLandS = new BABYLON.Sound("sliceHit", "sounds/heartlandS.mp3", scene,
-        null, {volume: .03, autoplay: true, loop: true})
+        // const heartLandS = new BABYLON.Sound("sliceHit", "sounds/heartlandS.mp3", scene,
+        // null, {volume: .03, autoplay: true, loop: true})
 
         scene.actionManager = new ActionManager(scene)
 
@@ -6005,6 +6033,16 @@ class App{
         wagon.meshes[1].lookAt(new Vector3(-25.33,0,69), 0,0,0)
         this.blocks.push(wagon.meshes[1])
         this.putFakeShadow(wagon.meshes[1], 8, .07)
+        this.freeze(wagon.meshes[1])
+
+        const slaveCart = await this.importMesh(scene, "./models/", "slaveCart.glb")
+        slaveCart.meshes[1].parent = null
+        slaveCart.meshes[1].position = new Vector3(54,0,-14);
+        slaveCart.meshes[1].rotationQuaternion = null
+        slaveCart.meshes[1].lookAt(new Vector3(58,0,-3), 0,0,0)
+        this.blocks.push(slaveCart.meshes[1])
+        this.putFakeShadow(slaveCart.meshes[1], 9, .02)
+        this.freeze(slaveCart.meshes[1])
         // const feetSmoke = this.createFeetSmoke(explodingSmoke, .03,.5, 1000, 0,this.myChar.bx)
         // feetSmoke.stop()
         // setTimeout(() => {
@@ -6117,7 +6155,7 @@ class App{
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
-
+        
         removeHomePage()
         loadedMesh = maxLoad
         hideLScreen()
@@ -6244,8 +6282,8 @@ class App{
         const cam = this.arcCam(scene)
         this.createBoxToFollow(scene)
 
-        const theHouse = await this.importMesh(scene, "./models/", "medRooms.glb")
-        theHouse.meshes.forEach(mesh => mesh.receiveShadows = true)
+        // const theHouse = await this.importMesh(scene, "./models/", "medRooms.glb")
+        // theHouse.meshes.forEach(mesh => mesh.receiveShadows = true)
         
         oldHouseMesh = MeshBuilder.CreateBox("house", { width: 9, height: .15, depth: 12}, scene)
         oldHouseMesh.position = new Vector3(0,-.075,2.4)
@@ -6269,6 +6307,19 @@ class App{
         this.createWoodTall({x: 4, y:1, z:5}, 3.5, 2, { x: 3.7, z: 5}, {x: 0, z: -.7})
         this.createWoodTall({x: 4, y:1, z:2}, 3.5, 2, { x: 3.7, z: 2}, {x: 0, z: .7})
 
+        this.createWall(8, 9.5, {x:0, y: 4,z: 8.4}, 5, 'medBrick.jpg', 0, scene)
+        this.createWall(8, 9.5, {x:0, y: 4,z: -3.8}, 5, 'medBrick.jpg', 0, scene)
+
+        this.createWall(8, 12, {x:-4.6, y: 4,z: 2.5}, 5, 'medBrick.jpg', Math.PI/2, scene)
+        this.createWall(8, 12, {x:4.6, y: 4,z: 2.5}, 5, 'medBrick.jpg', Math.PI/2, scene)
+        
+        const TheTable = await this.importMesh(scene, "./models/", "table.glb")
+        TheTable.meshes[1].parent = null
+        TheTable.meshes[1].rotationQuaternion = null
+        TheTable.meshes[1].position = new Vector3(-.5,0,7.2)
+        TheTable.meshes[0].dispose()
+        this.putFakeShadow(TheTable.meshes[1], 5, .02)
+        this.blocks.push(TheTable.meshes[1])
         let myBed
         const theBed = await this.importMesh(scene, "./models/", "medBedss.glb")
         const allBed = theBed.meshes[0].getChildren()
@@ -6284,7 +6335,7 @@ class App{
             }
         })
         if(myBed === undefined) return log("bed not found ")
-        myBed.position = new Vector3(2.9,0,5)
+        myBed.position = new Vector3(2.9,0,6.5)
 
         const theDoor = await this.importMesh(scene, "./models/", "smallDoor.glb")
         theDoor.meshes[0].position = new Vector3(1.9,0,-3.55)
@@ -6386,7 +6437,6 @@ class App{
         Sword.meshes.forEach(mesh => mesh.isVisible = false)
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
         this.registerBlocks(this.myChar, .09);
-        
     }
     async _goToGuildHouse(){
         displayElems([apartCont, aprtLoadingBx], "none")
@@ -6534,7 +6584,7 @@ class App{
                 this.prevLoc = { x: myPos.x, z: myPos.z }
                 await this.updateMyDetailsOL(this.det, true)
                 this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
-                
+                await this.updatePlace(`apartment.${this.targDetail.houseNo}`)
                 return await this._goToRoom(`apartment.${this.targDetail.houseNo}`)
             }
         }else{
@@ -7491,13 +7541,15 @@ class App{
                          if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break;
                     case "fist":
-                        
+                        myCharDet.runningS.setPlaybackRate(1.2)
+                        if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+            
                         this.myChar.moveActionName = 'running.fist'
                          if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break;
                     case "stand":
                         
-                        myCharDet.runningS.setPlaybackRate(.8)
+                        // myCharDet.runningS.setPlaybackRate(1)
                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break
                 }
@@ -8451,6 +8503,20 @@ class App{
         dig.parent = null
         dig.position = new Vector3(loc.x,0,loc.z)
         return dig
+    }
+    createWall(theHeight, theWidth, pos, uAndVscale, modeltex, rotatY, scene){
+        const wall = MeshBuilder.CreateBox("wall", {depth: .5, height: theHeight, width: theWidth}, scene)
+        wall.position = new Vector3(pos.x,pos.y,pos.z)
+
+        const newMat = new StandardMaterial("wallMat", scene)
+        const wallTex = new Texture(`./images/modeltex/${modeltex}`)
+        
+        wallTex.uScale = uAndVscale
+        wallTex.vScale = uAndVscale
+        newMat.diffuseTexture = wallTex
+        wall.material = newMat
+        if(rotatY) wall.rotation.y = rotatY
+        wall.checkCollisions = true
     }
     craftBonFire(loc, scene){
         if(!bonFireMesh) return
