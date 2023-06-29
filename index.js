@@ -3953,6 +3953,7 @@ class App{
             this.myBar.bar.width = `0px`
             this.allCanPress()
             this.myChar.mode = "fist"
+            openGameUI()
             if(this.det.weapon.name !== "none") this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
         }
         if(this.det.hp <= 0){            
@@ -4063,8 +4064,10 @@ class App{
                         if(myqst.isCleared) return log("quest is already cleared for this" + questTarg)
                         log("same name and same breed of enemy")
                         myqst.currentNumber++
-                        if(myqst.currentNumber >= myqst.demandNumber) myqst.isCleared = true
-                        showNotif("Quest Cleared", 2000)
+                        if(myqst.currentNumber >= myqst.demandNumber){
+                            myqst.isCleared = true
+                            showNotif("Quest Reached Proceed To Guild", 2000)
+                        }
                     }
                 }
             })
@@ -4079,7 +4082,7 @@ class App{
                 if(theItemQuest.currentNumber >= theItemQuest.demandNumber) theItemQuest.isCleared = true
             break;
         }
-        await this.updateMyDetailsOL(this.det, false)
+        await this.updateMyDetailsOL(this.det, true)
     }
     recalMeeleDmg(){
         let totalDmg = 0
@@ -4176,8 +4179,11 @@ class App{
                     if(themons.hp <= myTotalDmg){
                         this.focusOn = null
                         this.det.monsterKilled++
+                        const lootForIt = monsterloot.filter( itmloot => itmloot.for === themons.monsName)
+                        log("loots for this monster")
+                        log(lootForIt)
+                        const theItem = lootForIt[Math.floor(Math.random() * lootForIt.length)]
                         
-                        const theItem = monsterloot[Math.floor(Math.random() * monsterloot.length)]
                         if(!theItem) return log("the item is undefined")
                         
                         const monsCore = records.find(rec => rec.for === monster.monsName)
@@ -4185,7 +4191,7 @@ class App{
                             const monsCoreItem = {...monsCore, price: monsCore.secondPrice, meshId: makeRandNum(), qnty: 1}
                             
                             await this.addToInventory(monsCoreItem)
-                            this.obtain(monsCoreItem.name,1,false)
+                            this.obtain(monsCoreItem.dn,1,false)
                         }else log("this monster has no core")
 
                         if(Math.random() * 10 > 9) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})

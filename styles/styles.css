@@ -3874,6 +3874,7 @@ nav {
 .adventurer-cont .adv-quests .myquest-bx .myquest-img {
   width: 40px;
   border-radius: 4px;
+  margin-right: 12px;
 }
 
 .adventurer-cont .adv-quests .myquest-bx .myquest-ttle {
