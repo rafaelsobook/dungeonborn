@@ -300,6 +300,7 @@ const rankFloat = document.querySelector(".rank-float")
 const itemRewardsList = document.querySelector(".rewards-pictures")
 const coinReward = document.querySelector(".rc")
 const acceptQuestBtn = document.querySelector(".accept-quest-btn")
+const deleteQuestBtn = document.querySelector(".delete-quest-btn")
 // TOP ADVENTURER DETAILS
 const topAdventurersCont = document.querySelector(".alladventurer-detail-cont")
 const toplist = document.querySelector(".adc-list")
@@ -879,11 +880,12 @@ class App{
     allCanPress(){
         this._canpress = true
         canPress = true
+        this.setProperSound()
     }
     stopPress(stopSound){
         this._canpress = false
         canPress = false
-
+  
         if(!this.myChar) return
         if(stopSound) this.myChar.runningS.stop();
     }
@@ -1738,6 +1740,44 @@ class App{
             })
         })
     }
+    showMyAdventurerDetails(){
+        advCont.style.display = "flex"
+        const rankDet = ranks.find(rn => rn.rankDig === this.det.rank)
+        if(!rankDet) return log("not found my rank")
+        advDet.children[0].innerHTML = `rank: ${rankDet.displayRank}`
+        advDet.children[1].innerHTML = `kills: ${this.det.monsterKilled}`
+        advDet.children[2].innerHTML = `cleared: ${this.det.clearedQuests.totalCleared}`
+        advQuestLists.innerHTML = ''
+        this.checkItemsForQuest("edibles")
+        this.det.quests.forEach(myqst => {
+            log(myqst)
+            const newDiv = createElement("div", "myquest-bx")
+            // const divBackImg = createElement("img", "myquest-backimg")
+            // divBackImg.src="./images/setup/scroll.png"
+            // newDiv.append(divBackImg)
+            const newImg = createElement("img", "myquest-img")
+            if(myqst.questPicName !== ""){
+                newImg.src = `./images/questpics/${myqst.questPicName}.png`
+            }else{
+                newImg.src = `./images/loots/${myqst.questTarget.targetName}.png`
+            }
+            const qstTtle = createElement("p", "myquest-ttle", myqst.title)
+
+            const qstDemNumber = createElement("p", "myquest-demand", `required: ` +myqst.demandNumber)
+            newDiv.append(newImg)
+            newDiv.append(qstTtle)
+
+            newDiv.append(qstDemNumber)
+
+            advQuestLists.append(newDiv)
+            
+            newDiv.addEventListener("click", () => {
+                rewardInfo = myqst
+                this.showQuestInfo(true)
+                log(myqst)
+            })
+        })
+    }
     setEventListeners(){
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
@@ -1771,42 +1811,7 @@ class App{
                         this.checkAllMyCrafts();
                     break
                     case "myquests":
-                        advCont.style.display = "flex"
-                        const rankDet = ranks.find(rn => rn.rankDig === this.det.rank)
-                        if(!rankDet) return log("not found my rank")
-                        advDet.children[0].innerHTML = `rank: ${rankDet.displayRank}`
-                        advDet.children[1].innerHTML = `kills: ${this.det.monsterKilled}`
-                        advDet.children[2].innerHTML = `cleared: ${this.det.clearedQuests.totalCleared}`
-                        advQuestLists.innerHTML = ''
-                        this.checkItemsForQuest("edibles")
-                        this.det.quests.forEach(myqst => {
-                            log(myqst)
-                            const newDiv = createElement("div", "myquest-bx")
-                            const divBackImg = createElement("img", "myquest-backimg")
-                            divBackImg.src="./images/setup/scroll.png"
-                            newDiv.append(divBackImg)
-                            const newImg = createElement("img", "myquest-img")
-                            if(myqst.questPicName !== ""){
-                                newImg.src = `./images/questpics/${myqst.questPicName}.png`
-                            }else{
-                                newImg.src = `./images/loots/${myqst.questTarget.targetName}.png`
-                            }
-                            const qstTtle = createElement("p", "myquest-ttle", myqst.title)
-                            const qstDef = createElement("p", "myquest-defi", myqst.def)
-                            const qstDemNumber = createElement("p", "myquest-demand", `required: ` +myqst.demandNumber)
-                            newDiv.append(newImg)
-                            newDiv.append(qstTtle)
-                            newDiv.append(qstDef)
-                            newDiv.append(qstDemNumber)
-    
-                            advQuestLists.append(newDiv)
-                            
-                            newDiv.addEventListener("click", () => {
-                                rewardInfo = myqst
-                                this.showQuestInfo(true)
-                                log(myqst)
-                            })
-                        })
+                        this.showMyAdventurerDetails()
                     break
                     case "mystats":
                         myStatContainer.classList.remove("my-stat-hidding")
@@ -2031,36 +2036,29 @@ class App{
                 this.allCanPress()
                 this._allSounds.woodCreakS.play()
                 if(this.det.storyQue.some(storyName => storyName === "wakingUp")){
-                    log("waking up from tutorial");
-                    
+
                     closeGameUI()
                     this.stopPress()
                     this.myChar.mode = "none"
                     this.playAnim(this.myChar.anims, "standlooking")
                     const oneSpeechInStart = oneIntroSpeech.map(spch => spch.name === '' ? {...spch, name: this.det.name} : spch)
-                    this.continuesSpeech(oneSpeechInStart, 0, 2000, () => {   
+                    this.continuesSpeech(oneSpeechInStart, 0, 3000, () => {   
                         setTimeout(() => {
-                            this.setQuestions(objectivesChoices, "Choose Main Objective", (det) => {
+                            this.setQuestions(objectivesChoices, "What Do You Want To Know", (det) => {
                                 this._allSounds.skillAcquiredS.attachToMesh(this.myChar.bx)
                                 this._allSounds.skillAcquiredS.setPlaybackRate(.9 + Math.random()*.2)
                                 this._allSounds.skillAcquiredS.play()
                                 this.transCloseElem(questionCont, 2000)
-                                let oneLastMesseg = [{name: "One", message: det.desc}, {name:"One", message: "Choose A Blessing You wish to receive"}]
-                                if(det.name === "freedom") oneLastMesseg = [{name: "One", message: "You are always free ..."},{name: "One", message: "But Be Careful, You can only have it Once" }]
+                                let oneLastMesseg = [{name: "One", message: det.desc[0]}, {name: "One", message: det.desc[1]}, {name:"One", message: "I think I'm far enough, Choose Your Blessing ..."}]
+                                
                                 this.continuesSpeech(oneLastMesseg, 0, 3000, async () => {
                                     this.det.storyQue = this.det.storyQue.filter(strQ => strQ !== "wakingUp");
                                     await this.updateMyDetailsOL({...this.det,mainObj: { name: det.name, dn:det.dn} }, true);
-                                    if(det.name === "freedom") {
-                                        this.allCanPress()
-                                        openGameUI()
-                                        this.myChar.nameMesh.isVisible = true
-                                        this.myChar.playerHealthMesh.isVisible = true
-                                        return this.myChar.mode = "stand"
-                                    }
+
                                     setTimeout(() => {
-                                        const secMess = "When you go out I want you to find an Adventurer named Niko, He's expecting you"
-                                        const thirdMess = "He can help you how to survive in this world, Find the guild house and you can find him there"
-                                        const fourthMess = "I don't have much time now ... farewell and Goodluck"
+                                        const secMess = "There's a person waiting for you outside, He's expecting you"
+                                        const thirdMess = "He will be guiding you in this world you're standing ..."
+                                        const fourthMess = "Farewell ..."
                                         this.openBlessings(starterBlessings, [
                                             {
                                                 name: "One",
@@ -2085,7 +2083,7 @@ class App{
                                     }, 1500)
                                 })
                             })
-                        }, 2400)
+                        }, 3000)
                     })
                 }
                 return clearInterval(restingInterval)
@@ -2101,8 +2099,10 @@ class App{
                 this.closePopUpAction()
                 this.stopMyCharacter()
                 clearTimeout(this._attackTimeout)
+                this._allSounds.merchantV.play()
                 this.continuesSpeech([{name: "Zeenan",message: "Hi I'm zeenan, A Traveling Merchant ..."}, {name: "Zeenan",message: "Maybe We Could Do Some Business ..."}],0,2500,() => {
                     setTimeout(() => merchantChoice.style.display = "flex", 2400)
+                    this.setProperSound()
                 }) 
                 return
             }
@@ -2147,6 +2147,7 @@ class App{
                     guildBtn.innerHTML = 'check quests'
                     guildTtle.innerHTML = `How can I help you ?`;
                 }
+                this.setProperSound()
                 return log(this.det.rank)
             }
             if(this.targetRecource.name === 'bonfire'){
@@ -2222,11 +2223,12 @@ class App{
                 this.closePopUpAction()
                 const {x,z} = this.myChar.bx.position
                 this.playerLookAt(this.myChar.bx, this.targetRecource.position)
+                this._allSounds.normalV.play()
                 if(this.targetRecource.name.includes("walker")){
                     this.targetRecource.lookAt(new Vector3(x, this.yPos,z),0,0,0)
                     simpleNpc = simpleNpc.map(npz => npz._id === this.targetRecource.name.split(".")[1] ? {...npz, _talking: true, _moving: false} : npz)
                     const theNpz = simpleNpc.find(npz => npz._id === this.targetRecource.name.split(".")[1])
-                    if(!theNpz) return log("not found ")
+                    if(!theNpz) return log("not found NPC")
                     this.stopAnim(theNpz.anims, 'walk')
                     this.stopMyCharacter()
                     clearTimeout(this._attackTimeout);
@@ -2261,7 +2263,8 @@ class App{
                             this.continuesSpeech(this.targDetail, 0, 4000, () => {
                                 log(this.targetRecource)
                                 simpleNpc = simpleNpc.map(npz => npz._id === this.targetRecource.name.split(".")[1] ? {...npz, _talking: false, _moving: true} : npz)
-                                this.playerLookAt(theNpz.bx, {...theNpz.dirTarg, y: this.yPos})
+                                const npzD = theNpz.dirTarg
+                                theNpz.bx.lookAt(new Vector3(npzD.x, this.yPos, npzD.z),0,0,0)
                             })
                         break
                     }
@@ -2278,8 +2281,17 @@ class App{
                                 closeGameUI()
                                 const lastSpeechConvo = [{name: "Niko", message: "You can register As An Adventurer In the guild, If you want some extra earning"},
                                 {name: "Niko", message: "But Be Careful Only Accept Quest that you think you can ..."},
+                                {name: "Niko", message: "There's a merchant that sells weapons and items near the Guild ..."},
                                 {name: "Niko", message: "If you are having a hard time surviving In the wild"},
-                                {name: "Niko", message: "You can find my friend Jericho In this Village, He knows crafting"},
+                                {name: "Niko", message: "You can find my friend Jericho In this Village, He knows crafting .."},
+                                {name: "Niko", message: "Don't starve ... There's plenty of shops in here ..."},
+                                {name: "Niko", message: "There's also cherries on the wild, You can also hunt edible monsters ..."},
+                                {name: "Niko", message: "Make sure to cook them, Know who you hunt and what you hunt"},
+                                {name: "Niko", message: "There's a lot in the wild, Some of them are still mystery so be careful"},
+                                {name: "Niko", message: "For now I want you to get stronger and explore things in here"},
+                                {name: "Niko", message: "Do not worry, I trust that you can manage on your own"},
+                                {name: "Niko", message: "I will find you If there's anything important"},
+                                {name: "Niko", message: "If you die before we reach our goal, then It will be our end ..."},
                                 {name: "Niko", message: "Goodluck on your journey ..."},
                                 ]
                                 const friendLastSpeech = () => {
@@ -2617,6 +2629,31 @@ class App{
                 this._allSounds.itemEquipedS.play()
                 this.returnClick([questCont])
                 this.det.quests = myUpdatedInfo.quests
+            } catch (error) {
+                log(error)
+                this.showTransaction("Register Quest Failed", 2300)
+            }
+        })
+        deleteQuestBtn.addEventListener("click", async () => {
+            log(rewardInfo)
+            // take the quest
+            // after taking delete the quest
+            rewardInfoCont.style.display = "none"
+            this.showTransaction("Abandoning Current Quest ...", false)
+            try {
+                // adding the quest from the Global Quests
+                delete this.det.quests[0].isCleared
+                this.det.quests[0].currentNumber=0
+                log("to be deleted")
+                log(this.det.quests[0])
+                await this.useFetch(`${APIURL}/quests/save`, "POST",undefined, this.det.quests[0])              
+                // setting my quest to zero
+                this.det.quests = []
+                await this.updateMyDetailsOL(this.det, true)
+                this.showTransaction("Quest Abandoned", 2300)
+                this.setHTMLUI(this.det)
+                this.showMyAdventurerDetails()
+                this._allSounds.itemEquipedS.play()
             } catch (error) {
                 log(error)
                 this.showTransaction("Register Quest Failed", 2300)
@@ -3989,7 +4026,8 @@ class App{
         player.bx.locallyTranslate(new Vector3(0,0,-.15))
         this.playAnim(player.anims, "bump");
         this.myChar.runningS.stop()
-        setTimeout(() => player.mode = "stand", 1300)
+        setTimeout(() => player.mode = "fist", 1300)
+        this.keepSword(player.rootSword, player.rootBone)
         if(player._id === this.det._id){
             this.stopPress();
             botMoving = false;
@@ -4000,6 +4038,7 @@ class App{
             }, 1500)
             this.setProperSound()
         }
+        
     }
     resetPlusBuffs(){
         this.plusDmg = 0
@@ -4501,7 +4540,7 @@ class App{
         }else{
             rewardImg.src = `./images/questpics/${rewardInfo.questPicName}.png`
         }
-        
+        log(rewardInfo)
         rewardTtle.innerHTML = rewardInfo.title
         rewardDesc.innerHTML = isMyQuest ? `${rewardInfo.def} <br/> required: ${rewardInfo.currentNumber}/${rewardInfo.demandNumber}`: `${rewardInfo.def} <br/> required: ${rewardInfo.demandNumber}`
         const rankDN = ranks.find(rnk => rnk.rankDig === rewardInfo.requiredRank)
@@ -4516,7 +4555,14 @@ class App{
             itemRewardsList.append(newImg)
         })
         coinReward.innerHTML = rewardInfo.reward.rewardCoin
-        isMyQuest ? acceptQuestBtn.style.display = "none" : acceptQuestBtn.style.display = "block"
+    
+        if(isMyQuest){
+            acceptQuestBtn.style.display = "none"
+            deleteQuestBtn.style.display = "block"
+        }else{
+            acceptQuestBtn.style.display = "block"
+            deleteQuestBtn.style.display = "none"
+        }
     }
     async delQuestFromMain(_questId){
         await this.useFetch(`${APIURL}/quests/delete/${_questId}`, "DELETE", this.token)
@@ -4603,6 +4649,12 @@ class App{
 
         const brokenS = new BABYLON.Sound("brokenS", "sounds/brokenS.mp3", scene,
         null, {volume: .5, spatialSound: false, autoplay: false, loop: false})
+
+        const merchantV = new BABYLON.Sound("brokenS", "sounds/merchantV.mp3", scene,
+        null, {volume: .6, spatialSound: false, autoplay: false, loop: false})
+
+        const normalV = new BABYLON.Sound("brokenS", "sounds/normalV.mp3", scene,
+        null, {volume: .9, spatialSound: false, autoplay: false, loop: false})
 
         const woodFloorS = new BABYLON.Sound("woodFloorS", "sounds/woodFloorS.mp3", scene,
         null, {volume: .3, spatialSound: false, autoplay: false, loop: false})
@@ -4695,6 +4747,8 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            merchantV,
+            normalV,
             woodFloorS,
             smallCongratsS,
             brokenS,
@@ -8805,7 +8859,7 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const {smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+            const { merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
             
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
@@ -8817,6 +8871,8 @@ class App{
             congratsS.attachToMesh(body)
             brokenS.attachToMesh(body)
             smallCongratsS.attachToMesh(body)
+            merchantV.attachToMesh(body)
+            normalV.attachToMesh(body)
         }
         const myswordz = []
         const myhelmetz = []

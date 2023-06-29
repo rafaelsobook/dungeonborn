@@ -3796,7 +3796,6 @@ nav {
   height: 70%;
   width: 50%;
   background: #1d1c1c;
-  opacity: 0.9;
   display: none;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
@@ -3857,73 +3856,52 @@ nav {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: start;
-      -ms-flex-pack: start;
-          justify-content: flex-start;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
   padding: 10px;
   border-radius: 3px;
-  height: 90%;
-}
-
-.adventurer-cont .adv-quests .myquest-bx .myquest-backimg {
-  height: 85%;
-  width: 80%;
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%) scale(60%);
-          transform: translate(-50%, -50%) scale(60%);
-  z-index: -1;
+  height: 15%;
+  width: 100%;
+  border: 1px solid #8d6d27;
+  background: -webkit-gradient(linear, left top, left bottom, from(#857d55), color-stop(#836b37), to(#4d3f20));
+  background: linear-gradient(to bottom, #857d55, #836b37, #4d3f20);
 }
 
 .adventurer-cont .adv-quests .myquest-bx .myquest-img {
   width: 40px;
   border-radius: 4px;
-  margin-bottom: 10px;
 }
 
 .adventurer-cont .adv-quests .myquest-bx .myquest-ttle {
   font-family: "Caudex", serif;
-  color: #1d1c1c;
-  margin-bottom: 10px;
-}
-
-.adventurer-cont .adv-quests .myquest-bx .myquest-defi {
-  color: rgba(122, 99, 4, 0.94);
-  font-family: "Bellefair", serif;
-  margin-bottom: 10px;
-  width: 100%;
+  color: #f5f5f5;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
 }
 
 .adventurer-cont .adv-quests .myquest-bx .myquest-demand {
-  color: crimson;
+  color: #f5f5f5;
   font-weight: 400;
-  text-align: left;
+  font-family: "Bellefair", serif;
 }
 
-@media (max-height: 600px) {
-  .adventurer-cont .adv-quests .myquest-bx .myquest-backimg {
-    height: 80%;
-    width: 59%;
+@media (max-height: 400px) {
+  .adventurer-cont .adv-quests .myquest-bx {
+    height: 25%;
   }
   .adventurer-cont .adv-quests .myquest-bx .myquest-img {
-    width: 37px;
-    margin-bottom: 3px;
+    width: 35px;
   }
   .adventurer-cont .adv-quests .myquest-bx .myquest-ttle {
-    margin-bottom: 3px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
-  .adventurer-cont .adv-quests .myquest-bx .myquest-defi {
-    margin-bottom: 5px;
-    font-size: 0.8rem;
+  .adventurer-cont .adv-quests .myquest-bx .myquest-demand {
+    font-size: 0.9rem;
   }
 }
 
@@ -4409,6 +4387,17 @@ nav {
   cursor: pointer;
 }
 
+.rewardinfo-cont .delete-quest-btn {
+  padding: 3px 20px;
+  font-family: "Caudex", serif;
+  color: #f5f5f5;
+  font-size: 1rem;
+  border: 1px solid #5a1010;
+  background: -webkit-gradient(linear, left top, left bottom, from(#620000), color-stop(#8b0000), color-stop(#ca0000), to(#740000));
+  background: linear-gradient(to bottom, #620000, #8b0000, #ca0000, #740000);
+  cursor: pointer;
+}
+
 @media (max-height: 500px) {
   .blessings-cont {
     padding: 20px;
@@ -4436,6 +4425,7 @@ nav {
             transform: translate(-50%, -50%) scale(1);
     z-index: 3;
     padding: 10px;
+    z-index: 6;
   }
   .rewardinfo-cont .rank-float {
     font-size: 12rem;

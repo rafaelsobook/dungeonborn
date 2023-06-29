@@ -163,14 +163,14 @@ const npcInfos = [
         displayW: {name: "oakblade", isHide: false},
         armor: {name: "cladarmor"},
         place: "heartland",
-        maxDistance: { x: 0, z: -50, chaceToStop: 8},
+        maxDistance: { x: -1.7, z: -5.2, chaceToStop: 8},
         _moving: true,
         spd: .1,
         condition: function (player) {
             if(player.lvl <= 3) return this.speech
             return [{name: 'barney', message: "Sorry about last time, By the way I heard your name on the guild ..."}, {name: 'barney', message: "Not all Adventurer have an aptitude for magic ... "}, {name: 'barney', message: `Ohhh ... And You're already lvl ${player.lvl} ... SANA ALL !`}]
         },
-        dirTarg: {x: -5, z: 0},
+        dirTarg: {x: -1.7, z: -5.2},
         speech: [{name: 'barney', message: "don't talk to me peasant ... Move Away !"}, {name: 'barney', message: "Mind your own business ..."}],
     },
     {...npcDet,
@@ -250,7 +250,7 @@ const npcInfos = [
         name: 'fox',
         nType: "walker",
         x: 35,
-        z: -21,
+        z: -18,
         toWear: {hair: "antaenus", cloth: "none", pants: "brown", boots: "sinbad", hairColor: {r: 0,g: 0,b:0}},
         displayW: {name: "grimblue", isHide: false},
         armor: {name: "hydra"},
@@ -357,10 +357,24 @@ const npcInfos = [
         },
         dirTarg: {x:9, z: 13.5},
         speech: function(mainName){
-            return [{ name: mainName, message: "Are you ...." },{name: 'Niko', message: "You must be him, I'm Informed I will see you here..."}, {name: 'Niko', message: "I Know the Person who sent you here, No One must know how you got In here and where you came from ..."}, {name: 'Niko', message: "I'm here to support you In your Journey, You might need something ..."}]
+            return [{ name: mainName, message: "Are you ...." },
+            {name: 'Niko', message: "Greetings Friend, I'm Informed I will see you here..."}, 
+            {name: 'Niko', message: "You can call me nick, I'm here to support you in your journey"}, 
+            {name: 'Niko', message: "I Know the Person who sent you here, No One must know how you got In here and where you came from ..."}, 
+            {name: 'Niko', message: "I'm here to support you In your Journey, You might need something ..."}]
         },
-        secSpeech: [{name: "Niko", message: "Goodluck On Your Journey, If you want to rest you can rent in one of the apartments"}, {name: "Niko", message: "Having a good meal and enough rest will keep your focus"}, {name: "Niko", message: "You can sometimes find me here, I have some quests going on ... I might not be here always "}],
-        normSpeech: [{name: "Niko", message: "Be Careful Out there ..."}]
+        secSpeech: [{name: "Niko", message: "I hope this helps, make sure to rest ... you can rent in one of the apartments"}, 
+        {name: "Niko", message: "Having a good meal and enough rest will keep your focus"}, 
+        {name: "Niko", message: "For now I want you to get stronger and explore things in here"},
+        {name: "Niko", message: "Do not worry, I trust that you can manage on your own"},
+        {name: "Niko", message: "I will find you If there's anything important"},
+        {name: "Niko", message: "There's"},
+        ],
+        normSpeech: [
+        {name: "Niko", message: "It is still early for you to see your goal"},
+        {name: "Niko", message: "Get Strong ... As You progress, things get more difficult"},
+        {name: "Niko", message: "So Be Careful Out there ..."},
+        ]
     },
     {...npcDet,
         _id: `npc${randomNum()}`,

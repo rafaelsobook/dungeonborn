@@ -1,34 +1,37 @@
 const objectives = [
     {
-        name: "slay",
-        dn: "Slay Number Two",
-        desc: "Number Two Thinks I'm the enemy here, He kill anyone who knows about my existence"
+        name: "getStronger",
+        dn: "How Can I Get Stronger",
+        desc: ["Normally, You will earn it through experience and hardwork, But If you're a risk taker",
+        " look for secret passages in dungeons, there lies to what you seek"]
     },
     {
-        name: "rankX",
-        dn: "Be Rank X",
-        desc: "The people nowadays forget what they used to be, A rank X adventurer is a legend and only achieved once in lifetime of DungeonBorn. I've been a Rank X once"
+        name: "earnMoney",
+        dn: "How To Earn Money",
+        desc: ["You can be a king or a knight and whatever you want here","There are jobs that you can do in this world. Like being an adventurer"]
     },
     {
-        name: "seedOfLife",
-        dn: "Find And Plant The Lost Seed",
-        desc: "This seed is forgotten and lost in time, I want you to Find this seed that will grow and save humanity in DungeonBorn"
+        name: "legendaryItems",
+        dn: "Is Legendary Items a thing",
+        desc: ["Indeed they are, You can make them or you can steal them ...", "You can also find them in dungeons and lost places"]
     },
     {
-        name: "savePriest",
-        dn: "Save The Goddess Priest",
-        desc: "Long Ago, I met this Goddess and helped me to achieve everything and even make DungeonBorn. I cannot Interfere anymore and will entrust this"
+        name: "whoAreYou",
+        dn: "Where did you came from",
+        desc: ["Beleive it or not, I'm just like you ... More details will come after,", "Sooner things will be clearer, My existence and this world"]
     },
     {
-        name: "demonLord",
-        dn: "Defeat The Demon Lord",
-        desc: "The DEMON LORD who lives for centuries and always Reincarnate, I don't have a grudge against him but looks like the new Demon Lord has forgotten his limits"
+        name: "whenAgain",
+        dn: "When Can We Talk Again",
+        desc: ["I have already consumed lot by summoning you and even talking to you,"," But If you could defeat some of what I mentioned, It could help me regain some of my life force"]
     },
     {
-        name: "freedom",
-        dn: "I want to live Free",
-        desc: "Ahh Yess... Being Reborn and having a chance to change your life is always your right."
+        name: "survivalTips",
+        dn: "More Details About Dungeonborn",
+        desc: ["Considering my remaining time, I can only tell you few like, There are lot of places here that even I don't know exist",
+            "I'm not the only person who can use magic, You can master the art of magic too"]
     },
+    
 ]
 
 export default objectives
