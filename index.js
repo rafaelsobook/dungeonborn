@@ -576,6 +576,8 @@ class App{
         this._weaponAtk = "slash.0" // slash.0 slash.1
         this._meeleAtk = "meelee0" // kick // meelee0 melee1
 
+        // sound related
+        this.floorPlaces = ["guildhouse", "crafthouse", "apartment"]
 
         // ACQUIRING ITEMS
         this.timeOutForClearingLists
@@ -836,8 +838,6 @@ class App{
         rightLowerUI.children[3].style.opacity = 1
     }
     changeAtkBtnImg(){
-        log(this.myChar.mode);
-
         switch(this.myChar.mode){
             case "weapon":
                 log(this.det.weapon.name)
@@ -973,7 +973,6 @@ class App{
     async updateMyDetailsOL(toSave, updateLocal){
         try {
             const data = await this.useFetch(`${APIURL}/characters/updateall/${toSave._id}`, "PATCH", this.token, toSave)
-            log(data)
             updateLocal && this.setDetails(data)
         } catch (error) {
             log(error)   
@@ -1164,7 +1163,6 @@ class App{
                 mode: modeName
             })
         }, dura)
-
     }
     closeRedUI(){
         apartCont.style.display = "none"
@@ -1778,6 +1776,14 @@ class App{
             })
         })
     }
+    setRunningSound(){
+        myCharDet.runningS.setPlaybackRate(1.2)
+        const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
+        if(isOnFloorPlace){
+            log("is in floor places")
+            myCharDet.runningS.setPlaybackRate(1)
+        }
+    }
     setEventListeners(){
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
@@ -1823,12 +1829,10 @@ class App{
             const btnName = e.target.className
             if(!btnName.includes("mode-btn")) return log("not a mode btn")
             let modeName
-            myCharDet.runningS.setPlaybackRate(1.2)
-            if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+            this.setRunningSound()
             if(btnName.includes("swordpic")){
                 if(this.det.weapon.name === "none") return
-                myCharDet.runningS.setPlaybackRate(1.2)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+                this.setRunningSound()
                 if(this.myChar.mode === "stand" || this.myChar.mode === "fist"){
 
                     this.myChar.mode = "none"
@@ -2116,6 +2120,18 @@ class App{
                 apartInfos.style.display = "flex"
                 aprtLoadingBx.style.display ="none"
                 return
+            }
+            if(this.targetRecource === 'crafthouse'){
+                this.stopPress()
+                apartInfos.style.display = "none"
+                aprtLoadingBx.style.display ="block"
+                this.closePopUpAction()
+                
+                aprtLoadLabel.innerHTML = "Entering Shop..."
+                await this.updateMyDetailsOL({...this.det, currentPlace: 'crafthouse', x: 0, z: 0 }, true)
+                this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
+                
+                return await this._goToCraftHouse()
             }
             if(this.targetRecource === 'guildhouse'){
                 this.stopPress()
@@ -3703,10 +3719,8 @@ class App{
         // if(Math.random() > .2 && !isCritical) this.playAnim(monster.anims, Math.random() > .5 ? 'hit' : "hit1")
         this.playAnim(monster.anims, Math.random() > .5 ? 'hit' : "hit1")
         
-        log(`monsterHP: ${monster.hp} - ${dmgTaken}`)
         monster.hp -= dmgTaken
         monster.robHealthGui.width = `${(parseInt(monster.hp)/parseInt(monster.maxHp) * 100) * 4}px`;
-        log(`monsterHP: ${monster.hp}`)
 
         const {x,z} = playerPos
         monster.body.position.x = monspos.x
@@ -3767,7 +3781,7 @@ class App{
         }
 
         const targPos = theMonsterTargMesh.getAbsolutePosition();
-        log(theMonster.body)
+  
         theMonster.body.position = new Vector3(monsBodyPos.x, monsBodyPos.y,monsBodyPos.z)
         
         this.playerLookAt(theMonster.body, {x: targPos.x, z: targPos.z});
@@ -3839,9 +3853,6 @@ class App{
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.armor.meshId)
             if(myArmor.cState >= 1){
                 myDef+= this.det.armor.plusDef
-            
-                log("hit -" + dmgTaken/4)
-                log(this.det.armor.cState)
                 this.det.items.forEach(itm => {
                     if(itm.meshId === this.det.armor.meshId) this.reduceDurability(itm, dmgTaken/4)
                 })
@@ -3878,7 +3889,6 @@ class App{
         }
         if(this.det.shield.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.shield.meshId)
-            log(myArmor)
             if(!myArmor) return log("shield not found")
             if(myArmor.cState >= 1){
                 myDef+= this.det.shield.plusDef
@@ -3892,12 +3902,11 @@ class App{
         }
 
         let toDeduct = myDef >= dmgTaken ? 1 : dmgTaken - myDef
-        log('my def ' + myDef + " - dmgtaken " + dmgTaken)
-        log(`to deduct in my life ${toDeduct}`)
+        // log('my def ' + myDef + " - dmgtaken " + dmgTaken)
+        // log(`to deduct in my life ${toDeduct}`)
         this.det.hp -= toDeduct
-        log(this.det.status)
         if(effects && effects.chance > Math.random()*10){
-            log("there is effect")
+      
             this.det.hp -= effects.plusDmg
             clearTimeout(this._attackTimeout)
             if(this.det.hp >= 0){
@@ -4087,33 +4096,29 @@ class App{
     recalMeeleDmg(){
         let totalDmg = 0
         let physicDmg = (this.det.stats.core * this.physicalX) + this.plusCore
-        log("my mode " + this.myChar.mode)
+       
         switch(this.myChar.mode){
             case "weapon":
-                log("on weapon damage")
                 if(!this.det.weapon) return log("no weapon")
                 totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * this.weaponX)
-                log(totalDmg)
+    
                 const minDurability = this.det.weapon.durability/3
                 if(this.det.weapon.cState <= minDurability) totalDmg = totalDmg/2
             break;
             case "fist":
-                log("on fist damage")
+                
                 totalDmg = physicDmg
             break
             case "noneweapon":
-                log("on weapon damage")
+                
                 if(!this.det.weapon) return log("no weapon")
                 totalDmg = physicDmg + parseInt(this.det.weapon.plusDmg) + this.plusDmg + (this.det.stats.sword * this.weaponX)
-                log(totalDmg)
+                
             break;
         }
         if(this.det.survival.sleep <= 20){
             totalDmg = totalDmg/2
-            log("Im not In Focus")
         }
-        log(totalDmg)
-
         return totalDmg
     }
     recalPhyDefense(dmgTaken){
@@ -4121,8 +4126,6 @@ class App{
         if(this.det.armor.name !== "none") {
             myDef+= this.det.armor.plusDef
             this.reduceDurability(this.det.armor, dmgTaken/4)
-            log("hit -" + dmgTaken/4)
-            log(this.det.armor.cState)
         }
         if(this.det.gear.name !== "none") {
             myDef+= this.det.gear.plusDef
@@ -4139,7 +4142,7 @@ class App{
         return myDef
     }
     regEnemyToAttack(){
-        log(`enemy registered ... ${this.enemyRegistered.length}`)
+        
         Monsterz.forEach(monster => {
             const alreadyHave = this.enemyRegistered.some(enemId => enemId === monster.monsId)
             if(alreadyHave) return log("this monster is already registered !")
@@ -4151,9 +4154,8 @@ class App{
                 }, async e=>{
                     const themons = Monsterz.find(mons => mons.monsId === monster.monsId)
                                         
-                    if(!themons) return
+                    if(!themons) return log("monster not found")
                     let myTotalDmg = parseInt(this.recalMeeleDmg())
-                    log(`the monster targ is ${themons.targHero}`)
          
                     this.focusOn = monster.body
 
@@ -4184,7 +4186,7 @@ class App{
                         log(lootForIt)
                         const theItem = lootForIt[Math.floor(Math.random() * lootForIt.length)]
                         
-                        if(!theItem) return log("the item is undefined")
+                        if(!theItem) log("the item is undefined")
                         
                         const monsCore = records.find(rec => rec.for === monster.monsName)
                         if(monsCore){
@@ -4194,7 +4196,9 @@ class App{
                             this.obtain(monsCoreItem.dn,1,false)
                         }else log("this monster has no core")
 
-                        if(Math.random() * 10 > 9) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
+                        if(theItem){ // if there is an item for this monster
+                            if(Math.random() * 10 > 9) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
+                        }
                         
                         // EDIBLE MONSTERS
                         switch(themons.monsName){
@@ -4204,7 +4208,7 @@ class App{
                                     price: 100, qnty: 1}
                                     await this.addToInventory(foodDet)
                                     this.obtain(foodDet.name,1,false)
-                            break
+                            break;
                         }
                         log(themons)
                         this.readCheckMyQuest("slay", themons.monsName, themons.monsBreed)
@@ -4215,7 +4219,9 @@ class App{
                     
                     const myposition = this.myChar.bx.position
                     let isCritical = false;
-                    if(this.det.survival.sleep >= 20 && Math.random()*10 < 8) isCritical = true
+                    // 30% of chance to crit
+                    let chanceOfCrit = 3
+                    if(this.det.survival.sleep >= 20 && Math.random()*10 < chanceOfCrit) isCritical = true
                     if(isCritical){
                         const critMultiply = Math.floor(Math.random()*(criticalMultiplier+.5));
                         log('Crit multiplied to ' + critMultiply)
@@ -4366,7 +4372,7 @@ class App{
         cam.upperRadiusLimit = 14.5
         cam.lowerBetaLimit = .85;
         cam.upperBetaLimit = 1
-        if(this.currentPlace === "guildhouse" || this.currentPlace?.includes("apartment")){
+        if(this.currentPlace === "guildhouse" || this.currentPlace?.includes("apartment") || this.currentPlace === "crafthouse"){
             cam.lowerRadiusLimit = 3.5;
             cam.upperRadiusLimit = 4
             log("we are in guild or apartment")
@@ -4944,6 +4950,9 @@ class App{
                 case "hiddenland":
                     await this._hiddenLand() 
                 break
+                case "crafthouse":
+                    await this._goToCraftHouse() 
+                break
             }
             if(this.det.currentPlace.includes('dungeon')){
                 const dFloor = this.det.currentPlace.split(".")[1]
@@ -5290,9 +5299,10 @@ class App{
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
         golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
+        // const monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
 
-        // const Golem = await this.importMesh(scene, "./models/mons/", "golem.glb");
-        // Golem.meshes[0].position.z = -31
+        const monoloth = await this.importMesh(scene, "./models/mons/", "monoloth.glb");
+        monoloth.meshes[0].position.z = -51
         // box to follow
         const btf = this.createBoxToFollow(scene)
         this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
@@ -5483,7 +5493,7 @@ class App{
         // update naten muna ang loc naten para di magkagulo sa socketio
         // this.createFog(scene, 0.002)
 
-        const Ground = await this.createGround(scene, "./images/modeltex/hiddenlandTex4.jpg",200)
+        const Ground = this.createGround(scene, "./images/modeltex/hiddenlandTex4.jpg",200)
         Ground.diffuseTex.uScale = 28
         Ground.diffuseTex.vScale = 28
         this.createSwmpTile(scene)
@@ -6035,8 +6045,8 @@ class App{
         const explodingSmoke = this.createExplodingSmoke()
         this.creationOfFakeShadow(scene)
         // sound
-        // const heartLandS = new BABYLON.Sound("sliceHit", "sounds/heartlandS.mp3", scene,
-        // null, {volume: .03, autoplay: true, loop: true})
+        const heartLandS = new BABYLON.Sound("sliceHit", "sounds/heartlandS.mp3", scene,
+        null, {volume: .03, autoplay: true, loop: true})
 
         scene.actionManager = new ActionManager(scene)
 
@@ -6055,7 +6065,7 @@ class App{
 
         cam = this.arcCam(scene)
 
-        await this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
+        this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
 
         // this.createHeartLandTile(scene)
 
@@ -6174,6 +6184,10 @@ class App{
                 this.myChar.bx.lookAt(new Vector3(0,this.yPos,0),0,0,0)
                 this.arrangeCam(-1.4, 1.15)
             break
+            case "crafthouse":
+                this.myChar.bx.position = new Vector3(-40,this.yPos,22)
+                this.myChar.bx.lookAt(new Vector3(0,this.yPos,0),0,0,0)
+            break
             // NO NEED TO PUT DEFAULT
             // IN CHARACTER CREATION IT'S ALREADY ASIGNING POS FROM DB
         }
@@ -6277,28 +6291,47 @@ class App{
         // CREATING THE GUILD HOUSE
         allHouses.forEach(allh => allh.position.y += 100)
 
-        const TheGuildHL = await this.importMesh(scene, "./models/", "guildHouseHL.glb")
-        const guildHL = TheGuildHL.meshes[1];guildHL.rotationQuaternion = null
-        log(guildHL )
-        guildHL.parent = null;
-        // TheGuildHL.meshes[0].dispose();
-        guildHL.checkCollisions = true
-        guildHL.position = new Vector3(0,0,61);
-        const guildEntrance = MeshBuilder.CreateGround('guildEntr', {height: 3, width: 2}, scene)
-        guildEntrance.position = new Vector3(0,.5,57.5);
-        guildEntrance.visibility = false
+        // craft house
+        const craftHouse = await this.createImportantHouse("craftHouse.glb", {x: -48, y:0, z: 21}, { x: -44, y: .5, z: 23}, -Math.PI/2 ,scene)
+        const theDoor = await this.importMesh(scene, "./models/", "smallDoor.glb")
+        theDoor.meshes[0].position = new Vector3(-45,0,23)
+        theDoor.meshes[0].rotationQuaternion = null
+        theDoor.meshes[0].addRotation(0,Math.PI/2,0)
+        this.createTextMesh(makeRandNum(), "Dwarven Shop", "white", {x: -44, y: 3, z: 23}, 100, scene, false)
+        
+        this.toRegAction(this.myChar.bx, craftHouse.entrance, () => {
+            this.openPopUpAction("info")
+            this.targetRecource ='crafthouse'
+            const myF = this.myChar.bx.position
+            this.prevLoc = {x: myF.x, z:myF.z}
+        })
+        this.toRegActionExit(this.myChar.bx, craftHouse.entrance, () => {
+            this.closePopUpAction()
+            this.targetRecource = undefined
+        })
+        this.toRegAction(this.myChar.bx, craftHouse.impHouse, () => {
+            this.stopPress(true)
+            this.bump(this.myChar);
+            const mypos = this.myChar.bx.position
+            this.socketAvailable && this.socket.emit('userBump', {_id: this.det._id, pos:{ x: mypos.x, z: mypos.z }, 
+            dirTarg: {x: this.btf.position.x, z: this.btf.position.z} })
+            setTimeout(() => this.allCanPress, 2000)
+        })
+        // guild house
+        const GUILD = await this.createImportantHouse("guildHouseHL.glb", {x: 0, y:0, z: 61}, { x: 0, y: .5, z: 57.5}, false, scene)
+
         this.createTextMesh(makeRandNum(), "Guild", "white", {x: 0, y: 3, z: 56.2 }, 100, scene, false)
-        this.toRegAction(this.myChar.bx, guildEntrance, () => {
+        this.toRegAction(this.myChar.bx, GUILD.entrance, () => {
             this.openPopUpAction("info")
             this.targetRecource ='guildhouse'
             const myF = this.myChar.bx.position
             this.prevLoc = {x: myF.x, z:myF.z}
         })
-        this.toRegActionExit(this.myChar.bx, guildEntrance, () => {
+        this.toRegActionExit(this.myChar.bx, GUILD.entrance, () => {
             this.closePopUpAction()
             this.targetRecource = undefined
         })
-        this.toRegAction(this.myChar.bx, guildHL, () => {
+        this.toRegAction(this.myChar.bx, GUILD.impHouse, () => {
             this.stopPress(true)
             this.bump(this.myChar);
             const mypos = this.myChar.bx.position
@@ -6624,6 +6657,110 @@ class App{
             await this._heartLand()
         })
         scene.defaultMaterial.backFaceCulling = false;
+        Sword.meshes.forEach(mesh => mesh.isVisible = false)
+        window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
+        this.registerBlocks(this.myChar, .09);
+        displayElems([craftIcon], "none")
+    }
+    async _goToCraftHouse(){
+        
+        displayElems([apartCont, aprtLoadingBx], "none")
+        displayElems([apartInfos], "flex")
+        showLoadingScreen(false, 'wizard')
+        this.stopPress(true)
+        this.setUp(false)
+        const result = await this.getCharacDetailsOnline()
+        this.setDetails(result)
+        this.setHTMLUI(this.det)
+        const scene = new Scene(this._engine);
+        const gl = new BABYLON.GlowLayer("glow", scene);
+        gl.intensity = 1.4
+        light = new DirectionalLight("dungLight", new Vector3(0, -1, -0.3), scene);
+        hemLight = new HemisphericLight("light", new Vector3(0,10,1), scene)
+
+        scene.actionManager = new ActionManager(scene)
+        scene.clearColor = new Color3(0,0,0)
+        shadowGen = new ShadowGenerator(1024, light);
+        this.disablePointerPicks(scene)
+
+        await this._loadCharacterSounds(scene)
+
+        this.runLifeManaStaminaRegen()
+        const cam = this.arcCam(scene)
+        const btf = this.createBoxToFollow(scene)
+       
+        await this.createWoodPlank(scene);
+        const ground = this.createGround(scene, "./images/modeltex/planks.jpg", 17);
+        ground.diffuseTex.uScale = 3
+        ground.diffuseTex.vScale = 3
+
+        this.createWoodTall({x: -4.2, y:1.5, z:-8.35}, 2.5, 1.5, { x: -3.7, z: 3})
+        this.createWoodTall({x: 3.7, y:1.5, z:-8.35}, 2.5, 1.5, { x: 3.7, z: 3})
+
+        this.createWoodTall({x: -4.2, y:1.5, z:8}, 2.5, 1.5, { x: -3.7, z: 3})
+        this.createWoodTall({x: 3.7, y:1.5, z:8}, 2.5, 1.5, { x: 3.7, z: 3})
+        this.createWoodTall({x: 1.7, y:1.5, z:8}, 2.5, 1.5, { x: 1.7, z: 3})
+
+        this.createWall(8, 19, {x:0, y: 4,z: 8.6}, 5, 'rockTexWall.jpg', 0, scene, true)
+        this.createWall(8, 19, {x:0, y: 4,z: -8.6}, 5, 'rockTexWall.jpg', 0, scene, true)
+
+        this.createWall(8, 19, {x:-8.6, y: 4,z: 0}, 5, 'rockTexWall.jpg', Math.PI/2, scene, true)
+        this.createWall(8, 19, {x:8.6, y: 4,z: 0}, 5, 'rockTexWall.jpg', Math.PI/2, scene, true)
+
+
+        // SWORDS
+        const Sword = await this.importMesh(scene, "./models/", "swords.glb")
+        allsword = Sword.meshes[0].getChildren()
+        allsword.forEach(mesh => mesh.parent = null);
+        this.creationOfFakeShadow(scene)
+        await this.helmetCreation(scene);
+        await this.shieldCreation(scene);
+
+        let theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,true,true, allsword, allhelmets, allshields, light, 1.7)
+        myCharDet = this.myChar;
+        this.myChar.bx.position = new Vector3(0,this.yPos,0);
+
+        npcInfos.forEach(npz => this.createNpc(theCharacterRoot, npz, true, btf))
+
+        const theDoor = await this.importMesh(scene, "./models/", "smallDoor.glb")
+        theDoor.meshes[0].position = new Vector3(1.9,0,-8.42)
+        theDoor.meshes[0].rotationQuaternion = null
+        this.putFakeShadow(theDoor.meshes[1], 3, .02)
+        // const pathOutside = this.createPath(1.5, {x: 1.9,y:1,z:-8.42},scene)
+        this.toRegAction(this.myChar.detector, theDoor.meshes[1], async () => {
+            this.stopPress(true)
+            this.prevPlace = 'crafthouse'
+            this.setUp(true)
+            displayElems([apartInfos], "none")
+            displayElems([aprtLoadingBx, apartCont], "flex")
+            aprtLoadLabel.innerHTML = "Outside..."
+            
+            await this.updateMyDetailsOL({...this.det, currentPlace: 'heartland'}, false)
+            showLoadingScreen(false, 'wizard')
+            this.emptyArray()
+            await this._heartLand();
+        })
+
+        await scene.whenReadyAsync()
+        this._scene.dispose()
+        this._scene = scene
+        removeHomePage()
+        hideLScreen()
+        openGameUI(this.det)
+        this.allCanPress()
+        this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5);
+        cam.beta = 1;
+
+        this.initPressControllers(scene)
+        this.showMapName(`Dwarven Shop`, 3000)
+
+        const toRender = () => {
+            this.actionAndMovement(this.btf, this.cam)
+            this.renderMonsters()
+        }
+        scene.registerBeforeRender(toRender);
+
         Sword.meshes.forEach(mesh => mesh.isVisible = false)
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
         this.registerBlocks(this.myChar, .09);
@@ -8564,7 +8701,7 @@ class App{
         dig.position = new Vector3(loc.x,0,loc.z)
         return dig
     }
-    createWall(theHeight, theWidth, pos, uAndVscale, modeltex, rotatY, scene){
+    createWall(theHeight, theWidth, pos, uAndVscale, modeltex, rotatY, scene, putOnBlocks){
         const wall = MeshBuilder.CreateBox("wall", {depth: .5, height: theHeight, width: theWidth}, scene)
         wall.position = new Vector3(pos.x,pos.y,pos.z)
 
@@ -8577,6 +8714,8 @@ class App{
         wall.material = newMat
         if(rotatY) wall.rotation.y = rotatY
         wall.checkCollisions = true
+        if(putOnBlocks) this.blocks.push(wall)
+        return wall
     }
     craftBonFire(loc, scene){
         if(!bonFireMesh) return
@@ -8915,7 +9054,7 @@ class App{
         woodCuttingS.attachToMesh(rootSword)
         spearStruck.attachToMesh(body)
         log(this.currentPlace)
-        if(this.currentPlace === "guildhouse" || this.currentPlace.includes('apartment')){
+        if(this.currentPlace === "guildhouse" || this.currentPlace.includes('apartment') || this.currentPlace === "crafthouse"){
             runningS = this._allSounds.woodFloorS.clone()
             runningS.attachToMesh(body)
         }
@@ -9152,7 +9291,7 @@ class App{
         magicCircle.isVisible = false
         magicCircle.visibility = .2
     }
-    async createGround(scene, directory, size){
+    createGround(scene, directory, size){
         const groundMat = new StandardMaterial("groundMat", scene)
         const groundMesh = MeshBuilder.CreateGround("ground", {width: size, height: size}, scene)
         const diffuseTex = new Texture(directory, scene)
@@ -9320,7 +9459,6 @@ class App{
         boxGround.material.freeze()
         return boxGround
     }
-    
     createHouse(meshId, houseNo, toClone, loc, scene, rotat, houseDet){
         const newHouse = toClone.clone(`house.${meshId}`)
         
@@ -9376,6 +9514,20 @@ class App{
         newHouse.checkCollisions = true
         newHouse.freezeWorldMatrix()
         newHouse.material.freeze()
+    }
+    async createImportantHouse(modelName, pos, doorPos, rotatY, scene){
+        const ImportantHouse = await this.importMesh(scene, "./models/", modelName)
+        const impHouse = ImportantHouse.meshes[1];
+        impHouse.parent = null;
+        impHouse.rotationQuaternion = null
+        if(rotatY) impHouse.addRotation(0,rotatY,0)
+        // TheGuildHL.meshes[0].dispose();
+        impHouse.checkCollisions = true
+        impHouse.position = new Vector3(pos.x,pos.y,pos.z);
+        const entrance = MeshBuilder.CreateGround(modelName.split(".")[0], {height: 3, width: 2}, scene)
+        entrance.position = new Vector3(doorPos.x,doorPos.y,doorPos.z);
+        entrance.visibility = false
+        return {impHouse, entrance}
     }
     createOre(mesh, data){
         const newOre = mesh.clone(`iron.${data.meshId}`)
