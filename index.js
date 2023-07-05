@@ -388,6 +388,7 @@ let goblinRoot
 let minotaurRoot
 let snakeRoot
 let golemRoot
+let monoloth
 let cam
 let shadowGen
 let allsword
@@ -5299,10 +5300,8 @@ class App{
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
         golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
-        // const monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
+        monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
 
-        const monoloth = await this.importMesh(scene, "./models/mons/", "monoloth.glb");
-        monoloth.meshes[0].position.z = -51
         // box to follow
         const btf = this.createBoxToFollow(scene)
         this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
@@ -6298,7 +6297,7 @@ class App{
         theDoor.meshes[0].rotationQuaternion = null
         theDoor.meshes[0].addRotation(0,Math.PI/2,0)
         this.createTextMesh(makeRandNum(), "Dwarven Shop", "white", {x: -44, y: 3, z: 23}, 100, scene, false)
-        
+        this.putFakeShadow(theDoor.meshes[1], 2, .02)
         this.toRegAction(this.myChar.bx, craftHouse.entrance, () => {
             this.openPopUpAction("info")
             this.targetRecource ='crafthouse'
@@ -6860,6 +6859,9 @@ class App{
                     break;
                     case 'golem':
                         monsterRoot = golemRoot
+                    break;
+                    case "monoloth":
+                        monsterRoot = monoloth
                     break;
                 }
                 this.createMonster(monsterRoot, shadowGen, true, mon.monsId, mon.monsName, mon.modelType, mon.pos, mon.spd, mon.hp, mon.maxHp,mon.monsLvl, mon.atkInterval, mon.dmg, scene, mon.targHero, mon.expGain, mon.monsBreed, mon.effects)
@@ -10102,6 +10104,8 @@ class App{
         let intervalWillAttack
         let onCollideTimeOut
 
+        let intervalLR
+
         const scaleR = .3 * Math.random()
         const randomSec = 3000 + (5000 * Math.random())
         
@@ -10245,7 +10249,7 @@ class App{
                 healthPosY = 3
             break;
         }
-        
+
         const nameMesh = this.createMonsName(namePosY, monsId, monsName,body)
         const {robHealthGui, monsHealthPlane} = this.createMonsHealthBar(healthPosY, monsId, body, hp, maxHp)
         // const boneCore = meshes[0].getChildren()[0].getChildren()[1].getChildren()[0]
@@ -10307,20 +10311,28 @@ class App{
                         theMons.targHero = this.det._id
                         theMons.isChasing = true
                     }
+                    let willAtackLR = false
+                    // let objectToThrow
+                    // switch(monsName){
+                    //     case "monoloth":
+                    //         willAtackLR = true
+                    //         objectToThrow = MeshBuilder.CreateBox("stinger", { size: .5, depth: 2}, scene)
+                    //     break;
+                    // }
+                    // if(willAtackLR){
+                    //     clearInterval(intervalLR);
+                    //     intervalLR = setInterval(() => {
+                    //         const toThrow = objectToThrow.clone(monsName);
+                    //         const mPos = body.position
+                    //         toThrow.position = new Vector3(mPos.x, mPos.y, mPos.z)
+                    //         toThrow.locallyTranslate(new Vector3(0,0,.6));
+                    //         this.flyingWeaponz.push({mesh: toThrow})
+                    //     }, atkInterval)
+                    // }
                     return
                 }
                 if(isMyTargetHere) return log("the target is here return")
-                if(this.det.hp <= 0) return log("this player is dead")
-                log(theMons.targHero);
-                if(this.socketAvailable){
-                    log("is online will chase")
-                    this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
-                }else{
-                    theMons.isAttacking = false
-                    theMons.targHero = this.det._id
-                    theMons.isChasing = true
-                }
-                
+                if(this.det.hp <= 0) return log("this player is dead")                
             }
         ))
         enemyDetection.actionManager.registerAction(new ExecuteCodeAction(
