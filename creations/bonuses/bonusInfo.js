@@ -22,11 +22,11 @@ const bonusInfos = [
                 },
                 {
                     name: speakerName,
-                    message: "I heard rumord that she was still on her journey outside the Gate, Out In the Endless Mist",
+                    message: "Rumors say she was still on her journey outside the Gate, Out In the Endless Mist",
                 },
                 {
                     name: speakerName,
-                    message: "Some Say she can grant you any skill that you desire, for an exchange of a small task",
+                    message: "She can grant you any skill that you desire, for an exchange of a small task",
                 },
                 {
                     name: speakerName,

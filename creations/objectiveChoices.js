@@ -28,8 +28,8 @@ const objectives = [
     {
         name: "survivalTips",
         dn: "More Details About Dungeonborn",
-        desc: ["Considering my remaining time, I can only tell you few like, There are lot of places here that even I don't know exist",
-            "I'm not the only person who can use magic, You can master the art of magic too"]
+        desc: ["IThere are lot of places here that even I don't know exist, This place exist with magic, weapons, dungeons and monsters",
+            "You use items and make items from rare loots that you will found."]
     },
     
 ]

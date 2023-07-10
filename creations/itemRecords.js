@@ -16,85 +16,6 @@ const records = [
         desc: "this can also be used for crafting medicines and weapon"
     },
     {
-        dn: 'Dagger',
-        name: 'dagger', 
-        itemType: 'sword',
-        origPrice: 100,
-        plusDmg: 10,
-        secondPrice: 20,
-        desc: "Assasin's favorite weapon, useful for survival"
-    },
-    { 
-        dn: 'Dragon Spear',
-        name: 'dragonSpear',
-        itemType: 'sword',
-        desc: "holding this powerful spear can make you powerful against any foes",
-        plusDmg: 40,
-        origPrice: 6000,
-        secondPrice: 5500,
-    },
-    {
-        dn: 'Dger Spear',
-        name: 'dgerSpear', 
-        itemType: 'sword',
-        origPrice: 3000,
-        plusDmg: 60,
-        secondPrice: 20,
-        desc: "Light and easy to throw spear, It camouflages in the dark"
-    },
-    {
-        dn: "Sarpion",
-        name: 'sarpion', 
-        itemType: 'sword',
-        origPrice: 2000,
-        plusDmg: 60,
-        secondPrice: 1000,
-        desc: "A heavy pointed sword, No mercy on your enemy",
-    },
-    {
-        dn: "Village Spear",
-        name: 'villageSpear', 
-        itemType: 'sword',
-        origPrice: 300,
-        plusDmg: 10,
-        secondPrice: 140,
-        desc: "A Pointed Spear useful for throwing, good for hunting",
-    },
-    {
-        dn: 'big rod',
-        name: 'rod', 
-        itemType: 'sword',
-        origPrice: 100,
-        plusDmg: 60,
-        secondPrice: 1000,
-        desc: "A heavy swing from the user will create a large impact on the enemy",
-    },
-    {
-        dn: 'Pickaxe',
-        name: 'pickaxe', 
-        itemType: 'sword',
-        origPrice: 100,
-        plusDmg: 60,
-        secondPrice: 1000,
-        desc: "Essential for minning and can also be used as a weapon"
-    },
-    {
-        dn: 'Wood',
-        name: "wood",
-        itemType: "tool",
-        desc: "used for making bon fire and can make stick out of it",
-        origPrice: 2,
-        secondPrice: 1
-    },
-    {
-        dn: 'Iron',
-        name: "iron",
-        itemType: "tool",
-        desc: "essential for making swords and hard tools",
-        origPrice: 5,
-        secondPrice: 2
-    },
-    {
         dn: 'Leaves',
         name: "leaves",
         itemType: "loot",
@@ -151,6 +72,14 @@ const records = [
         secondPrice: 500
     },
     {
+        dn: 'Atropine',
+        name: "poisonAntidote",
+        itemType: "food",
+        desc: "This antidote is best used for poisons, Only good herbs expert can craft such antidote",
+        origPrice: 500,
+        secondPrice: 500
+    },
+    {
         dn: 'Minotaur meat',
         name: "minMeatRaw",
         itemType: "food",
@@ -183,12 +112,80 @@ const records = [
         secondPrice: 500
     },
     { 
+        dn: 'Masfina Blade',
+        name: 'masfinaBlade', 
+        itemType: 'sword',
+        desc: "Masfina Blade's Replica, It has almost the same sharpness of the origin but very fragile",
+        origPrice: 3400,
+        secondPrice: 2000,
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 8},
+        plusDmg: 80,
+        cState: 1400,
+        durability: 1400
+    },
+    { 
+        dn: 'Staff Of Mare',
+        name: 'staffofmare', 
+        itemType: 'sword',
+        desc: "Staff Of Wizards, Commonly they used this as a tool to control magic",
+        origPrice: 3400,
+        secondPrice: 2000,
+        craftMaterial: { name: "gobcore", qnty: 2, forgeChance: 6},
+        plusDmg: 10,
+        plusMag: 30,
+        cState: 5000,
+        durability: 5000
+    },
+    { 
+        dn: 'Oak Blade',
+        name: 'oakblade', 
+        itemType: 'sword',
+        desc: "One of the most influential of the early swords that arose during the Bronze Age",
+        origPrice: 3400,
+        secondPrice: 2000,
+        craftMaterial: { name: "mincore", qnty: 2, forgeChance: 6},
+        plusDmg: 35,
+        plusMag: 30,
+        cState: 5000,
+        durability: 5000
+    },
+    { 
+        dn: 'Grimthor Blade',
+        name: 'grimthor', 
+        itemType: 'sword',
+        desc: "One of the most influential of the early swords that arose during the Bronze Age",
+        origPrice: 3400,
+        secondPrice: 2000,
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 6},
+        plusDmg: 10,
+        plusMag: 30,
+        cState: 5000,
+        durability: 5000
+    },
+    { 
+        dn: 'Falkata Steel',
+        name: 'falkata', 
+        itemType: 'sword',
+        desc: "One of the most influential of the early swords that arose during the Bronze Age",
+        origPrice: 3400,
+        secondPrice: 2000,
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 6},
+        plusDmg: 10,
+        plusMag: 30,
+        cState: 5000,
+        durability: 5000
+    },
+    { 
         dn: 'Red Prince',
         name: 'redprince', 
         itemType: 'sword',
         desc: "A terrifying sword that has blackness inside, it can unleash hell itself",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 6},
+        plusDmg: 70,
+        cState: 5000,
+        durability: 5000
     },
     { 
         dn: 'Lumin Sword',
@@ -196,7 +193,11 @@ const records = [
         itemType: 'sword',
         desc: "many battles have fought and this sword has the most experience",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        plusDmg: 17,
+        cState: 3000,
+        durability:3000,
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 7},
     },
     { 
         dn: 'Blade Fury',
@@ -204,7 +205,11 @@ const records = [
         itemType: 'sword',
         desc: "a fury sword used by old heroes",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        plusDmg: 35,
+        cState: 4000,
+        durability:4000,
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 3},
     },
     { 
         dn: 'Hunting Sword',
@@ -212,7 +217,11 @@ const records = [
         itemType: 'sword',
         desc: "sword used for hunting boar and small monsters",
         origPrice: 2000,
-        secondPrice: 500
+        secondPrice: 500,
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
+        plusDmg: 13,
+        cState: 2000,
+        durability: 2000
     },
     { 
         dn: 'Wooden Stick',
@@ -220,15 +229,23 @@ const records = [
         itemType: 'sword',
         desc: "useful weapon for self defense",
         origPrice: 400,
-        secondPrice: 200
+        secondPrice: 200,
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
+        plusDmg: 10,
+        cState: 1000,
+        durability: 1000
     },
     { 
         dn: 'Grim Blue',
         name: 'grimblue', 
         itemType: 'sword',
-        desc: "one of its kind, crafted my the great maggos in its time",
+        desc: "one of its kind, crafted by the great maggos in its time",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 7},
+        plusDmg: 35,
+        cState: 5000,
+        durability: 5000
     },
     { 
         dn: 'Drakfoid',
@@ -236,7 +253,11 @@ const records = [
         itemType: 'sword',
         desc: "A sword that on par to it's kind the sword can slay hundreds of demons",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 4},
+        plusDmg: 45,
+        cState: 5000,
+        durability: 5000
     },
     { 
         dn: 'Ruzty Sword',
@@ -244,67 +265,217 @@ const records = [
         itemType: 'sword',
         desc: "it's rust can inflict your enemy with tetano",
         origPrice: 3400,
-        secondPrice: 2000
+        secondPrice: 2000,
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 8},
+        plusDmg: 40,
+        cState: 5000,
+        durability: 5000
+    },
+    {
+        dn: 'Dagger',
+        name: 'dagger', 
+        itemType: 'sword',
+        origPrice: 100,
+        plusDmg: 10,
+        secondPrice: 20,
+        desc: "Assasin's favorite weapon, useful for survival",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
+        plusDmg: 15,
+        cState: 1000,
+        durability: 1000
+    },
+    { 
+        dn: 'Dragon Spear',
+        name: 'dragonSpear',
+        itemType: 'sword',
+        desc: "holding this powerful spear can make you powerful against any foes",
+        plusDmg: 40,
+        origPrice: 6000,
+        secondPrice: 5500,
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 7},
+        plusDmg: 40,
+        cState: 5000,
+        durability: 5000
+    },
+    {
+        dn: 'Dger Spear',
+        name: 'dgerSpear', 
+        itemType: 'sword',
+        origPrice: 3000,
+        plusDmg: 30,
+        secondPrice: 20,
+        cState: 4000,
+        durability:4000,
+        desc: "Light and easy to throw spear, It camouflages in the dark",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 8}
+    },
+    {
+        dn: "Sarpion",
+        name: 'sarpion', 
+        itemType: 'sword',
+        origPrice: 2000,
+        plusDmg: 20,
+        secondPrice: 1000,
+        cState: 4000,
+        durability:4000,
+        desc: "A heavy pointed sword, No mercy on your enemy",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 9},
+        
+    },
+    {
+        dn: "Village Spear",
+        name: 'villageSpear', 
+        itemType: 'sword',
+        origPrice: 300,
+        plusDmg: 15,
+        secondPrice: 140,
+        cState: 500,
+        durability:500,
+        desc: "A Pointed Spear useful for throwing, good for hunting",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0}
+    },
+    {
+        dn: 'big rod',
+        name: 'rod', 
+        itemType: 'sword',
+        origPrice: 100,
+        plusDmg: 60,
+        secondPrice: 1000,
+        desc: "A heavy swing from the user will create a large impact on the enemy",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
+        plusDmg: 12,
+        cState: 500,
+        durability: 500
+    },
+    {
+        dn: 'Pickaxe',
+        name: 'pickaxe', 
+        itemType: 'sword',
+        origPrice: 100,
+        plusDmg: 60,
+        secondPrice: 1000,
+        desc: "Essential for minning and can also be used as a weapon",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
+        plusDmg: 5,
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: 'Hydra Armor',
         name: 'hydra', 
         itemType: 'armor', 
-        plusDef: 0, plusDmg: 0, 
+        plusDef: 12, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 5000,
         secondPrice: 3000,
-        desc: "a noble's armor the armor is light but strong as destruction"
+        desc: "a noble's armor the armor is light but strong as destruction",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: 'Chief Plate',
         name: 'chiefplate', 
         itemType: 'armor', 
-        plusDef: 0, plusDmg: 0, 
+        plusDef: 4, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 5000,
         secondPrice: 3000,
-        desc: "a replica of Chief Hanzon armor, the plate is made by bronze"
+        desc: "a replica of Chief Hanzon armor, the plate is made by bronze",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
+        cState: 2400,
+        durability: 2400
+    },
+    {
+        dn: 'Clad Armor',
+        name: 'cladarmor', 
+        itemType: 'armor', 
+        plusDef: 19, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 5000,
+        secondPrice: 3000,
+        desc: "This armor is simple and light. Best for swinging swords",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 10},
+        cState: 4000,
+        durability: 4000
+    },
+    {
+        dn: 'Karpa Scale',
+        name: 'karparmor', 
+        itemType: 'armor', 
+        plusDef: 48, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 10000,
+        secondPrice: 6000,
+        desc: "This armor is huge and heavy but the no one has seen died wearing this armor",
+        craftMaterial: { name: "vipcore", qnty: 3, forgeChance: 7},
+        cState: 6000,
+        durability: 6000
     },
     {
         dn: 'Karba Armor',
         name: 'karba', 
         itemType: 'armor', 
-        plusDef: 0, plusDmg: 0, 
+        plusDef: 20, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 5000,
         secondPrice: 3000,
-        desc: "this armor is famous to it's known leather, A farmer would say they are invinsible when wearing this armor"
+        desc: "this armor is famous to it's known leather, A farmer would say they are invinsible when wearing this armor",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 7},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: "First Born Helmet",
         name: 'firstborn', 
         itemType: 'helmet', 
-        plusDef: 10, plusDmg: 0, 
+        plusDef: 5, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 2400,
         secondPrice: 2000,
-        desc: "You use this helmet if you're out for adventuring."
+        desc: "Use this helmet if you're out for adventuring.",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: "karori",
         name: 'karori', 
         itemType: 'helmet', 
-        plusDef: 60, plusDmg: 0, 
+        plusDef: 14, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 3400,
         secondPrice: 3000,
-        desc: "even steel cannot penetrate the hardness of this steel"
+        desc: "Even steel cannot penetrate the hardness of this steel",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
+        cState: 4000,
+        durability: 4000
+    },
+    {
+        dn: "Silver Shade",
+        name: 'karpred', 
+        itemType: 'helmet', 
+        plusDef: 16, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 3400,
+        secondPrice: 3000,
+        desc: "A small shaded silver helmet, comfortable to wear and light but hard",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: "Silvered Nine",
         name: 'silverdnine', 
         itemType: 'gear', 
-        plusDef: 20, plusDmg: 0, 
+        plusDef: 10, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 100,
         secondPrice: 100,
-        desc: "A well forged gear, useful for protection and light weight armor"
+        desc: "A well forged gear, useful for protection and light weight armor",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: "Copper Scale",
@@ -314,17 +485,49 @@ const records = [
         magRes: 0, plusMag: 0,
         origPrice: 100,
         secondPrice: 100,
-        desc: "Gear that can blocked small attacks, can protect you from harm"
+        desc: "Gear that can blocked small attacks, can protect you from harm",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 9},
+        cState: 4000,
+        durability: 4000
     },
     {
         dn: "Safe Shield",
         name: 'safeshield', 
         itemType: 'shield', 
+        plusDef: 10, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 100,
+        secondPrice: 100,
+        desc: "A well forged gear, can break easily but can protect you",
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
+        cState: 1500,
+        durability: 1500
+    },
+    {
+        dn: "Ancilian Shield",
+        name: 'ancilia', 
+        itemType: 'shield', 
         plusDef: 20, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 100,
         secondPrice: 100,
-        desc: "A well forged gear, useful for protection and light weight armor"
+        desc: "A Heart Shaped Shield, Light and can block normal attacks",
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
+        cState: 2000,
+        durability: 2000
+    },
+    {
+        dn: "Zviadi Iron",
+        name: 'zviadi', 
+        itemType: 'shield', 
+        plusDef: 35, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 100,
+        secondPrice: 100,
+        desc: "A special shield, Can Block some magic and good in blocking normal attacks",
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 9},
+        cState: 3000,
+        durability: 3000
     },
     {
         dn: "Goblin Core",
@@ -374,6 +577,22 @@ const records = [
         origPrice: 30,
         secondPrice: 20,
         desc: "Useful for creating potions, can also be used to make medicines"
+    },
+    {
+        dn: 'Wood',
+        name: "wood",
+        itemType: "tool",
+        desc: "used for making bon fire and can make stick out of it",
+        origPrice: 2,
+        secondPrice: 1
+    },
+    {
+        dn: 'Iron',
+        name: "iron",
+        itemType: "tool",
+        desc: "essential for making swords and hard tools",
+        origPrice: 5,
+        secondPrice: 2
     },
 ]
 

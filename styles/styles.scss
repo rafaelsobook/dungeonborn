@@ -357,16 +357,6 @@ nav {
   }
 }
 
-.transClose {
-  opacity: 0;
-  transition: 1s;
-}
-
-.transClosePopUp {
-  transform: translate(-50%, -50%) scale(0);
-  transition: 0.05s;
-}
-
 // NOTIFICATION
 .notif-popup {
   @include centerFix(3);
@@ -1345,11 +1335,12 @@ nav {
           padding: 2px;
           background: linear-gradient(
             to bottom,
-            rgba(195, 195, 195, 0.84),
-            rgba(80, 80, 80, 0.84),
-            rgba(68, 68, 68, 0.84),
-            $naturalBlack
+            rgb(89, 115, 77 / 84%),
+            rgb(159, 183, 153),
+            rgb(153, 153, 153 / 84%),
+            #575656
           );
+
           .item-img {
             height: 100%;
             width: 100%;
@@ -1561,7 +1552,6 @@ nav {
   transition: 0.07s;
   .speaker-name {
     position: absolute;
-    left: -10px;
     top: -30px;
     background-color: $naturalBlack;
     padding: 8px 12px;
@@ -1670,7 +1660,7 @@ nav {
   height: 70px;
   @include flexCenter();
   top: 60%;
-  left: 68%;
+  left: 60%;
   opacity: 0.7;
   display: none;
   .pac-btn {
@@ -2458,6 +2448,27 @@ nav {
     }
   }
 }
+.negative-stats {
+  padding: 2px 5px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  .neg-stat {
+    margin: 5px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .ns-img {
+      width: 30px;
+      margin-right: 3px;
+    }
+    .ns-cap {
+      font-size: 0.9rem;
+      font-family: $copyrightFont;
+      font-weight: 900;
+    }
+  }
+}
 @media (max-height: 400px) {
   .survival-stats {
     margin-top: 12px;
@@ -3216,9 +3227,9 @@ nav {
   background: linear-gradient(
     to bottom,
     rgba(238, 238, 238, 0.8),
-    rgba(228, 228, 228, 0.9),
-    rgba(209, 209, 209, 0.5),
-    rgba(180, 180, 180, 0.4)
+    rgba(190, 190, 190, 0.9),
+    rgba(143, 143, 143, 0.9),
+    rgba(95, 95, 95, 0.9)
   );
   display: flex;
   justify-content: space-between;
@@ -3238,6 +3249,8 @@ nav {
       color: #8d6d27;
       font-size: 0.8rem;
       opacity: 0.9;
+      width: 80%;
+      text-align: center;
     }
     .topick-img {
       width: 60px;
@@ -3311,12 +3324,12 @@ nav {
     opacity: 0.2;
   }
   80% {
-    transform: translate(-50%, -50%) scale(0.7);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 0.7;
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(0.6);
+    transform: translate(-50%, -50%) scale(0.85);
   }
 }
 
@@ -3526,13 +3539,20 @@ nav {
   background: rgb(249, 173, 76);
   z-index: -1;
 }
-.sideAnimate {
+//  for notification animation
+.sideLeftAnimate {
   transition: 1s;
   left: 50%;
   animation: 3s slidingLeft ease-in-out forwards;
   opacity: 0;
 }
-
+.sideRightAnimate {
+  transition: 1s;
+  left: auto;
+  right: 50%;
+  animation: 3s slidingRight ease-in-out forwards;
+  opacity: 0;
+}
 @keyframes slidingLeft {
   0% {
     left: 50%;
@@ -3551,7 +3571,24 @@ nav {
     opacity: 0;
   }
 }
-
+@keyframes slidingRight {
+  0% {
+    right: 50%;
+    opacity: 0;
+  }
+  20% {
+    right: -75%;
+    opacity: 1;
+  }
+  95% {
+    right: -77%;
+    opacity: 1;
+  }
+  100% {
+    right: 50%;
+    opacity: 0;
+  }
+}
 .db-logo {
   position: fixed;
   left: 50%;
@@ -3833,4 +3870,166 @@ nav {
   top: -50%;
   opacity: 0.1;
   transition: 0.5s ease-in-out;
+}
+
+// DWARVEN SHOP
+.wdfull {
+  width: 100%;
+}
+.compatible-mat-cont {
+  @include centerFix(3);
+  width: 50%;
+  height: 70%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-self: center;
+  background: $naturalBlack;
+  border-radius: 3px;
+  z-index: 100;
+  transition: 0.3s ease-in-out;
+  .cmc-ttle {
+    text-align: center;
+    font-family: $mapfont;
+    color: #c5c5c5;
+  }
+  .cmc-myrec-bx {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    color: #b3b3b3;
+    font-family: $tipsFont;
+    .cmc-t-iron {
+      @include flexCenter();
+    }
+  }
+  .cmc-list {
+    height: 70%;
+    list-style-type: none;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    gap: 5px;
+    .cmc-li {
+      transition: 0.2s;
+      padding: 0 5px;
+      height: 110px;
+      cursor: pointer;
+      border-radius: 2px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      .cmc-itmimg {
+        width: 70px;
+        height: 70px;
+        position: relative;
+        border: 1px solid rgba(190, 190, 190, 0.76);
+        padding: 5px;
+        border-radius: 3px;
+        background: linear-gradient(
+          to bottom,
+          rgb(173, 173, 173),
+          rgb(105, 105, 105),
+          rgb(70, 70, 70)
+        );
+      }
+      .cmc-duracap {
+        font-family: $copyrightFont;
+        margin: 4px 0;
+        color: rgb(141, 141, 141);
+        font-size: 0.7rem;
+      }
+      .cmc-itmname {
+        font-family: $numFont;
+        color: rgb(173, 173, 173);
+        font-size: 0.7rem;
+      }
+      .cmc-qnty {
+        color: rgba(94, 195, 0, 0.863);
+      }
+      .cmc-red {
+        color: rgb(192, 0, 0);
+      }
+    }
+    .cmc-li:hover {
+      transform: scale(0.95);
+      background: rgba(160, 162, 163, 0.664);
+      transition: 0.2s;
+    }
+    .cmc-active {
+      transform: scale(0.9);
+      background: rgba(112, 112, 112, 0.664);
+      transition: 0.4s;
+    }
+  }
+  .cmc-lack-notif {
+    width: 100%;
+    text-align: center;
+    color: crimson;
+    font-family: $tipsFont;
+    display: none;
+  }
+
+  .cmc-bx {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: rgb(148, 148, 148);
+    .cmc-button {
+      border-radius: 2px;
+      padding: 2px 20px;
+      background: $littleBlack;
+      @include flexCenter();
+      margin-left: 10px;
+      border: 1px solid #9b9b9b;
+      cursor: pointer;
+    }
+    .cmc-button:hover {
+      transform: translateY(-2px);
+    }
+    .cmc-button:active {
+      filter: invert(1);
+      opacity: 0.8;
+      transition: 0.3s;
+      transform: scale(0.9);
+    }
+    .craft-type {
+      float: right;
+      background: none;
+      // border-bottom: 1px solid rgb(148, 148, 148);
+      color: rgb(126, 126, 126);
+      font-family: $copyrightFont;
+      outline: none;
+      padding: 4px;
+      margin: 5px;
+      font-weight: 900;
+    }
+  }
+  .cmc-cancel {
+    padding: 3px 15px;
+    background: rgb(175, 0, 0);
+    border: 1px solid rgb(112, 0, 0);
+    border-radius: 2px;
+    font-family: $gamefont;
+    cursor: pointer;
+    color: #f5f5f5;
+    float: right;
+  }
+}
+.cmc-coinimg {
+  width: 25px;
+  margin-left: 6px;
+}
+// reusables
+.transClose {
+  opacity: 0;
+  transition: 1s;
+}
+
+.transClosePopUp {
+  transform: translate(-50%, -50%) scale(0);
+  transition: 0.1s;
 }

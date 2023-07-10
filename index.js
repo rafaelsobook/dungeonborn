@@ -240,6 +240,9 @@ const stamCap = document.querySelector(".stamCap")
 
 const hungStat = document.querySelector(".hungStat")
 const restStat = document.querySelector(".restStat")
+// negative stats
+const negativeStatCont = document.querySelector(".negative-stats")
+
 //  apartment
 const apartCont = document.querySelector(".apartment-cont")
 const apartName = document.querySelector(".aprt-name")
@@ -305,9 +308,18 @@ const deleteQuestBtn = document.querySelector(".delete-quest-btn")
 const topAdventurersCont = document.querySelector(".alladventurer-detail-cont")
 const toplist = document.querySelector(".adc-list")
 
+// CRAFTING SWORS
+const compatibleCont = document.querySelector(".compatible-mat-cont")
+const ttleOfItemsDisplay = document.querySelector('.cmc-ttle')
+const compatibleItemList = document.querySelector('.cmc-list')
+const craftWeaponBtn = document.querySelector('.cmc-button')
+const craftCost = document.querySelector('.cmc-cost')
+
+
 // ABOUT PAGE
 const aboutCont = document.querySelector(".about-container")
 const abtBackBtn = document.querySelector(".back-btn")
+
 
 // fps
 let divFps = document.querySelector(".fps");
@@ -529,9 +541,9 @@ class App{
         this.plusCore = 0
         this.plusmagic = 0
         // DAMAGE MULTIPLIED TO FIX
-        this.physicalX = 15
-        this.weaponX = 20
-        this.magX = 30
+        this.physicalX = 5
+        this.weaponX = 8
+        this.magX = 10
 
         this.hpRegenInterval
         this.mpRegenInterval
@@ -649,7 +661,7 @@ class App{
             if(statpwr.className.includes('sword')) statpwr.innerHTML = `Lvl ${sword}`
             if(statpwr.className.includes('def')) statpwr.innerHTML = `Lvl ${def}`
             if(statpwr.className.includes('core')) statpwr.innerHTML = `Lvl ${core}`
-            if(statpwr.className.includes('magic')) statpwr.innerHTML = `Lvl ${magic}`
+            if(statpwr.className.includes('magic')) statpwr.innerHTML = `Lvl ${magic}` 
         })
         const myStat = document.querySelector(".mystatus")
         myStat.childNodes.forEach(elem => { // HP AND MP ELEMENT
@@ -658,11 +670,11 @@ class App{
             if(elem.className && elem.className.includes('sp')) elem.innerHTML = `Stamina: ${Math.floor(data.sp)}/${data.maxSp}`
             if(elem.className && elem.className.includes('exp')) elem.innerHTML = `Exp: ${Math.floor(parseInt(data.exp)/parseInt(data.maxExp) * 100)}%`
             if(elem.className && elem.className.includes('str')) elem.innerHTML = `Physical Damage: ${this.det.stats.core * this.physicalX}`
-            if(elem.className && elem.className.includes('weaponDmg')) elem.innerHTML = `Plus Weapon Damage: ${this.det.stats.sword * this.physicalX}`
-            if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.recalPhyDefense(0))}`
+            if(elem.className && elem.className.includes('weaponDmg')) elem.innerHTML = `Plus Weapon Damage: ${this.det.stats.sword * this.weaponX} + ${this.det.weapon.name !== "none" ? this.det.weapon.plusDmg : 0}`
+            if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.det.stats.def*1.5)} + ${(Math.floor(this.recalPhyDefense(0))-this.det.stats.def*1.5)}`
             if(elem.className && elem.className.includes('magicDmg')) elem.innerHTML = `Magic Damage: ${Math.floor(this.det.stats.magic * this.magX)}`
-            if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Speed: ${Math.floor(this.det.stats.spd)}`
-            if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" ")}`
+            if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Movement Speed: ${Math.floor(this.det.stats.spd)}`
+            if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" || ")}`
         })
         log(this.det.aptitude)
         let rankName = "none"
@@ -700,13 +712,13 @@ class App{
             setTimeout(() => popUpUI.classList.remove("lvladdon"), 1200)
         }, dura)
     }
-    popItemInfo(itemDet, cback){
+    popItemInfo(itemDet, capName, onMiddle, cback){
         log("pop up now")
         this._allSounds.itemEquipedS.play()
         const newBx = createElement("div", "topick-bx")
         const imgBx = createElement("div", "topick-img-bx")
         const topickCap = createElement("p", "topick-cap")
-        topickCap.innerHTML = 'Item drop'
+        topickCap.innerHTML = capName ? capName : 'Item drop'
         
         const theImg = createElement("img", "topick-img")
         theImg.src = `./images/loots/${itemDet.name}.png`
@@ -731,26 +743,31 @@ class App{
                 break;
                 case "accept":
                     await this.addToInventory(itemDet)
-                    this.obtain(itemDet.name,1,false)
-                    
+                    const itemOnRec = records.find(recitm => recitm.name === itemDet.name)
+                    this.obtain(itemOnRec ? itemOnRec.dn : itemDet.name,1,false)
                 break
             }
             newBx.classList.add("scale-down")
         })
         
-        newBx.style.left = `${13 + Math.random()*40}%`
+        if(!onMiddle){
+            newBx.style.left = `${13 + Math.random()*40}%`
+        }else{
+            newBx.style.left = `50%`
+        }
+        
         document.body.append(newBx);
         newBx.classList.add("scale-show")
     }
-    showSideNotif(parentElem, notifMessage){
+    showSideNotif(parentElem, notifMessage, animName){
         sideNotif.style.display = "block"
         
         parentElem.append(sideNotif)
         sideNotif.innerHTML = notifMessage
-        sideNotif.classList.add("sideAnimate")
+        sideNotif.classList.add(animName)
         setTimeout(() => {
             sideNotif.style.display = "none"
-            sideNotif.classList.remove("sideAnimate")
+            sideNotif.classList.remove(animName)
         }, 3500)
     }
     openPopUpAction(actionName){
@@ -892,13 +909,13 @@ class App{
     }
     blurButtons(btns){
         btns.forEach(btn => {
-            btn.pointerEvents = 'none'
+            btn.style.pointerEvents = 'none'
             btn.style.opacity = .5
         })
     }
     returnButtons(btns){
         btns.forEach(btn => {
-            btn.pointerEvents = 'visible'
+            btn.style.pointerEvents = 'visible'
             btn.style.opacity = 1
         })
     }
@@ -915,7 +932,7 @@ class App{
         }
     }
     getMyPos(playerBx, localT){
-        const inviMesh = new BABYLON.TransformNode("aswa", scene, false)
+        const inviMesh = new BABYLON.TransformNode("transformNode", scene, false)
         const myFoz = playerBx.position
         inviMesh.parent = playerBx
         inviMesh.position = new Vector3(0,0,0)
@@ -1050,9 +1067,9 @@ class App{
         log(data)
         this.setInventory("recource")
     }
-    async upgrade(statName, willSave){
+    async upgrade(statName){
         let data = await this.getCharacDetailsOnline()
-
+ 
         if(data.points <= 0) return log("not enough points")
         switch (statName) {
             case 'sword':
@@ -1063,7 +1080,7 @@ class App{
             break;
             case 'core':
                 data.stats.core += 1
-                data.maxHp += 50
+                data.maxHp += 40
                 data.maxMp += 20
                 data.maxSp += 20
             break;
@@ -1081,10 +1098,13 @@ class App{
     async expGain(exp){
         let excessExp = 0
         this.det.exp += parseInt(exp)
+        log(`exp gained is ${exp}`)
+        log(`my current exp ${this.det.exp}`)
+        log(`my max exp is ${this.det.maxExp}`)
         if(this.det.exp >= this.det.maxExp){
             excessExp = this.det.exp - this.det.maxExp
             this.det.exp = excessExp
-            this.det.maxExp = this.det.maxExp*2
+            this.det.maxExp += this.det.maxExp/2
 
             this.det.points +=1
             this.det.lvl += 1
@@ -1093,12 +1113,12 @@ class App{
             this.det.sp = this.det.maxSp
             log(this.det)
             this.setHTMLUI(this.det)
-            await this.updateMyDetailsOL(this.det, false)
+            await this.updateMyDetailsOL(this.det, true)
             this.showTransaction(`Level Raised To ${this.det.lvl}`, 1500)
             this._allSounds.congratsS.play()
+            log("Updated online")
             return log(this.det)
         }
-        log('exp gained ' + this.det.exp)
         this.setHTMLUI(this.det)
         // this.blurButtons(upgradeBtns)
         // await this.updateMyDetailsOL(data, false)
@@ -1521,6 +1541,198 @@ class App{
             questionCont.append(newP)
         })
     }
+    setCraftOrFixing(ttle, itemType, categ){
+        const ironElem = document.querySelector(".cmc-t-iron")
+        const coinElem = document.querySelector(".cmc-t-coin")
+        const requireIronCap = document.querySelector(".cmc-req-cap")
+        const insuffCap = document.querySelector(".cmc-lack-notif")
+        const craftTypeSelect = document.querySelector(".craft-type")
+
+        insuffCap.style.display = "none"
+        compatibleCont.style.display = "flex"
+        compatibleCont.classList.remove("transClosePopUp")
+        requireIronCap.innerHTML = `requires iron x${0}`
+        craftCost.innerHTML = `x${0}`
+        this.blurButtons([craftWeaponBtn])
+
+        ttleOfItemsDisplay.innerHTML = ttle
+        compatibleItemList.innerHTML = ''
+        let lengthOfItemInside = 0;
+        let myIron = this.det.items.find(itmdet => itmdet.name === "iron");
+        if(!myIron) myIron = { qnty: 0 }
+        ironElem.innerHTML = `total irons: ${myIron.qnty}`
+        coinElem.innerHTML = this.det.coins
+        this.det.items.forEach(itm => {
+            switch(categ){
+                case "craftNewWeapon":
+                    craftTypeSelect.style.display = "block"
+                    if(itm.itemType === itemType){
+                        lengthOfItemInside++
+                        if(lengthOfItemInside >= 5) compatibleItemList.style.overflowY = "scroll"
+                        const theItem = records.find(rec =>rec.name === itm.name)
+                        const newLi = createElement("li", "cmc-li")
+                        const itmImg = createElement("img", "cmc-itmimg")
+                        itmImg.src = `./images/loots/${itm.name}.png`
+                        const itmName = createElement("p", "cmc-itmname", `${theItem.dn} <span class="cmc-qnty">${itm.qnty}</span>`)
+                        newLi.append(itmImg)
+                        newLi.append(itmName)
+                        compatibleItemList.append(newLi)
+                        newLi.addEventListener("click", e => {
+                            const weaponResults = []
+                            records.forEach(recItm => {                                
+                                if(recItm.craftMaterial?.name === itm.name 
+                                && recItm.itemType === craftTypeSelect.value
+                                && recItm.craftMaterial?.forgeChance > 0) weaponResults.push(recItm)
+                            })
+                            log(weaponResults)
+ 
+                            
+                            document.querySelectorAll(".cmc-li").forEach(elem => {
+                                if(elem.className.includes("cmc-active")) elem.classList.remove("cmc-active")
+                            })
+                            newLi.classList.add("cmc-active")
+                            if(!weaponResults.length){
+                                insuffCap.style.display = "block"
+                                return insuffCap.innerHTML = `item cannot be craft`
+                            }
+                            const weaponToCraft = weaponResults[Math.floor(Math.random()*weaponResults.length)]
+                            
+                            let costForCraft = 0
+                            let ironCost = 0
+                            switch(itm.name){
+                                case "mincore":
+                                    costForCraft = 700
+                                    ironCost = 5
+                                break
+                                default:    
+                                    costForCraft = 100
+                                    ironCost = 3
+                                break;
+                            }
+                
+                            requireIronCap.innerHTML = `requires iron x${ironCost}`
+                            craftCost.innerHTML = `x${costForCraft}`
+                            this.blurButtons([craftWeaponBtn])
+                            if(weaponToCraft.craftMaterial.qnty > itm.qnty){
+                                insuffCap.style.display = "block"
+                                return insuffCap.innerHTML = `insufficient core, requires x${weaponToCraft.craftMaterial.qnty}`
+                            }
+                            if(myIron.qnty < ironCost){
+                                insuffCap.style.display = "block"
+                                return insuffCap.innerHTML = `insufficient iron, requires x${ironCost}`
+                            }
+                            if(this.det.coins < costForCraft){
+                                insuffCap.style.display = "block"
+                                return insuffCap.innerHTML = `insufficient coins, requires x${costForCraft}`
+                            }
+                            insuffCap.style.display = "none"
+                            craftWeaponBtn.innerHTML = `Request Craft
+                            <img src="./images/UI/coins.png" alt="" class="cmc-coinimg">
+                            <span class="cmc-cost">x${costForCraft}</span>`
+                            this.craftFunc = async function(){
+                                this.det.coins-=costForCraft
+                                // first deduct some iron
+                                await this.deductItem(myIron.meshId, ironCost)
+                                // then deduct the cores
+                                await this.deductItem(itm.meshId, weaponToCraft.craftMaterial.qnty)
+                                this.popItemInfo({...weaponToCraft, meshId: makeRandNum(), price: weaponToCraft.secondPrice, qnty: 1 }, weaponToCraft.dn, true)
+                            }
+                            this.returnButtons([craftWeaponBtn])
+                        
+                        })
+                    }
+                break
+                case "fixEnhanceItem":
+                    craftTypeSelect.style.display = "none"
+                    const itemCategs = ["helmet", "armor","gear", "sword", "shield"]
+
+                    itemCategs.forEach(armrWeapon => {
+                        if(itm.itemType === armrWeapon){
+                            if(itm.name === this.det.weapon.name) return log(itm.name + " is equiped")
+                            if(itm.name === this.det.armor.name) return log(itm.name + " is equiped")
+                            if(itm.name === this.det.shield.name) return log(itm.name + " is equiped")
+                            if(itm.name === this.det.helmet.name) return log(itm.name + " is equiped")
+                            if(itm.name === this.det.gear.name) return  log(itm.name + " is equiped")
+                            lengthOfItemInside++
+                            if(lengthOfItemInside >= 5) compatibleItemList.style.overflowY = "scroll"
+                            const theItem = records.find(rec =>rec.name === itm.name)
+                            const newLi = createElement("li", "cmc-li")
+                            const itmImg = createElement("img", "cmc-itmimg")
+                            itmImg.src = `./images/loots/${itm.name}.png`
+
+                            const percentFix = itm.cState/itm.durability * 100
+                            const itmDuraElem = createElement("p", `cmc-duracap ${percentFix <= 25 && "cmc-red"}`, `durability: ${Math.floor(percentFix)}%`)
+                            const itmName = createElement("p", "cmc-itmname", `${theItem.dn}`)
+                            newLi.append(itmImg)
+                            newLi.append(itmDuraElem)
+                            newLi.append(itmName)
+                            compatibleItemList.append(newLi)
+                            
+                            newLi.addEventListener("click", e => {
+                                document.querySelectorAll(".cmc-li").forEach(elem => {
+                                    if(elem.className.includes("cmc-active")) elem.classList.remove("cmc-active")
+                                })
+                                newLi.classList.add("cmc-active")
+                                let costForCraft = 0
+                                let ironCost = 0
+                                const itemRec = records.find(rec => rec.name === itm.name)
+                                log("core material " + itemRec.craftMaterial.name)
+                                switch(itemRec.craftMaterial.name){
+                                    case "mincore":
+                                        costForCraft = 700
+                                        ironCost = 2
+                                    break
+                                    default:    
+                                        costForCraft = 100
+                                        ironCost = 1
+                                    break;
+                                }
+                    
+                                requireIronCap.innerHTML = `requires iron x${ironCost}`
+                                craftCost.innerHTML = `x${costForCraft}`
+                                this.blurButtons([craftWeaponBtn])
+                                // FIX THE ITEM 
+                                if(myIron.qnty < ironCost){
+                                    insuffCap.style.display = "block"
+                                    return insuffCap.innerHTML = `insufficient iron, requires x${ironCost}`
+                                }
+                                if(this.det.coins < costForCraft){
+                                    insuffCap.style.display = "block"
+                                    return insuffCap.innerHTML = `insufficient coins, requires x${costForCraft}`
+                                }
+                                insuffCap.style.display = "none"
+                                craftWeaponBtn.innerHTML = `Enhance & Fix 
+                                <img src="./images/UI/coins.png" alt="" class="cmc-coinimg">
+                                <span class="cmc-cost">x${costForCraft}</span>`
+                                this.craftFunc = async function(){
+                                    this.det.coins-=costForCraft
+                                    // first deduct some iron
+                                    await this.deductItem(myIron.meshId, ironCost)
+                                    const theItemToFix = this.det.items.find(myItm => myItm.meshId === itm.meshId)
+
+                                    theItemToFix.cState = itm.durability
+                                    if(theItemToFix.plusDmg) theItemToFix.plusDmg += Math.floor(theItemToFix.plusDmg/4)
+                                    if(theItemToFix.plusDef) theItemToFix.plusDef += Math.floor(theItemToFix.plusDef/4)
+                                     
+                                    // no need to update my this.det.weapon or det.armor because you cannot see
+                                    // the item in the box if you didnt unequip them
+                                    this.showTransaction("The Item is Enhanced and Fixed", 3500)
+                                    this._allSounds.itemEquipedS.play();
+                                    await this.updateMyDetailsOL(this.det, true);
+                                }
+                                this.returnButtons([craftWeaponBtn])
+                            
+                            })
+                        }
+                    })
+                    if(lengthOfItemInside === 0){
+                        insuffCap.style.display = "block"
+                        insuffCap.innerHTML = `No item in inventory, Unequip Armor Or Weapon`
+                    }
+                break
+            }
+        })
+    }
     unEquip(itemInfo){
         switch(itemInfo.itemType){
             case "armor":
@@ -1682,7 +1894,7 @@ class App{
                                 openGameUI(this.det)
                                 this.myChar.mode = 'stand'
                                 this.allCanPress()
-                                if(!this.socketAvailable) this.craftBonFire({x: bonFPos.x, y: bonFPos.y, z: bonFPos.z}, this._scene)
+                                if(!this.socketAvailable) this.craftBonFire({x: bonFPos.x, y: bonFPos.y, z: bonFPos.z})
                                 if(this.socketAvailable) this.socket.emit("plant-bonfire", 
                                 {meshId: makeRandNum(), pos: {x: bonFPos.x, y: bonFPos.y, z: bonFPos.z}, place: this.currentPlace });
                                 this.cancelCraft()
@@ -1785,6 +1997,14 @@ class App{
             myCharDet.runningS.setPlaybackRate(1)
         }
     }
+    setWalkSound(){
+        myCharDet.runningS.setPlaybackRate(.9)
+        const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
+        if(isOnFloorPlace){
+            log("is in floor places")
+            myCharDet.runningS.setPlaybackRate(.74)
+        }
+    }
     setEventListeners(){
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
@@ -1793,6 +2013,13 @@ class App{
             if(theTargBtn === "cancel") return this.cancelCraft()
             return this.craftFunc()
         })
+        craftWeaponBtn.addEventListener("click", e => {
+            if(this.craftFunc === undefined) return log("craft func not set")
+            compatibleCont.classList.add("transClosePopUp")
+            setTimeout(() => compatibleCont.style.display = "none", 500)
+            this.craftFunc()
+        })
+
         rightUIBtns.forEach(btn => {
             btn.addEventListener("click", e => {
                 const btnName = e.target.className.split(" ")[1]
@@ -1831,6 +2058,9 @@ class App{
             if(!btnName.includes("mode-btn")) return log("not a mode btn")
             let modeName
             this.setRunningSound()
+            clearInterval(this.hitRecourceInterval)
+            this.animStopAll(this.myChar, ["minning"])
+            log(this.myChar.anims)
             if(btnName.includes("swordpic")){
                 if(this.det.weapon.name === "none") return
                 this.setRunningSound()
@@ -1874,8 +2104,7 @@ class App{
                 
             }
             if(btnName.includes("walkpic")){    
-                myCharDet.runningS.setPlaybackRate(.9)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
+                this.setWalkSound()
                 this.stopAnim(this.myChar.anims, "fight.idle")
                 if(this.myChar.mode === "weapon"){
                     log("yes it is weapon")
@@ -1913,7 +2142,6 @@ class App{
                     })
                 }  
             }
-
             this.disableRightBtns(1400, false)
         })
         attackBtn.addEventListener("click", e => {
@@ -2124,15 +2352,52 @@ class App{
             }
             if(this.targetRecource === 'crafthouse'){
                 this.stopPress()
+                log(this.myChar.anims)
                 apartInfos.style.display = "none"
                 aprtLoadingBx.style.display ="block"
-                this.closePopUpAction()
                 
                 aprtLoadLabel.innerHTML = "Entering Shop..."
                 await this.updateMyDetailsOL({...this.det, currentPlace: 'crafthouse', x: 0, z: 0 }, true)
                 this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
                 
                 return await this._goToCraftHouse()
+            }
+            if(this.targetRecource === 'craft-table'){
+                this.stopPress(true)
+                this.animStopAll(this.myChar, ['walk', 'running'])
+                closeGameUI()
+                const questionsCraftHouse = [
+                    {
+                        name: "craftNewWeapon",
+                        dn: "Craft Items",
+                        desc: ["The Items We Can Craft depends on what cores you have", "And a small fee for the dwarvesmen ..."],
+                        displayCap: "Choose Crafting Material"
+                    },
+                    {
+                        name: "fixEnhanceItem",
+                        dn: "Fix Enhance Weapon",
+                        desc: ["We Can Enhance Your Weapon with the right tools", "It requires Iron and fees ..."],
+                        displayCap: "Select Item To Fix and Enhance"
+                    },
+                    {
+                        name: "cancel",
+                        dn: "Nevermind",
+                    },
+                ]
+                this.setQuestions(questionsCraftHouse, "How Can I Help You ?", det => {
+                    questionCont.classList.add("transClose");
+                    setTimeout(() => questionCont.style.display="none",500)
+                    openGameUI()
+                    this.allCanPress()
+                    
+                    if(det.name === "cancel") return log("okay nevermind")
+                    
+                    this.continuesSpeech([ { name: "Smythe", message: det.desc[0]},{ name: "Smythe", message: det.desc[1]}, ], 0, 2500, () => {
+                        log("open crafting box")
+                        setTimeout(() => this.setCraftOrFixing(det.displayCap, "core", det.name), 1500)
+                    })
+                })
+                return
             }
             if(this.targetRecource === 'guildhouse'){
                 this.stopPress()
@@ -2235,7 +2500,6 @@ class App{
                 },100)
                 return
             }
-    
             if(this.targetRecource.name.includes("npc")){
                 this.closePopUpAction()
                 const {x,z} = this.myChar.bx.position
@@ -2266,7 +2530,7 @@ class App{
                                             setTimeout(() => showNotif(`${crft.name} craft learned `, 6000), notifTimeOut);    
                                             notifTimeOut+= 1000
                                         })
-                                        this.showSideNotif(craftIcon, "Craft Added")
+                                        this.showSideNotif(craftIcon, "Craft Added", "sideLeftAnimate")
                                         this._allSounds.smallCongratsS.play()
                                     }
                                     openGameUI(this.det)
@@ -2403,7 +2667,7 @@ class App{
                     }
                 }
                 
-                return myCharDet.runningS.setPlaybackRate(.85)
+                return this.setWalkSound()
             }
             if(this.targetRecource.name.includes("scroll")){
                 this.playAnim(this.myChar.anims, "pickup")
@@ -2523,7 +2787,8 @@ class App{
                     this.myChar.mode = 'stand'
                     this.allCanPress()
                     this.socketAvailable && this.socket.emit('treasure-opened', {meshId: this.targDetail.meshId})
-                    await this.obtain(this.targDetail.name, 1, false)
+                    const theItemOnrec = records.find(recItm => recItm.name === this.targDetail.name)
+                    await this.obtain(theItemOnrec ? theItemOnrec.dn : this.targDetail.name, 1, false)
                     this.targetRecource.dispose()
                     this.targetRecource = undefined
                     // this.Treasures = this.Treasures.filter(treasure => treasure.meshId !== this.targDetail.meshId)
@@ -2921,7 +3186,7 @@ class App{
                             openGameUI(this.det)
                             this.myChar.mode = 'stand'
                             this.allCanPress()
-                            if(!this.socketAvailable) return this.craftBonFire(bonFPos, this._scene)
+                            if(!this.socketAvailable) return this.craftBonFire(bonFPos)
                             if(this.socketAvailable) this.socket.emit("plant-bonfire", 
                             {meshId: makeRandNum(), pos: bonFPos, place: this.currentPlace });
                         })
@@ -3025,16 +3290,28 @@ class App{
             }
             if(itemInfo.itemType === "food"){
                 let nameOfBtn = "Eat"
+                let isCuring = false
                 const theFood = foodInfo.find(food => food.name === itemInfo.name)
-                if(theFood.name.includes("potion"))nameOfBtn = "use"
+                if(!theFood) return log("food not found")
+                const foodNameLower = theFood.name.toLowerCase()
+                log(foodNameLower)
+                if(theFood.name.includes("potion") || foodNameLower.includes("antidote")) nameOfBtn = "use"
                 const aBtn = createElement("button", "plantseed item-infobtn", nameOfBtn,async () => {
                     
                     if(!theFood) return log("food not found")
                     if(!theFood.name.includes("potion")){
-                        //means ordinary food
-                        const plusHealth = this.det.maxHp * theFood.plusHealth
-                        this.det.hp += plusHealth
-                        this.det.survival.hunger += parseInt(theFood.plus);
+                        if(foodNameLower.includes("antidote")){
+                            isCuring = true
+                            this.det.status = this.det.status.filter(stat => stat.effectType !== theFood.cureFor)
+                            log(this.det.status)
+                            this.showTransaction("Processing Antidote ...", false)
+                        }else{
+                            //means ordinary food
+                            const plusHealth = this.det.maxHp * theFood.plusHealth
+                            this.det.hp += plusHealth
+                            this.det.survival.hunger += parseInt(theFood.plus);
+                        }
+
                     }else{
                         //means potion
                         this.det.hp += theFood.plus
@@ -3046,10 +3323,16 @@ class App{
 
                     if(this.det.survival.hunger > 100) this.det.survival.hunger = 100
                     
+                    this.setNegativeStatUI()
                     this.updateLifeManaSpGUI()
                     this.updateLifeMesh();
                     log(theItemDetail.meshId)
-                    await this.deductItem(theItemDetail.meshId, 1)      
+                    await this.deductItem(theItemDetail.meshId, 1) 
+                    if(isCuring){
+                        await this.updateMyDetailsOL(this.det, true)
+                        this.showTransaction("Antidote Processed", 3000)
+                        isCuring = false
+                    }     
                     itemInfoCont.style.display = "none";
                 })
                 itemInfoBtns.append(aBtn)
@@ -3083,7 +3366,9 @@ class App{
                     
                     this.makeSwordVisible(this.myChar.swordz, theItemDetail.name)
                     // await this.useFetch(`${APIURL}/characters/updateweapon/${this.det._id}`, "PATCH", this.token, theItemDetail)
+                    log("before equiping ", this.det.weapon)
                     this.det.weapon = theItemDetail
+                    log("I will equip this " , this.det.weapon)
                     this.checkIfHaveWeapon()
                     await this.updateMyDetailsOL(this.det,true);
                     this.setEquipedItems()
@@ -3602,9 +3887,14 @@ class App{
         speechCont.innerHTML = ''
         let startPage = startOfPage
 
-        speechCont.append(createElement('p', 'speaker-name', arrayOfSpeech[startPage].name, false))         
+        const speakerName = createElement('p', 'speaker-name', arrayOfSpeech[startPage].name, false)
+        speechCont.append(speakerName)         
         speechCont.append(createElement('p', 'speaker-speech', arrayOfSpeech[startPage].message, false))
-        
+        if(speakerName.innerHTML === this.det.name){
+            speakerName.style.left = "-10px"
+        }else{
+            speakerName.style.right = "-10px"
+        }
         startPage++
         if(arrayOfSpeech.length > startPage){
             speechCont.append(createElement('button', 'nextBtn', '>>', () => {
@@ -3623,21 +3913,52 @@ class App{
         
         
     }
-    gameOver(){
+    async gameOver(){
+        await this.useFetch(`${APIURL}/characters/delete/${this.det._id}`, "DELETE", this.token)
+        await this.useFetch(`${APIURL}/quests/save`, "POST",undefined, this.det.quests[0])              
+        if(this.det.quests.length){
+            delete this.det.quests[0]._id
+            
+            this.det.quests = []
+            await this.updateMyDetailsOL(this.det, false)
+        }
         setTimeout(() => {
             this.openStoryWritten(0, ['I Told You Not <br/> To Die', "You Died"], async () => {
-                await this.useFetch(`${APIURL}/characters/delete/${this.det._id}`, "DELETE", this.token)
-                if(this.det.quests.length){
-                    delete this.det.quests[0]._id
-                    await this.useFetch(`${APIURL}/quests/save`, "POST",undefined, this.det.quests[0])              
-                    this.det.quests = []
-                    await this.updateMyDetailsOL(this.det, false)
-                }
+                
                 setTimeout(() => window.location.reload(), 4000)
             })
         }, 2000)
     }
     // ACTIONS WHEN HIT
+    initMyDeath(){
+        this.stopMyCharacter()
+        this.det.hp = 0
+        this.updateHP_UI()
+        clearTimeout(this._enableKeyPessTimeout)
+
+        if(this.socketAvailable) this.socket.emit("playerDied", {_id: this.det._id})
+
+        Monsterz.forEach(mons => {
+            if(mons.targHero === this.det._id){
+                clearInterval(mons.intervalWillAttack)
+                mons.isChasing = false
+                mons.isAttacking = false
+                mons.targHero = undefined
+            }
+        })
+        if(!this.socketAvailable){
+            Monsterz.forEach(mons => {                    
+                clearInterval(mons.intervalWillAttack)
+                mons.isChasing = false
+                mons.isAttacking = false
+                mons.targHero = undefined                    
+            })
+        }         
+        
+        //if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
+        this.gameOver()
+        this.playerDeath(this.myChar)
+    }
     playerDeath(player){
         player.mode = "none"
         player.diedS.play()
@@ -3841,25 +4162,66 @@ class App{
             break;
         }
     }
-    implementStatus(){
-
+    setNegativeStatUI(){
+        negativeStatCont.innerHTML = ''
+        if(!this.det.status.length) return
+        this.det.status.forEach(negstat => {
+            const newDiv = createElement("div", `neg-stat ${negstat.effectType}`)
+            const negStatImg = createElement("img", "ns-img")
+            negStatImg.src = `./images/UI/${negstat.effectType}.png`
+            const negStatcap = createElement("p", "ns-cap", negstat.effectType)
+            switch(negstat.effectType){
+                case "poisoned":
+                    negStatcap.style.color = "#4b9863"
+                break
+                default:
+                    negStatcap.style.color = "#f5f5f5"
+                break
+            }
+            newDiv.append(negStatImg)
+            newDiv.append(negStatcap)
+            negativeStatCont.append(newDiv)
+        })
     }
     async hitByNonMultiAI(body, enemBody, dmgTaken, animName, monsId, effects){
+        let effectTimeOut
+        let returnBtnSec = 200
         let myDef = this.det.stats.def*2;
         const {x,z} = enemBody.position
         body.lookAt(new Vector3(x,body.position.y,z), 0,0,0)
         this.myChar.weaponCol.position.y = 9
-        
+
+        let deductInArmor = dmgTaken
+        if(this.det.shield.name !== "none") {
+            const myArmor = this.det.items.find(itm => itm.meshId === this.det.shield.meshId)
+            if(!myArmor) return log("shield not found")
+            if(myArmor.cState >= 1){
+                myDef+= this.det.shield.plusDef
+                this.det.items.forEach(itm => {
+                    if(itm.meshId === this.det.shield.meshId){
+                        this.reduceDurability(itm, deductInArmor/2)
+                        deductInArmor = deductInArmor/2
+                    }
+                })
+            }else{
+                this.unEquip(myArmor)
+                await this.deductItem(myArmor.meshId, 1)
+                this._allSounds.brokenS.play()
+                this._statPopUp(`Shield Broken`)
+            }
+        }
         if(this.det.armor.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.armor.meshId)
             if(myArmor.cState >= 1){
                 myDef+= this.det.armor.plusDef
                 this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.armor.meshId) this.reduceDurability(itm, dmgTaken/4)
+                    if(itm.meshId === this.det.armor.meshId) this.reduceDurability(itm, deductInArmor/3)
                 })
             }else{
                 this.unEquip(myArmor)
                 await this.deductItem(myArmor.meshId, 1)
+                this._allSounds.brokenS.play()
+                this._statPopUp(`Armor Broken`)
             }
         }
         if(this.det.gear.name !== "none") {
@@ -3868,11 +4230,13 @@ class App{
                 myDef+= this.det.gear.plusDef
            
                 this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.gear.meshId) this.reduceDurability(itm, dmgTaken/4)
+                    if(itm.meshId === this.det.gear.meshId) this.reduceDurability(itm, deductInArmor/3)
                 })
             }else{
                 this.unEquip(myArmor)
                 await this.deductItem(myArmor.meshId, 1)
+                this._allSounds.brokenS.play()
+                this._statPopUp(`Armor Broken`)
             }
         }
         if(this.det.helmet.name !== "none") {
@@ -3881,62 +4245,51 @@ class App{
                 myDef+= this.det.helmet.plusDef
             
                 this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.helmet.meshId) this.reduceDurability(itm, dmgTaken/4)
+                    if(itm.meshId === this.det.helmet.meshId) this.reduceDurability(itm, deductInArmor/3)
                 })
             }else{
                 this.unEquip(myArmor)
                 await this.deductItem(myArmor.meshId, 1)
-            }
-        }
-        if(this.det.shield.name !== "none") {
-            const myArmor = this.det.items.find(itm => itm.meshId === this.det.shield.meshId)
-            if(!myArmor) return log("shield not found")
-            if(myArmor.cState >= 1){
-                myDef+= this.det.shield.plusDef
-                this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.shield.meshId) this.reduceDurability(itm, dmgTaken/4)
-                })
-            }else{
-                this.unEquip(myArmor)
-                await this.deductItem(myArmor.meshId, 1)
+                this._allSounds.brokenS.play()
+                this._statPopUp(`helmet Broken`)
             }
         }
 
-        let toDeduct = myDef >= dmgTaken ? 1 : dmgTaken - myDef
+        let toDeduct = myDef >= dmgTaken ? .5 : dmgTaken - myDef
         // log('my def ' + myDef + " - dmgtaken " + dmgTaken)
         // log(`to deduct in my life ${toDeduct}`)
+        this.stopPress()
+        closeGameUI()
+        clearTimeout(effectTimeOut)
+        effectTimeOut = setTimeout(() => {
+            if(this.det.hp <= 0) return log("dead after mons effect stop here")
+            openGameUI()
+            this.allCanPress()
+        }, returnBtnSec)
         this.det.hp -= toDeduct
         if(effects && effects.chance > Math.random()*10){
-      
+            clearTimeout(effectTimeOut)
             this.det.hp -= effects.plusDmg
-            clearTimeout(this._attackTimeout)
-            if(this.det.hp >= 0){
-                if(!this.det.status.length){
-                    this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
-                }else{
-                    const alreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
-                    if(!alreadyThere){
-    
-                    }
-                }
-                this.implementStatus()
-                const myCurrentMode = this.myChar.mode
-                this.myChar.mode = effects.effectType
+            effectTimeOut = setTimeout(() => {
+                if(this.det.hp <= 0) return log("dead after mons effect stop here")
+                openGameUI()
+                this.allCanPress()
+            }, effects.dura/2)
+            if(this.det.hp > 0){
+
+                const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
+                if(!statusAlreadyThere) this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
+                
+                this.setNegativeStatUI()
                 let colorOfCap = "limegreen"
                 switch(effects.effectType){
                     case "poisoned":
                         colorOfCap = "limegreen"
                         const theParticle = this.createBloodParticle("poisonTex", 100, this.myChar.bx.position, "sphere", true, 5, true, false)
                         theParticle.color = new BABYLON.Color3(0.05, 0.18, 0.02)
-                    break
+                    break;
                 }
                 this.createTextMesh(makeRandNum(), effects.effectType, colorOfCap, this.myChar.bx.position, 90,this._scene, true)
-                setTimeout(() => {
-                    if(this.det.hp <= 0) return
-                    this.myChar.mode = myCurrentMode
-                    this.allCanPress()
-                    openGameUI()
-                }, effects.dura)
                 log(`duration to continue ${effects.dura}`)
             }
         }
@@ -3966,35 +4319,8 @@ class App{
             openGameUI()
             if(this.det.weapon.name !== "none") this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
         }
-        if(this.det.hp <= 0){            
-            this.stopMyCharacter()
-            this.det.hp = 0
-            this.updateHP_UI()
-            clearTimeout(this._enableKeyPessTimeout)
-
-            if(this.socketAvailable) this.socket.emit("playerDied", {_id: this.det._id})
-
-            Monsterz.forEach(mons => {
-                if(mons.targHero === this.det._id){
-                    clearInterval(mons.intervalWillAttack)
-                    mons.isChasing = false
-                    mons.isAttacking = false
-                    mons.targHero = undefined
-                }
-            })
-            if(!this.socketAvailable){
-                Monsterz.forEach(mons => {                    
-                    clearInterval(mons.intervalWillAttack)
-                    mons.isChasing = false
-                    mons.isAttacking = false
-                    mons.targHero = undefined                    
-                })
-            }            
-            
-            //if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
-            this.gameOver()
-            return this.playerDeath(this.myChar)
-        }
+        if(this.det.hp <= 0) return this.initMyDeath() 
+        
         if(this.myChar._minning || this.myChar._training){
             log("I am minning or training")
             clearInterval(this.hitRecourceInterval)
@@ -4182,6 +4508,8 @@ class App{
                     if(themons.hp <= myTotalDmg){
                         this.focusOn = null
                         this.det.monsterKilled++
+                        // first level up
+                        await this.expGain(themons.expGain)
                         const lootForIt = monsterloot.filter( itmloot => itmloot.for === themons.monsName)
                         log("loots for this monster")
                         log(lootForIt)
@@ -4213,7 +4541,7 @@ class App{
                         }
                         log(themons)
                         this.readCheckMyQuest("slay", themons.monsName, themons.monsBreed)
-                        await this.expGain(themons.expGain)
+                        
                     }
                     let criticalMultiplier = 2
                     const mpos = monster.body.position
@@ -4413,9 +4741,12 @@ class App{
         this.lootz = []
         this.Crytalz = []
 
+        // CRAFT RELATED
         this.canDropHere = true
         this.craftFunc = undefined
         this.toDropMesh = undefined
+
+        this.setNegativeStatUI()
 
         moveNums = { straight: 0, leftRight: 0 }
         displayElems([craftIcon], "block")
@@ -4489,11 +4820,13 @@ class App{
             this.updateSP_UI()
         }, (100 - this.det.regens.sp) * 5)
         this.updateHunger()
+        
         this.hungerInterval = setInterval(() => {
             this.updateHunger()
             // saling ketket lang tong check body
             this.checkBody()
         }, 40.5 * 1000)
+        // I PUT THE STATS DEDCUTION HERE
         this.sleepyInterval = setInterval(() => {
             if(this.det.survival.sleep > 0) this.det.survival.sleep-=.2
             if(this.det.survival.sleep < 0.2) this.det.survival.sleep = 0
@@ -4503,7 +4836,21 @@ class App{
             }else{
                 restStat.parentElement.children[0].style.animation = "none"
             }
-        }, 2.2 * 1000)
+
+            // FOR STATUS EFFECTS
+            if(this.det.status.length){
+                this.det.status.forEach(effect => {
+                    switch(effect.effectType){
+                        case "poisoned":
+                            this.det.hp -= effect.dmgPm
+                            this.createBloodParticle("poisonTex",300, this.myChar.bx.position, "sphere", true, 1, true, undefined)
+                            this.createTextMesh(makeRandNum(), `poisoned ${effect.dmgPm}`, "green", this.myChar.bx.position, 90, this._scene, true, false)
+                        break
+                    }
+                })
+                if(this.det.hp <= 0) this.initMyDeath()
+            }
+        }, 5.2 * 1000)
         log("successfully made the life") 
     }
     updateHP_UI(){
@@ -4669,7 +5016,7 @@ class App{
         const normalV = new BABYLON.Sound("brokenS", "sounds/normalV.mp3", scene,
         null, {volume: .9, spatialSound: false, autoplay: false, loop: false})
 
-        const woodFloorS = new BABYLON.Sound("woodFloorS", "sounds/woodFloorS.mp3", scene,
+        const woodFloorS = new BABYLON.Sound("woodFloorS", "sounds/woodRun.mp3", scene,
         null, {volume: .3, spatialSound: false, autoplay: false, loop: false})
 
         const rockSmashS = new BABYLON.Sound("rockSmashS", "sounds/rockSmashS.mp3", scene,
@@ -4799,16 +5146,13 @@ class App{
     setProperSound(){
         switch(this.myChar.mode){
             case "stand":
-                myCharDet.runningS.setPlaybackRate(.9)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
+                this.setWalkSound()
             break;
             case "none":
-                myCharDet.runningS.setPlaybackRate(.9)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(.8)
+               this.setWalkSound()
             break;
             default:
-                myCharDet.runningS.setPlaybackRate(1.2)
-                if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
+               this.setRunningSound()
             break;
         }
         log("Our Current place is " + this.currentPlace)
@@ -5059,7 +5403,7 @@ class App{
         let toSave = {
             owner: this.userId,
             name: "",
-            stats: {sword: 1, def: 1, core: 1, magic: 1},
+            stats: {sword: 1, def: 100, core: 1, magic: 1},
             weapon: { meshId: makeRandNum(), name: "none", itemType: "sword", plusDef: 1, plusDmg: 1, 
             magRes: 0, plusMag: 0, price: 0},
             helmet: { meshId: makeRandNum(), name: "none", itemType: "helmet", plusDef: 1, plusDmg: 1, 
@@ -5139,8 +5483,7 @@ class App{
                     hairMat.specularColor = new BABYLON.Color3(0,0,0) 
                     Character.meshes.forEach(mesh => {
                         if(mesh.name.includes("hair")) mesh.material = hairMat
-                    })
-                    
+                    })                    
                     panel.isVisible = true
                 break;
                 case "cloth":
@@ -5450,6 +5793,7 @@ class App{
 
         Tile.meshes.forEach(mesh => mesh.setEnabled(false))
         this.checkAll()
+        
     }
     async _hiddenLand(){
        
@@ -6065,7 +6409,7 @@ class App{
         cam = this.arcCam(scene)
 
         this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
-
+        
         // this.createHeartLandTile(scene)
 
         const medHouse = await this.importMesh(scene, "./models/", "medhouse1.glb")
@@ -6094,15 +6438,24 @@ class App{
             this.createNpc(theCharacterRoot, npz, false, btf)
         })
         await this.createMerchant(scene, {x: -7,y:0,z:53.5}, {x: -1.8, z: 52})
+        
+        await this.createBonFire(true, scene);
 
-        const wagon = await this.importMesh(scene, "./models/", "wagon.glb")
-        wagon.meshes[1].parent = null
-        wagon.meshes[1].position = new Vector3(15,0,59);
-        wagon.meshes[1].rotationQuaternion = null
-        wagon.meshes[1].lookAt(new Vector3(-25.33,0,69), 0,0,0)
-        this.blocks.push(wagon.meshes[1])
-        this.putFakeShadow(wagon.meshes[1], 8, .07)
-        this.freeze(wagon.meshes[1])
+        // createTorch
+        const leftTorch = await this.importMesh(scene, "./models/", "bigtorch.glb", true)
+        leftTorch.position = new Vector3(7,0,-75)
+        this.blocks.push(leftTorch);
+        this.craftBonFire({x: 7, y: 4.7, z: -75}, .5, false)
+        this.freeze(leftTorch)
+        //right torch
+        this.createBigTorch(leftTorch, {x: -7, y:0, z:-75})
+        // dwarven torch
+        this.createBigTorch(leftTorch, {x: -38, y:0, z:13})
+        this.createBigTorch(leftTorch, {x: -20, y:0, z:13})
+        this.createBigTorch(leftTorch, {x: -32, y:0, z:27.6})
+        this.createBigTorch(leftTorch, {x: -10, y:0, z:55})
+        
+        await this.createWagon({x:-25.33,y:0,z:69}, {x:15,y:0,z:59},scene)
 
         const slaveCart = await this.importMesh(scene, "./models/", "slaveCart.glb")
         slaveCart.meshes[1].parent = null
@@ -6741,6 +7094,68 @@ class App{
             await this._heartLand();
         })
 
+        npcInfos.forEach(npz => this.createNpc(theCharacterRoot, npz, false, btf))
+
+        // THE TABLE
+        const smallDesk = await this.importMesh(scene, "./models/", "guildDesk.glb", true)
+        smallDesk.receiveShadows = true
+        smallDesk.position.z = 5.5; 
+        smallDesk.rotation = new Vector3(0,Math.PI,0)
+        this.blocks.push(smallDesk);
+
+        this.toRegAction(this.myChar.detector, smallDesk, () => {
+            this.openPopUpAction("speak");
+            this.targetRecource = 'craft-table'
+            log(this.targetRecource)            
+            this.targDetail = { title: "checkquest" }
+        });
+        this.toRegActionExit(this.myChar.detector, smallDesk, () => {
+            this.closePopUpAction()
+            guildCont.style.display = "none"
+            this.targetRecource = undefined
+            this.targDetail = undefined
+            questCont.classList.add("trans-close")
+            questCont.style.display = "none"
+        })
+
+        const weaponDisplays = [
+            {
+                name: "normal",
+                pos: {x : 1, y: 2.4, z: 8.2},
+                rotateAngle: {x:0,y:0,z: Math.PI}
+            },
+            {
+                name: "bladefury",
+                pos: {x : -1.1, y: 2.4, z: 8.2},
+                rotateAngle: {x:0,y:0,z: Math.PI}
+            },
+            {
+                name: "drakfoid",
+                pos: {x : -3, y: 2.4, z: 8.2},
+                rotateAngle: {x:0,y:0,z: Math.PI}
+            },
+            {
+                name: "grimblue",
+                pos: {x : 2.7, y: 2.4, z: 8.2},
+                rotateAngle: {x:0,y:0,z: Math.PI}
+            },
+            {
+                name: "oakblade",
+                pos: {x : 3.7, y: 2.4, z: 7.8},
+                rotateAngle: {x:0,y:0,z: Math.PI}
+            },
+
+        ]
+        weaponDisplays.forEach(wpn => {
+            const sword1ToClone = allsword.find(swrd => swrd.name.includes(wpn.name))
+            const swordDisplay = sword1ToClone.clone(wpn.name)
+
+            swordDisplay.position = new Vector3(wpn.pos.x,wpn.pos.y,wpn.pos.z);
+            swordDisplay.scaling = new Vector3(.3,.3,.3);
+            const rot = wpn.rotateAngle
+            swordDisplay.addRotation(rot.x,rot.y,rot.z)
+        })
+
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
@@ -6875,7 +7290,7 @@ class App{
             const isMade = bonFirezz.some(bonf => bonf.meshId === mon.meshId)
             if(!isMade){
                // create craftBonfire
-               this.craftBonFire(mon.pos, this._scene);
+               this.craftBonFire(mon.pos)
                bonFirezz.push(mon)
             }
         })
@@ -7571,13 +7986,12 @@ class App{
                                              
                         playerDet.bx.locallyTranslate(new Vector3(0,0,playerDet.spd * (this._engine.getDeltaTime()/1000) ))
                         playerDet.moveActionName = `running.${playerDet.mode}`
-                        playerDet.myshieldz.forEach(mesh => mesh.position.x = -1)                         
+                        playerDet.myshieldz.forEach(mesh => mesh.position.x = -.5)                         
                     break;
-                    case "fist":
-                        log(playerDet.spd)                         
+                    case "fist":                      
                         playerDet.bx.locallyTranslate(new Vector3(0,0,playerDet.spd * (this._engine.getDeltaTime()/1000) ))
                         playerDet.moveActionName = `running.${playerDet.mode}` 
-                        playerDet.myshieldz.forEach(mesh => mesh.position.x = -1)                        
+                        playerDet.myshieldz.forEach(mesh => mesh.position.x = -.5)                        
                     break;
                 }
                 this.playAnim(playerDet.anims, playerDet.moveActionName)
@@ -7737,12 +8151,10 @@ class App{
                     case "weapon":
                         
                         this.myChar.moveActionName = 'running.weapon'
-                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
+                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play(0)
                     break;
                     case "fist":
-                        myCharDet.runningS.setPlaybackRate(1.2)
-                        if(this.currentPlace === "guildhouse" || this.currentPlace.includes("apartment")) myCharDet.runningS.setPlaybackRate(1)
-            
+                        this.setRunningSound()
                         this.myChar.moveActionName = 'running.fist'
                          if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
                     break;
@@ -7753,8 +8165,7 @@ class App{
                     break
                 }
             }
-            const sendToSocket = () => {
-                
+            const sendToSocket = () => {                
                 this.socketAvailable && this.socket.emit("move", {
                     dirTarg: { x: this.btf.position.x, z: this.btf.position.z},
                     _id: this.det._id,
@@ -7801,6 +8212,9 @@ class App{
                     // this.btf.locallyTranslate(new Vector3(0,0,-this.runSpeed - 100))
                     sendToSocket()
                 break
+                case "alt":
+                    log("clicking the alt")
+                break
             }
             const btfPos = this.btf.position
             me.dirTarg = {x: btfPos.x,z: btfPos.z}
@@ -7829,6 +8243,11 @@ class App{
             } 
             if(keyPressed === " "){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
+                log("my details",this.det)
+                // this.myChar.mode = "poisoned"
+                this.det.maxHp += 200
+                this.det.hp+=199
+                
             } 
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
@@ -7976,6 +8395,17 @@ class App{
         mesh.freezeWorldMatrix()
     }
     // CREATIONS
+    async createWagon(lookDir, pos, scene){
+        const wagon = await this.importMesh(scene, "./models/", "wagon.glb")
+        wagon.meshes[1].parent = null
+        wagon.meshes[1].position = new Vector3(pos.x,pos.y,pos.z);
+        wagon.meshes[1].rotationQuaternion = null
+        const lr = lookDir
+        wagon.meshes[1].lookAt(new Vector3(lr.x,lr.y,lr.z), 0,0,0)
+        this.blocks.push(wagon.meshes[1])
+        this.putFakeShadow(wagon.meshes[1], 8, .07)
+        this.freeze(wagon.meshes[1])
+    }
     async createPeeble(imgAddress, scene, capac, xRange, zRange){
         const Pebbles = await this.importMesh(scene, "./models/", "pebbles.glb")
         thePeeble = Pebbles.meshes[1]; thePeeble.setParent(null)
@@ -8191,29 +8621,37 @@ class App{
     createHLPlanks(){
         // entrance to half way
         for(var plankzqnty = -60;plankzqnty < -20; plankzqnty+=2){
-            this.createRoadPlank({x: -4.2, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
-            this.createRoadPlank({x: 4.2, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
+            if(Math.random() < .85 ){
+                this.createRoadPlank({x: -4.2, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
+                this.createRoadPlank({x: 4.2, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
+            }            
         }
         // half way to guild
         for(var plankzqnty = 15;plankzqnty < 50; plankzqnty+=2){
-            this.createRoadPlank({x: -4, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
+            
+            if(plankzqnty > 25) this.createRoadPlank({x: -4, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
             this.createRoadPlank({x: 4, z: plankzqnty+Math.random()*1}, Math.PI/2 - Math.random()*.5 + Math.random()*.7)
         } 
 
         // half way to side left
         for(var plankzqnty = -5;plankzqnty >= -52; plankzqnty-=2){
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -20}, -1 + Math.random()*1)
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -7.5}, -1 + Math.random()*1)
-
-            // near the entrace
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -58}, -1 + Math.random()*1)
+            if(Math.random() < .85 ){
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -20}, -1 + Math.random()*1)
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -7.5}, -1 + Math.random()*1)
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: 30}, -1 + Math.random()*1)
+    
+                // near the entrace
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -58}, -1 + Math.random()*1)
+            }
         } 
         // half way to side left
         for(var plankzqnty = 5;plankzqnty <= 52; plankzqnty+=2){
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -20}, -1 + Math.random()*1)
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -7.5}, -1 + Math.random()*1)
-
-            this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -58}, -1 + Math.random()*1)
+            if(Math.random() < .85 ){
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -20}, -1 + Math.random()*1)
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -7.5}, -1 + Math.random()*1)
+    
+                this.createRoadPlank({x: plankzqnty-Math.random()*1, z: -58}, -1 + Math.random()*1)    
+            }
         } 
     }
     createSwampDungeonWall(TheTile, scene){
@@ -8703,6 +9141,14 @@ class App{
         dig.position = new Vector3(loc.x,0,loc.z)
         return dig
     }
+    createBigTorch(toClone, pos){
+        const clonedTorch = toClone.createInstance("bigtorch", scene)
+        clonedTorch.position = new Vector3(pos.x,pos.y,pos.z)
+        this.blocks.push(clonedTorch);
+        this.craftBonFire({x: pos.x, y: 4.7, z: pos.z}, .5, false)
+        this.putFakeShadow(clonedTorch, 4, .02)
+        this.freeze(clonedTorch)
+    }
     createWall(theHeight, theWidth, pos, uAndVscale, modeltex, rotatY, scene, putOnBlocks){
         const wall = MeshBuilder.CreateBox("wall", {depth: .5, height: theHeight, width: theWidth}, scene)
         wall.position = new Vector3(pos.x,pos.y,pos.z)
@@ -8719,8 +9165,8 @@ class App{
         if(putOnBlocks) this.blocks.push(wall)
         return wall
     }
-    craftBonFire(loc, scene){
-        if(!bonFireMesh) return
+    craftBonFire(loc, scaling, createMud){
+        if(!bonFireMesh) return log("no bonFireMesh origin")
         const fireSound = this._allSounds.bonfireSound.clone(`bonfireSound.${makeRandNum()}`)
         const stoneAndStick = bonFireMesh.clone("bonfire");
         stoneAndStick.parent = null
@@ -8728,7 +9174,7 @@ class App{
         const fireClone = fire.clone("fireclone")
         const smokeClone = smoke.clone("smokeClone")
         
-        stoneAndStick.position = new Vector3(loc.x,0,loc.z)
+        stoneAndStick.position = new Vector3(loc.x, loc.y ? loc.y : 0,loc.z)
         fireClone.emitter = stoneAndStick
         smokeClone.emitter = stoneAndStick
         this.toRegAction(this.myChar.detector, stoneAndStick, () => {
@@ -8748,7 +9194,9 @@ class App{
         //     pLightz.push(cloneLight)
         // }
         fireSound.play()
-        this.createDig(loc)
+        createMud && this.createDig(loc)
+        const {x,y,z} = stoneAndStick.getAbsolutePosition()
+        if(scaling) stoneAndStick.scaling = new Vector3(scaling,scaling,scaling)
     }
     craftBedLeave(loc, scene){
         if(!bedLeaveMesh) return log("bedleavemesh not ready")
@@ -9055,11 +9503,14 @@ class App{
         minningS.attachToMesh(rootSword)
         woodCuttingS.attachToMesh(rootSword)
         spearStruck.attachToMesh(body)
-        log(this.currentPlace)
-        if(this.currentPlace === "guildhouse" || this.currentPlace.includes('apartment') || this.currentPlace === "crafthouse"){
+
+        const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
+        if(isOnFloorPlace){
+            log("is in floor places")
             runningS = this._allSounds.woodFloorS.clone()
             runningS.attachToMesh(body)
         }
+        
         meshes.forEach(mesh => {
             if(mesh.name.includes("body") && castShadow) shadowGen.addShadowCaster(mesh)
             if(mesh.name.includes('armor')) armorz.push(mesh)            
@@ -9163,18 +9614,19 @@ class App{
             })
             return myshieldz
         }
-        if(det.weapon.name !== 'none'){
-            myswordz.forEach(swordmesh =>{
-                log(swordmesh.name)
-                if(swordmesh.name.split(".")[1] === det.weapon.name){
-                    swordmesh.isVisible = true
-                }else{
-                    swordmesh.isVisible = false
-                }
-            })
-        }else{
-            myswordz.forEach(swordmesh =>swordmesh.isVisible = false)
-        }
+        // if(det.weapon.name !== 'none'){
+        //     myswordz.forEach(swordmesh =>{
+        //         log(swordmesh.name)
+        //         if(swordmesh.name.split(".")[1] === det.weapon.name){
+        //             swordmesh.isVisible = true
+        //         }else{
+        //             swordmesh.isVisible = false
+        //         }
+        //     })
+        // }else{
+        //     myswordz.forEach(swordmesh =>swordmesh.isVisible = false)
+        // }
+        this.makeSwordVisible(myswordz, det.weapon.name)
         if(det.helmet.name !== 'none'){
             myhelmetz.forEach(swordmesh =>{
                 log(swordmesh.name)
@@ -9371,7 +9823,7 @@ class App{
         }
         bonFireMesh = BonFire.meshes[1]
         bonFireMesh.position.y += 20
-        
+        log("have created bonfire")
         return BonFire
     }
     async createInstances(meshName, count, from, until,scene){
@@ -9415,11 +9867,20 @@ class App{
             // this.freeze(newMesh)
         }
     }
-    async importMesh(scene, directory, meshName){
+    async importMesh(scene, directory, meshName, isNormalMesh){
         loadingWhat = `creating ${meshName.split(".")[0]} ..`
         const Model = await SceneLoader.ImportMeshAsync("", directory, meshName, scene)
         loadedMesh += 10
-        return Model
+        
+        let theModel
+        if(isNormalMesh){
+            theModel = Model.meshes[1];
+            theModel.parent = null
+            theModel.rotationQuaternion = null
+        }else{
+            theModel = Model
+        }
+        return theModel
     }
     // creartion from socket
 

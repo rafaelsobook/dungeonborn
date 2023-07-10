@@ -37,7 +37,7 @@ const toSell = [
         price: 800,
         plusDmg: 10,
         cState: 500,
-        durability:500,
+        durability:500
     },
     { 
         name: 'dgerSpear',
@@ -205,6 +205,13 @@ const toSell = [
         cState: 2000,
         durability:2000,
         desc: ""
+    },
+    {
+        name: 'poisonAntidote', 
+        dn: 'Atropine',
+        itemType: 'food',
+        price: 300,
+        desc: "This antidote is best used for poisons, Only good herbal expert can craft such antidote"
     }  
 ]
 

@@ -58,6 +58,15 @@ const foodsInfo = [
         raw: false,
         plus: 500,
     },
+    {
+        dn: 'Atropine',
+        name: "poisonAntidote",
+        plusHealth: .1,
+        desc: "This antidote is best used for poisons, Only good herbs expert can craft such antidote",
+        raw: false,
+        plus: 100,
+        cureFor: "poisoned"
+    },
 ]
 
 export default foodsInfo
