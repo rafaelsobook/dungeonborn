@@ -1585,8 +1585,7 @@ class App{
                                 && recItm.craftMaterial?.forgeChance > 0) weaponResults.push(recItm)
                             })
                             log(weaponResults)
- 
-                            
+                            log(craftTypeSelect.value)
                             document.querySelectorAll(".cmc-li").forEach(elem => {
                                 if(elem.className.includes("cmc-active")) elem.classList.remove("cmc-active")
                             })
@@ -1602,6 +1601,10 @@ class App{
                             switch(itm.name){
                                 case "mincore":
                                     costForCraft = 700
+                                    ironCost = 5
+                                break
+                                case "vipcore":
+                                    costForCraft = 2000
                                     ironCost = 5
                                 break
                                 default:    
@@ -1682,6 +1685,10 @@ class App{
                                         costForCraft = 700
                                         ironCost = 2
                                     break
+                                    case "vipcore":
+                                        costForCraft = 2000
+                                        ironCost = 3
+                                    break;
                                     default:    
                                         costForCraft = 100
                                         ironCost = 1
@@ -1709,8 +1716,8 @@ class App{
                                     // first deduct some iron
                                     await this.deductItem(myIron.meshId, ironCost)
                                     const theItemToFix = this.det.items.find(myItm => myItm.meshId === itm.meshId)
-
-                                    theItemToFix.cState = itm.durability
+                                    theItemToFix.durability += theItemToFix.durability/3
+                                    theItemToFix.cState = theItemToFix.durability
                                     if(theItemToFix.plusDmg) theItemToFix.plusDmg += Math.floor(theItemToFix.plusDmg/4)
                                     if(theItemToFix.plusDef) theItemToFix.plusDef += Math.floor(theItemToFix.plusDef/4)
                                      
@@ -1719,6 +1726,7 @@ class App{
                                     this.showTransaction("The Item is Enhanced and Fixed", 3500)
                                     this._allSounds.itemEquipedS.play();
                                     await this.updateMyDetailsOL(this.det, true);
+                                    log(this.det.items)
                                 }
                                 this.returnButtons([craftWeaponBtn])
                             
@@ -4268,13 +4276,19 @@ class App{
         }, returnBtnSec)
         this.det.hp -= toDeduct
         if(effects && effects.chance > Math.random()*10){
+            const theMons = Monsterz.find(mons => mons.monsId === monsId)
+            if(theMons.effectS !== undefined){
+                log(theMons.monsName + " has an effect Sound")
+                theMons.effectS.setPlaybackRate(.9+Math.random()*.2)
+                theMons.effectS.play()
+            }   
             clearTimeout(effectTimeOut)
             this.det.hp -= effects.plusDmg
             effectTimeOut = setTimeout(() => {
                 if(this.det.hp <= 0) return log("dead after mons effect stop here")
                 openGameUI()
                 this.allCanPress()
-            }, effects.dura/2)
+            }, effects.dura)
             if(this.det.hp > 0){
 
                 const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
@@ -5004,6 +5018,21 @@ class App{
         return data
     }
     async _loadCharacterSounds(scene){
+
+        const poisonS = new BABYLON.Sound("poisonS", "sounds/poisonS.mp3", scene,
+        null, {volume: .4, spatialSound: true, maxDistance: 40, autoplay: false, loop: false})
+        poisonS.setPlaybackRate(1.1)
+
+        const snakeBitS = new BABYLON.Sound("snakeBitS", "sounds/snakeBitS.mp3", scene,
+        null, {volume: 1, spatialSound: true, maxDistance: 40, autoplay: false, loop: false})
+        snakeBitS.setPlaybackRate(1)
+
+        const snakeSound = new BABYLON.Sound("snakeSound", "sounds/snakeSound.mp3", scene,
+        null, {volume: 1, spatialSound: true, maxDistance: 30, autoplay: false, loop: false})
+
+        const beeS = new BABYLON.Sound("beeS", "sounds/beeS.mp3", scene,
+        null, {volume: .2, spatialSound: true, maxDistance: 30, autoplay: false, loop: false})
+
         const whoop = new BABYLON.Sound("whoopSlash", "sounds/slashWhoosh.wav", scene,
         null, {volume: .2, spatialSound: true, maxDistance: 25, autoplay: false, loop: false})
 
@@ -5107,6 +5136,10 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            beeS,
+            poisonS,
+            snakeBitS,
+            snakeSound,
             merchantV,
             normalV,
             woodFloorS,
@@ -5403,7 +5436,7 @@ class App{
         let toSave = {
             owner: this.userId,
             name: "",
-            stats: {sword: 1, def: 100, core: 1, magic: 1},
+            stats: {sword: 1, def: 1, core: 1, magic: 1},
             weapon: { meshId: makeRandNum(), name: "none", itemType: "sword", plusDef: 1, plusDmg: 1, 
             magRes: 0, plusMag: 0, price: 0},
             helmet: { meshId: makeRandNum(), name: "none", itemType: "helmet", plusDef: 1, plusDmg: 1, 
@@ -8226,28 +8259,27 @@ class App{
             const keyPressed = e.key.toLowerCase()
 
             if(keyPressed === "p"){
-                log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
-                // this.obtain("hukla", "x2", false)
-                // this.checkAll()
-                // log(this.det)
-                this.det.coins+= 400
-                this.det.lvl++
-                // this.det.stats.spd+=.5
-                const meSelf = players.find(pl => pl._id ===this.det._id)
-                if(meSelf){
-                    meSelf.spd += 1
-                    log(meSelf.spd)
+                // log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
+                // // this.obtain("hukla", "x2", false)
+                // // this.checkAll()
+                // // log(this.det)
+                // this.det.coins+= 400
+                // this.det.lvl++
+                // // this.det.stats.spd+=.5
+                // const meSelf = players.find(pl => pl._id ===this.det._id)
+                // if(meSelf){
+                //     meSelf.spd += 1
+                //     log(meSelf.spd)
                     
-                    this._statPopUp("+spd +coins +lvl", 100);
-                }
+                //     this._statPopUp("+spd +coins +lvl", 100);
+                // }
             } 
             if(keyPressed === " "){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
                 log("my details",this.det)
                 // this.myChar.mode = "poisoned"
-                this.det.maxHp += 200
-                this.det.hp+=199
-                
+                // this.det.maxHp += 200
+                // this.det.hp+=199
             } 
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
@@ -9400,315 +9432,6 @@ class App{
             newFakeShadow.scaling = new Vector3(sizeShadow,.1,sizeShadow)
         }
     }
-    createCharacter(det, theCharacterRoot, scene, shadowGen, castShadow, isMine, allswords, allhelmets, allshields, light, detectorSize){
-        const body = MeshBuilder.CreateBox(`box.${det._id}`, {size: .2, height: 1.7}, scene)
-        body.position = new Vector3(det.x,this.yPos,det.z); 
-        body.checkCollisions = true
-        // body.onCollide = m => {
-        //     log(m.name)
-        //     if(m.name.includes("trees") || m.name.includes("wall")) log("walking on wall")
-        // }
-        const detector = MeshBuilder.CreateBox(`detector.${det._id}`, {size: detectorSize, height: 1}, scene)
-        detector.position = new Vector3(0,-.45,0); detector.visibility = .7
-        detector.parent = body
-
-        body.isVisible = false
-        detector.isVisible = false
-        if(fakeShadow) this.putFakeShadow(body)
-        let entries = theCharacterRoot.instantiateModelsToScene();
-        entries.animationGroups.forEach(ani => ani.name = ani.name.split(" ")[2])
-        let meshes = []
-        let rHead;
-        entries.rootNodes[0].getChildren().forEach(mes => {
-            mes.name = mes.name.split(" ")[2]
-            if(mes.name !== "Armature") meshes.push(mes);
-            if(mes.name === "Armature"){
-                mes.getChildren().forEach(mes => {
-                    if(mes.name.includes("rbone")) rHead = mes.getChildren()[0].getChildren()[0].getChildren()[0]
-                })     
-            }
-        })
-        const {lifeGui, playerHealthMesh} = this.createPlayerHealthBar(1.1,det._id,body, det.hp,det.maxHp, scene)
-
-        entries.rootNodes[0].parent = body
-        entries.rootNodes[0].position.y -= this.yPos
-        entries.rootNodes[0].rotationQuaternion = null
-        entries.skeletons[0].dispose()
-
-        const theHair = this.suitUpdate(meshes, det.hair, det.cloth, det.pants, det.boots, det.hairColor, scene, light)
-        const nameMesh = this.createTextMesh(makeRandNum(),det.name, "white",{x: 0, y:1.5, z:0},50, scene, false, body)
-
-        let camTarg
-        let weaponCol
-        if(isMine){
-            camTarg = MeshBuilder.CreateBox(`camTarg.${det._id}`, { size: .5 }, scene)
-            camTarg.parent = body
-            camTarg.isVisible = false
-            camTarg.position = new Vector3(0,.7,0);
-            // light.parent = camTarg;
-            
-            this.myBar = this.createBar(1.4,.04, det._id, body, 0, 300)
-
-            weaponCol = MeshBuilder.CreateBox(`weaponCol.${det._id}`, { size: .6, depth: 1.2 }, scene)
-            weaponCol.position = new Vector3(0,1,.8); 
-            weaponCol.parent = body
-            weaponCol.actionManager = new ActionManager(scene)
-            weaponCol.isVisible = false
-            const { merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
-            
-            changeModeS.attachToMesh(body)
-            skillAcquiredS.attachToMesh(body)
-            consumeS.attachToMesh(body)
-            itemEquipedS.attachToMesh(body)
-            coinReceivedS.attachToMesh(body)
-            nextBtnS.attachToMesh(body)
-            notifS.attachToMesh(body)
-            congratsS.attachToMesh(body)
-            brokenS.attachToMesh(body)
-            smallCongratsS.attachToMesh(body)
-            merchantV.attachToMesh(body)
-            normalV.attachToMesh(body)
-        }
-        const myswordz = []
-        const myhelmetz = []
-        const myshieldz = []
-        const armorz = []
-        const gearz = []
-        let rHand
-        let lHand
-        let rootBone
-        const rootSword = MeshBuilder.CreateBox(`rootsword.${det._id}`, {size: .5}, scene)
-        rootSword.isVisible = false;
-        const soundColl = MeshBuilder.CreateBox(`soundColl.${det._id}`, {height: 6, size: .3}, scene)
-        soundColl.parent = rootSword; soundColl.position = new Vector3(0,4.5,0)
-        soundColl.addRotation(0,0,0);
-        soundColl.actionManager = new ActionManager(scene)
-        soundColl.isVisible = false
-
-        const whoopS = this._allSounds.whoop.clone()
-        const drawSwordS = this._allSounds.drawSword.clone()
-        let runningS = this._allSounds.running.clone()
-        const minningS = this._allSounds.minning.clone()
-        const punchedS = this._allSounds.punched.clone()
-        const sliceHitS = this._allSounds.sliceHit.clone()
-        const woodCuttingS = this._allSounds.woodCuttingS.clone()
-        const diedS = this._allSounds.characDeathS.clone()
-        const spearStruck = this._allSounds.spearStruckS.clone();
-
-        runningS.attachToMesh(body)
-        punchedS.attachToMesh(body)
-        sliceHitS.attachToMesh(body)
-        whoopS.attachToMesh(rootSword)
-        drawSwordS.attachToMesh(rootSword)
-        minningS.attachToMesh(rootSword)
-        woodCuttingS.attachToMesh(rootSword)
-        spearStruck.attachToMesh(body)
-
-        const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
-        if(isOnFloorPlace){
-            log("is in floor places")
-            runningS = this._allSounds.woodFloorS.clone()
-            runningS.attachToMesh(body)
-        }
-        
-        meshes.forEach(mesh => {
-            if(mesh.name.includes("body") && castShadow) shadowGen.addShadowCaster(mesh)
-            if(mesh.name.includes('armor')) armorz.push(mesh)            
-            if(mesh.name.includes('gear')) gearz.push(mesh)
-        })
-        entries.rootNodes[0].getChildren()[0].getChildren().forEach(mesh => {
-            if(mesh.name.includes("rbone")){
-               rHand = mesh.getChildren()[0].getChildren()[0].getChildren()[2].getChildren()[0].getChildren()[0].getChildren()[0]
-               lHand = mesh.getChildren()[0].getChildren()[0].getChildren()[1].getChildren()[0].getChildren()[0].getChildren()[0]
-               rootBone = mesh.getChildren()[0]
-            }
-        })       
-        this.showArmor(armorz, det.armor.name);
-        this.showArmor(gearz, det.gear.name);
-        allswords.forEach(sword => {
-            det.items.forEach(item => {
-                if(item.itemType === 'sword'){
-                    if(sword.name.split(".")[1] === item.name){
-                        const isCreatedWithSameName = myswordz.some(swrd =>swrd.name.split(".")[1] === item.name)
-                        if(isCreatedWithSameName) return log("is already created")
-                        const swordCloned = sword.clone(`${sword.name}`)
-                        swordCloned._id = makeRandNum()
-                        swordCloned.parent = rootSword
-                        swordCloned.position = new Vector3(0,0,0);
-                        myswordz.push(swordCloned);
-                    }
-                }
-            })
-        })
-        allhelmets.forEach(helm => {
-            det.items.forEach(item => {
-                if(item.itemType === 'helmet'){
-                    if(helm.name.split(".")[1] === item.name){
-                        const isCreatedWithSameName = myhelmetz.some(swrd =>swrd.name.split(".")[1] === item.name)
-                        if(isCreatedWithSameName) return log("helmet already created")
-                        const clonedHelmet = helm.clone(`${helm.name}`)
-                        clonedHelmet.parent = rHead
-                        clonedHelmet.position = new Vector3(0,0,0);
-                        myhelmetz.push(clonedHelmet)
-                    }
-                }
-            })
-        })
-        allshields.forEach(shld => {
-            det.items.forEach(item => {
-                if(item.itemType === 'shield'){
-                    if(shld.name.split(".")[1] === item.name){
-                        const isCreatedWithSameName = myshieldz.some(swrd =>swrd.name.split(".")[1] === item.name)
-                        if(isCreatedWithSameName) return log("shield already created")
-                        const clonedShield = shld.clone(`${shld.name}`)
-                        clonedShield.parent = lHand
-                        clonedShield.position = new Vector3(0,0,0);
-                        myshieldz.push(clonedShield)
-                    }
-                }
-            })
-        })
-
-        detector.actionManager = new ActionManager(scene)
-        body.actionManager = new ActionManager(scene)
-
-        const createSword = (swordName) => {
-            allswords.forEach(sword => {
-                if(sword.name.split(".")[1] === swordName){
-                    log("we will create this sword")
-                    const swordCloned = sword.clone(sword.name)
-                    const isAlreadyHave = myswordz.some(swrd => swrd.name === swordName)
-                    if(isAlreadyHave) return log("already have this mesh created in my swords meshes")
-                    swordCloned.parent = rootSword
-                    myswordz.push(swordCloned)
-                }
-            })
-            return myswordz
-        }
-        const createHelm = (helmetName) => {
-            allhelmets.forEach(helmt => {
-                if(helmt.name.split(".")[1] === helmetName){
-                    log(`we will create ${helmt.name} helmet`)
-                    const clonedHelm = helmt.clone(helmt.name)
-                    const isAlreadyHave = myhelmetz.some(swrd => swrd.name === helmetName)
-                    if(isAlreadyHave) return log("already have this mesh created in my helmets meshes")
-                    clonedHelm.parent = rHead
-                    clonedHelm.position = new Vector3(0,0,0);
-                    myhelmetz.push(clonedHelm)
-                    myhelmetz.forEach(helmt => log(helmt.name))
-                }
-            })
-            return myhelmetz
-        }
-        const createShield = (shieldName) => {
-            allshields.forEach(shld => {
-                if(shld.name.split(".")[1] === shieldName){
-                    log(`we will create ${shld.name} shield`)
-                    const clonedShield = shld.clone(shld.name)
-                    const isAlreadyHave = myhelmetz.some(swrd => swrd.name === shieldName)
-                    if(isAlreadyHave) return log("already have this mesh created in my shields meshes")
-                    clonedShield.parent = lHand
-                    clonedShield.position = new Vector3(0,0,0)
-                    myshieldz.push(clonedShield)
-                }
-            })
-            return myshieldz
-        }
-        // if(det.weapon.name !== 'none'){
-        //     myswordz.forEach(swordmesh =>{
-        //         log(swordmesh.name)
-        //         if(swordmesh.name.split(".")[1] === det.weapon.name){
-        //             swordmesh.isVisible = true
-        //         }else{
-        //             swordmesh.isVisible = false
-        //         }
-        //     })
-        // }else{
-        //     myswordz.forEach(swordmesh =>swordmesh.isVisible = false)
-        // }
-        this.makeSwordVisible(myswordz, det.weapon.name)
-        if(det.helmet.name !== 'none'){
-            myhelmetz.forEach(swordmesh =>{
-                log(swordmesh.name)
-                if(swordmesh.name.split(".")[1] === det.helmet.name){
-                    swordmesh.isVisible = true
-                }else{
-                    swordmesh.isVisible = false
-                }
-            })
-        }else{
-            myhelmetz.forEach(swordmesh =>swordmesh.isVisible = false)
-        }
-        if(det.shield.name !== 'none'){
-            myshieldz.forEach(swordmesh =>{
-                if(swordmesh.name.split(".")[1] === det.shield.name){
-                    swordmesh.isVisible = true
-                }else{
-                    swordmesh.isVisible = false
-                }
-            })
-        }else{
-            myshieldz.forEach(swordmesh =>swordmesh.isVisible = false)
-        }
-
-        // const rockParticles = this.createBloodParticle("rocktexture", 10, false, "sphere", true, false, false, soundColl)
-        const toPush = {
-            _id: det._id,
-            name: det.name,
-            bx: body,
-            detector,
-            _moving: false,
-            _attacking: false,
-            _minning: det._minning ? det._minning : false,
-            _training: det._training ? det._training : false,
-            _crafting: det._crafting ? det._crafting : false,
-            mode: det.mode === undefined ? 'stand' : det.mode,
-            status: [], // bashed(will be moved backwards)
-            moveActionName: "none",
-            spd: det.stats.spd,
-            dirTarg: {x: 0, z: -1},
-            anims: entries.animationGroups,
-            meshes,
-            soundColl,
-            myhelmetz,
-            myshieldz,
-            swordz: myswordz, rHand, lHand, rootBone, rootSword, rHead, theHair,
-            createSword, createHelm, createShield,
-            armorz, gearz,
-            lifeGui,
-            playerHealthMesh,
-            nameMesh,
-            whoopS,
-            drawSwordS,
-            runningS,
-            minningS,
-            punchedS,
-            sliceHitS,
-            woodCuttingS,
-            spearStruck,
-            diedS
-        }
-
-        this.playAnim(toPush.anims, "0Idle", true)
-        if(det.mode === "weapon") this.getSword(rootSword, rHand)
-        if(det.mode === "fist") this.keepSword(rootSword, rootBone)
-        if(det.mode === "stand") this.keepSword(rootSword, rootBone)
-        if(det.dirTarg){
-            body.lookAt(new Vector3(det.dirTarg.x,body.position.y,det.dirTarg.z),0,0,0)
-        }
-        if(det.mode === undefined) this.keepSword(rootSword, rootBone)
-
-        // this.createMessage({name: det.name, message: "has Joined !"})
-        players.push(toPush)
-        
-        log(`${det.name} mesh created !`)
-        if(isMine){
-            toPush.weaponCol = weaponCol
-            toPush.camTarg = camTarg
-            return toPush
-        }
-        this.countActivePl()
-    }
     async createMerchant(scene, merchPos, merchTarg){
         const Merchant = await this.importMesh(scene, "./models/", "merchant.glb");
         Merchant.meshes[0].getChildren(merch => {
@@ -10325,6 +10048,323 @@ class App{
             }
         ))
     }
+    createCharacter(det, theCharacterRoot, scene, shadowGen, castShadow, isMine, allswords, allhelmets, allshields, light, detectorSize){
+        const body = MeshBuilder.CreateBox(`box.${det._id}`, {size: .2, height: 1.7}, scene)
+        body.position = new Vector3(det.x,this.yPos,det.z); 
+        body.checkCollisions = true
+        // body.onCollide = m => {
+        //     log(m.name)
+        //     if(m.name.includes("trees") || m.name.includes("wall")) log("walking on wall")
+        // }
+        const detector = MeshBuilder.CreateBox(`detector.${det._id}`, {size: detectorSize, height: 1}, scene)
+        detector.position = new Vector3(0,-.45,0); detector.visibility = .7
+        detector.parent = body
+
+        body.isVisible = false
+        detector.isVisible = false
+        if(fakeShadow) this.putFakeShadow(body)
+        let entries = theCharacterRoot.instantiateModelsToScene();
+        entries.animationGroups.forEach(ani => ani.name = ani.name.split(" ")[2])
+        let meshes = []
+        let rHead;
+        entries.rootNodes[0].getChildren().forEach(mes => {
+            mes.name = mes.name.split(" ")[2]
+            if(mes.name !== "Armature") meshes.push(mes);
+            if(mes.name === "Armature"){
+                mes.getChildren().forEach(mes => {
+                    if(mes.name.includes("rbone")) rHead = mes.getChildren()[0].getChildren()[0].getChildren()[0]
+                })     
+            }
+        })
+        const {lifeGui, playerHealthMesh} = this.createPlayerHealthBar(1.1,det._id,body, det.hp,det.maxHp, scene)
+
+        entries.rootNodes[0].parent = body
+        entries.rootNodes[0].position.y -= this.yPos
+        entries.rootNodes[0].rotationQuaternion = null
+        entries.skeletons[0].dispose()
+
+        const theHair = this.suitUpdate(meshes, det.hair, det.cloth, det.pants, det.boots, det.hairColor, scene, light)
+        const nameMesh = this.createTextMesh(makeRandNum(),det.name, "white",{x: 0, y:1.5, z:0},50, scene, false, body)
+
+        let camTarg
+        let weaponCol
+        let farDetector
+        if(isMine){
+            camTarg = MeshBuilder.CreateBox(`camTarg.${det._id}`, { size: .5 }, scene)
+            camTarg.parent = body
+            camTarg.isVisible = false
+            camTarg.position = new Vector3(0,.7,0);
+            // light.parent = camTarg;
+            
+            this.myBar = this.createBar(1.4,.04, det._id, body, 0, 300)
+
+            weaponCol = MeshBuilder.CreateBox(`weaponCol.${det._id}`, { size: .6, depth: 1.2 }, scene)
+            weaponCol.position = new Vector3(0,1,.8); 
+            weaponCol.parent = body
+            weaponCol.actionManager = new ActionManager(scene)
+            weaponCol.isVisible = false
+            const { merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+            
+            changeModeS.attachToMesh(body)
+            skillAcquiredS.attachToMesh(body)
+            consumeS.attachToMesh(body)
+            itemEquipedS.attachToMesh(body)
+            coinReceivedS.attachToMesh(body)
+            nextBtnS.attachToMesh(body)
+            notifS.attachToMesh(body)
+            congratsS.attachToMesh(body)
+            brokenS.attachToMesh(body)
+            smallCongratsS.attachToMesh(body)
+            merchantV.attachToMesh(body)
+            normalV.attachToMesh(body);
+
+            farDetector = MeshBuilder.CreateGround(`farDetector.${det._id}`, {width: 25, height: 25}, scene)
+            farDetector.position = new Vector3(0,0,0); 
+            farDetector.isVisible = false
+            farDetector.parent = body
+
+            detector.actionManager = new ActionManager(scene)
+            farDetector.actionManager = new ActionManager(scene)
+            body.actionManager = new ActionManager(scene)
+        }
+        const myswordz = []
+        const myhelmetz = []
+        const myshieldz = []
+        const armorz = []
+        const gearz = []
+        let rHand
+        let lHand
+        let rootBone
+        const rootSword = MeshBuilder.CreateBox(`rootsword.${det._id}`, {size: .5}, scene)
+        rootSword.isVisible = false;
+        const soundColl = MeshBuilder.CreateBox(`soundColl.${det._id}`, {height: 6, size: .3}, scene)
+        soundColl.parent = rootSword; soundColl.position = new Vector3(0,4.5,0)
+        soundColl.addRotation(0,0,0);
+        soundColl.actionManager = new ActionManager(scene)
+        soundColl.isVisible = false
+
+        const whoopS = this._allSounds.whoop.clone()
+        const drawSwordS = this._allSounds.drawSword.clone()
+        let runningS = this._allSounds.running.clone()
+        const minningS = this._allSounds.minning.clone()
+        const punchedS = this._allSounds.punched.clone()
+        const sliceHitS = this._allSounds.sliceHit.clone()
+        const woodCuttingS = this._allSounds.woodCuttingS.clone()
+        const diedS = this._allSounds.characDeathS.clone()
+        const spearStruck = this._allSounds.spearStruckS.clone();
+
+        runningS.attachToMesh(body)
+        punchedS.attachToMesh(body)
+        sliceHitS.attachToMesh(body)
+        whoopS.attachToMesh(rootSword)
+        drawSwordS.attachToMesh(rootSword)
+        minningS.attachToMesh(rootSword)
+        woodCuttingS.attachToMesh(rootSword)
+        spearStruck.attachToMesh(body)
+
+        const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
+        if(isOnFloorPlace){
+            log("is in floor places")
+            runningS = this._allSounds.woodFloorS.clone()
+            runningS.attachToMesh(body)
+        }
+        
+        meshes.forEach(mesh => {
+            if(mesh.name.includes("body") && castShadow) shadowGen.addShadowCaster(mesh)
+            if(mesh.name.includes('armor')) armorz.push(mesh)            
+            if(mesh.name.includes('gear')) gearz.push(mesh)
+        })
+        entries.rootNodes[0].getChildren()[0].getChildren().forEach(mesh => {
+            if(mesh.name.includes("rbone")){
+               rHand = mesh.getChildren()[0].getChildren()[0].getChildren()[2].getChildren()[0].getChildren()[0].getChildren()[0]
+               lHand = mesh.getChildren()[0].getChildren()[0].getChildren()[1].getChildren()[0].getChildren()[0].getChildren()[0]
+               rootBone = mesh.getChildren()[0]
+            }
+        })       
+        this.showArmor(armorz, det.armor.name);
+        this.showArmor(gearz, det.gear.name);
+        allswords.forEach(sword => {
+            det.items.forEach(item => {
+                if(item.itemType === 'sword'){
+                    if(sword.name.split(".")[1] === item.name){
+                        const isCreatedWithSameName = myswordz.some(swrd =>swrd.name.split(".")[1] === item.name)
+                        if(isCreatedWithSameName) return log("is already created")
+                        const swordCloned = sword.clone(`${sword.name}`)
+                        swordCloned._id = makeRandNum()
+                        swordCloned.parent = rootSword
+                        swordCloned.position = new Vector3(0,0,0);
+                        myswordz.push(swordCloned);
+                    }
+                }
+            })
+        })
+        allhelmets.forEach(helm => {
+            det.items.forEach(item => {
+                if(item.itemType === 'helmet'){
+                    if(helm.name.split(".")[1] === item.name){
+                        const isCreatedWithSameName = myhelmetz.some(swrd =>swrd.name.split(".")[1] === item.name)
+                        if(isCreatedWithSameName) return log("helmet already created")
+                        const clonedHelmet = helm.clone(`${helm.name}`)
+                        clonedHelmet.parent = rHead
+                        clonedHelmet.position = new Vector3(0,0,0);
+                        myhelmetz.push(clonedHelmet)
+                    }
+                }
+            })
+        })
+        allshields.forEach(shld => {
+            det.items.forEach(item => {
+                if(item.itemType === 'shield'){
+                    if(shld.name.split(".")[1] === item.name){
+                        const isCreatedWithSameName = myshieldz.some(swrd =>swrd.name.split(".")[1] === item.name)
+                        if(isCreatedWithSameName) return log("shield already created")
+                        const clonedShield = shld.clone(`${shld.name}`)
+                        clonedShield.parent = lHand
+                        clonedShield.position = new Vector3(0,0,0);
+                        myshieldz.push(clonedShield)
+                    }
+                }
+            })
+        })
+
+        const createSword = (swordName) => {
+            allswords.forEach(sword => {
+                if(sword.name.split(".")[1] === swordName){
+                    log("we will create this sword")
+                    const swordCloned = sword.clone(sword.name)
+                    const isAlreadyHave = myswordz.some(swrd => swrd.name === swordName)
+                    if(isAlreadyHave) return log("already have this mesh created in my swords meshes")
+                    swordCloned.parent = rootSword
+                    myswordz.push(swordCloned)
+                }
+            })
+            return myswordz
+        }
+        const createHelm = (helmetName) => {
+            allhelmets.forEach(helmt => {
+                if(helmt.name.split(".")[1] === helmetName){
+                    log(`we will create ${helmt.name} helmet`)
+                    const clonedHelm = helmt.clone(helmt.name)
+                    const isAlreadyHave = myhelmetz.some(swrd => swrd.name === helmetName)
+                    if(isAlreadyHave) return log("already have this mesh created in my helmets meshes")
+                    clonedHelm.parent = rHead
+                    clonedHelm.position = new Vector3(0,0,0);
+                    myhelmetz.push(clonedHelm)
+                    myhelmetz.forEach(helmt => log(helmt.name))
+                }
+            })
+            return myhelmetz
+        }
+        const createShield = (shieldName) => {
+            allshields.forEach(shld => {
+                if(shld.name.split(".")[1] === shieldName){
+                    log(`we will create ${shld.name} shield`)
+                    const clonedShield = shld.clone(shld.name)
+                    const isAlreadyHave = myhelmetz.some(swrd => swrd.name === shieldName)
+                    if(isAlreadyHave) return log("already have this mesh created in my shields meshes")
+                    clonedShield.parent = lHand
+                    clonedShield.position = new Vector3(0,0,0)
+                    myshieldz.push(clonedShield)
+                }
+            })
+            return myshieldz
+        }
+        // if(det.weapon.name !== 'none'){
+        //     myswordz.forEach(swordmesh =>{
+        //         log(swordmesh.name)
+        //         if(swordmesh.name.split(".")[1] === det.weapon.name){
+        //             swordmesh.isVisible = true
+        //         }else{
+        //             swordmesh.isVisible = false
+        //         }
+        //     })
+        // }else{
+        //     myswordz.forEach(swordmesh =>swordmesh.isVisible = false)
+        // }
+        this.makeSwordVisible(myswordz, det.weapon.name)
+        if(det.helmet.name !== 'none'){
+            myhelmetz.forEach(swordmesh =>{
+                log(swordmesh.name)
+                if(swordmesh.name.split(".")[1] === det.helmet.name){
+                    swordmesh.isVisible = true
+                }else{
+                    swordmesh.isVisible = false
+                }
+            })
+        }else{
+            myhelmetz.forEach(swordmesh =>swordmesh.isVisible = false)
+        }
+        if(det.shield.name !== 'none'){
+            myshieldz.forEach(swordmesh =>{
+                if(swordmesh.name.split(".")[1] === det.shield.name){
+                    swordmesh.isVisible = true
+                }else{
+                    swordmesh.isVisible = false
+                }
+            })
+        }else{
+            myshieldz.forEach(swordmesh =>swordmesh.isVisible = false)
+        }
+
+        // const rockParticles = this.createBloodParticle("rocktexture", 10, false, "sphere", true, false, false, soundColl)
+        const toPush = {
+            _id: det._id,
+            name: det.name,
+            bx: body,
+            detector,
+            farDetector,
+            _moving: false,
+            _attacking: false,
+            _minning: det._minning ? det._minning : false,
+            _training: det._training ? det._training : false,
+            _crafting: det._crafting ? det._crafting : false,
+            mode: det.mode === undefined ? 'stand' : det.mode,
+            status: [], // bashed(will be moved backwards)
+            moveActionName: "none",
+            spd: det.stats.spd,
+            dirTarg: {x: 0, z: -1},
+            anims: entries.animationGroups,
+            meshes,
+            soundColl,
+            myhelmetz,
+            myshieldz,
+            swordz: myswordz, rHand, lHand, rootBone, rootSword, rHead, theHair,
+            createSword, createHelm, createShield,
+            armorz, gearz,
+            lifeGui,
+            playerHealthMesh,
+            nameMesh,
+            whoopS,
+            drawSwordS,
+            runningS,
+            minningS,
+            punchedS,
+            sliceHitS,
+            woodCuttingS,
+            spearStruck,
+            diedS
+        }
+
+        this.playAnim(toPush.anims, "0Idle", true)
+        if(det.mode === "weapon") this.getSword(rootSword, rHand)
+        if(det.mode === "fist") this.keepSword(rootSword, rootBone)
+        if(det.mode === "stand") this.keepSword(rootSword, rootBone)
+        if(det.dirTarg){
+            body.lookAt(new Vector3(det.dirTarg.x,body.position.y,det.dirTarg.z),0,0,0)
+        }
+        if(det.mode === undefined) this.keepSword(rootSword, rootBone)
+
+        // this.createMessage({name: det.name, message: "has Joined !"})
+        players.push(toPush)
+        
+        log(`${det.name} mesh created !`)
+        if(isMine){
+            toPush.weaponCol = weaponCol
+            toPush.camTarg = camTarg
+            return toPush
+        }
+        this.countActivePl()
+    }
     // CREATION OF SKILLS
     createCastLong(mesh, pos, dirTarg, spd, scene){
         const longRangeSkill = mesh.clone(`lr.${makeRandNum()}`)
@@ -10577,15 +10617,27 @@ class App{
         body.visibility = .9
 
         let punchedS
+        let effectS
+        let farSound
         switch(monsName){
             case "golem":
                 punchedS = this._allSounds.rockSmashS.clone()
             break;
+            case "viper":
+                punchedS = this._allSounds.snakeBitS.clone()
+                effectS = this._allSounds.poisonS.clone()
+                farSound = this._allSounds.snakeSound.clone()
+                log("Viper connected sounds")
+            break;
+            case "monoloth":
+                farSound = this._allSounds.beeS.clone();
+                punchedS = this._allSounds.punched.clone()
+            break
             default:
                 punchedS = this._allSounds.punched.clone()
             break
         }
-        const sliceFleshS = this._allSounds.sliceFlesh.clone()
+        // const sliceFleshS = this._allSounds.sliceFlesh.clone()
         const sliceHitS = this._allSounds.sliceHit.clone();
         const spearStruck = this._allSounds.spearStruckS.clone();
 
@@ -10593,10 +10645,12 @@ class App{
 
         punchedS.attachToMesh(body)
         sliceHitS.attachToMesh(body)
-        sliceFleshS.attachToMesh(body)
+        // sliceFleshS.attachToMesh(body)
         spearStruck.attachToMesh(body)
-        sliceFleshS.setPlaybackRate(1.2)
-    
+        // sliceFleshS.setPlaybackRate(1.2)
+        if(effectS !== undefined) effectS.attachToMesh(body)
+        if(farSound !== undefined) farSound.attachToMesh(body)      
+
         const enemyDetection = MeshBuilder.CreateBox(`enemyDetection.${monsId}`, {size: 6, height: .6}, scene)
         enemyDetection.parent = body
         enemyDetection.isVisible = false
@@ -10905,10 +10959,23 @@ class App{
                 punchedS.setPlaybackRate(1+Math.random()*.2)
                 punchedS.play()
                 this.socketAvailable && this.socket.emit("playerIsHit", {_id: theIdOfPlayer, monsId, animName: 'hitcenter',dmg})
-
+                log(`I am hit by ${monsName}`)
                 this.hitByNonMultiAI(this.myChar.bx, body, dmg, 'hitcenter', monsId, effects ? effects : false)
             }
         ))
+        // for sounds
+        if(farSound !== undefined){
+            log(`${monsName} have a far sound`)
+            body.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger: ActionManager.OnIntersectionEnterTrigger,
+                    parameter: this.myChar.farDetector
+                }, e => {
+                    log(`colliding with ${monsName}`)
+                    farSound.play()
+                }
+            ))
+        }
         if(monsName.includes("slime")){
             const myrootbone = entries.rootNodes[0].getChildren()[0].getChildren()[1]
             weapon.parent = myrootbone
@@ -10946,10 +11013,11 @@ class App{
             standBy,
             expGain,
             punchedS,
-            sliceFleshS,
             sliceHitS,
             monsSoundDied,
-            monsBreed
+            monsBreed,
+            effectS,
+            farSound
         }
         let intervalLookAround
         intervalLookAround = setInterval(() => {
