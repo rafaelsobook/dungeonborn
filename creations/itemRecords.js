@@ -260,6 +260,18 @@ const records = [
         durability: 5000
     },
     { 
+        dn: 'Majesty',
+        name: 'majesty', 
+        itemType: 'sword',
+        desc: "A Blazing Sword, Known for It's mixture of gold red and black, Many demons life has been sealed in this sword",
+        origPrice: 7000,
+        secondPrice: 4000,
+        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 4},
+        plusDmg: 145,
+        cState: 5000,
+        durability: 5000
+    },
+    { 
         dn: 'Ruzty Sword',
         name: 'ruztysword', 
         itemType: 'sword',
@@ -364,7 +376,7 @@ const records = [
         dn: 'Hydra Armor',
         name: 'hydra', 
         itemType: 'armor', 
-        plusDef: 12, plusDmg: 0, 
+        plusDef: 18, plusDmg: 0, 
         magRes: 0, plusMag: 0,
         origPrice: 5000,
         secondPrice: 3000,

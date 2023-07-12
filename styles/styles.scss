@@ -2235,11 +2235,17 @@ nav {
       }
       .shopitem-name {
         flex: 1;
-        margin-left: 20px;
-        font-family: $mapfont;
+        margin-left: 15px;
+        font-family: $gamefont;
         font-weight: 700;
         color: $littlewhite;
-        font-size: 0.9rem;
+        font-size: 1rem;
+      }
+      .shopitm-qnty {
+        color: #adadad;
+        margin-right: 15px;
+        font-size: 1.1rem;
+        font-family: $numFont;
       }
       .shopitem-dmgDef {
         flex: 1;

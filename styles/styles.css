@@ -3114,11 +3114,18 @@ nav {
   -webkit-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
-  margin-left: 20px;
-  font-family: "Caudex", serif;
+  margin-left: 15px;
+  font-family: "Bellefair", serif;
   font-weight: 700;
   color: #adadad;
-  font-size: 0.9rem;
+  font-size: 1rem;
+}
+
+.shopchoice-cont .shop-list .shopbx .shopitm-qnty {
+  color: #adadad;
+  margin-right: 15px;
+  font-size: 1.1rem;
+  font-family: "Graduate", cursive;
 }
 
 .shopchoice-cont .shop-list .shopbx .shopitem-dmgDef {
