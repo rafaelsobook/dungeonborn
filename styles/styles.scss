@@ -130,25 +130,12 @@ nav {
   .nav-choice:active {
     transform: scale(0.98);
   }
-}
-.dark-nav {
-  background: rgba(0, 0, 0, 0.2);
-  padding-left: 15px;
+  .dark-nav {
+    background: rgba(0, 0, 0, 0.2);
+    padding-left: 15px;
+  }
 }
 
-.logo {
-  position: fixed;
-  left: 0;
-  width: 100%;
-  top: 21%;
-  text-align: center;
-  font-family: $scrollfont;
-  font-size: 2.9rem;
-  color: #a09a9a;
-  cursor: pointer;
-  font-weight: 700;
-  z-index: 8;
-}
 @media (max-height: 500px) {
   .nav-choices {
     .nav-choice {
@@ -156,6 +143,19 @@ nav {
       .slog {
         font-size: 1rem;
       }
+    }
+  }
+}
+@media (max-width: 450px) {
+  .nav-choices {
+    #installGame {
+      display: block;
+    }
+    .nav-choice {
+      font-size: 0.9rem;
+    }
+    .dark-nav {
+      display: none;
     }
   }
 }
@@ -339,6 +339,13 @@ nav {
     }
     .btn {
       font-size: 0.8rem;
+    }
+  }
+}
+@media (max-width: 450px) {
+  .home-page {
+    .homepage-btn {
+      display: none;
     }
   }
 }
@@ -2243,7 +2250,7 @@ nav {
       }
       .shopitm-qnty {
         color: #adadad;
-        margin-right: 15px;
+
         font-size: 1.1rem;
         font-family: $numFont;
       }
@@ -2265,6 +2272,7 @@ nav {
         border-radius: 4px;
         border: 1px solid $littleBlack;
         transform: scale(1);
+        margin-left: 15px;
       }
       .shopitem-btn:active {
         transform: scale(0.94);
@@ -3351,7 +3359,8 @@ nav {
   align-items: center;
   flex-direction: column;
   border-radius: 5px;
-  padding: 5px;
+  padding: 40px 10px;
+  overflow-y: scroll;
   .tutorial-bx {
     width: 100%;
     padding: 0 10px;
@@ -3359,48 +3368,35 @@ nav {
   }
   .tut-ttle {
     text-align: center;
-    font-family: $mapfont;
+    font-family: $gamefont;
     color: $littlewhite;
   }
   .tut-line {
     font-family: $tipsFont;
     color: $littlewhite;
     text-align: center;
+    margin-top: 4px;
   }
   .onleft {
     text-align: left;
   }
   .tut-btn {
-    position: fixed;
-    bottom: -20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: url("../images/UI/btnBackG.jpg");
-    padding: 1px 35px;
-    color: whitesmoke;
+    width: 30%;
+    margin-top: 20px;
     cursor: pointer;
-    font-family: $copyrightFont;
-    font-size: 1rem;
-    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-    border: none;
-    height: 20px;
-    width: 100px;
-    z-index: 4;
-    border-radius: 5px;
   }
   .tut-btn:active {
     opacity: 0.9;
-    bottom: -18%;
-    transition: 0.1s;
+    transform: scale(0.95);
   }
 }
 @media (max-height: 450px) {
   .tutorial-cont {
     width: 60%;
-    height: 50%;
+    height: 60%;
+    padding: 15px 5px;
     .tut-ttle {
       text-align: center;
-      font-family: $mapfont;
       color: $littlewhite;
     }
     .tut-line {
@@ -3804,6 +3800,11 @@ nav {
 @media (max-height: 350px) {
   .db-logo {
     transform: translate(-50%, -50%) scale(0.15);
+  }
+}
+@media (max-width: 450px) {
+  .db-logo {
+    transform: translate(-50%, -50%) scale(0.35);
   }
 }
 .db-placeup {

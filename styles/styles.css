@@ -110,23 +110,9 @@ nav {
           transform: scale(0.98);
 }
 
-.dark-nav {
+.nav-choices .dark-nav {
   background: rgba(0, 0, 0, 0.2);
   padding-left: 15px;
-}
-
-.logo {
-  position: fixed;
-  left: 0;
-  width: 100%;
-  top: 21%;
-  text-align: center;
-  font-family: "Almendra Display", cursive;
-  font-size: 2.9rem;
-  color: #a09a9a;
-  cursor: pointer;
-  font-weight: 700;
-  z-index: 8;
 }
 
 @media (max-height: 500px) {
@@ -135,6 +121,18 @@ nav {
   }
   .nav-choices .nav-choice .slog {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .nav-choices #installGame {
+    display: block;
+  }
+  .nav-choices .nav-choice {
+    font-size: 0.9rem;
+  }
+  .nav-choices .dark-nav {
+    display: none;
   }
 }
 
@@ -415,6 +413,12 @@ nav {
   }
   .login-container .btn {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .home-page .homepage-btn {
+    display: none;
   }
 }
 
@@ -3123,7 +3127,6 @@ nav {
 
 .shopchoice-cont .shop-list .shopbx .shopitm-qnty {
   color: #adadad;
-  margin-right: 15px;
   font-size: 1.1rem;
   font-family: "Graduate", cursive;
 }
@@ -3150,6 +3153,7 @@ nav {
   border: 1px solid #746d63;
   -webkit-transform: scale(1);
           transform: scale(1);
+  margin-left: 15px;
 }
 
 .shopchoice-cont .shop-list .shopbx .shopitem-btn:active {
@@ -4714,7 +4718,8 @@ nav {
       -ms-flex-direction: column;
           flex-direction: column;
   border-radius: 5px;
-  padding: 5px;
+  padding: 40px 10px;
+  overflow-y: scroll;
 }
 
 .tutorial-cont .tutorial-bx {
@@ -4725,7 +4730,7 @@ nav {
 
 .tutorial-cont .tut-ttle {
   text-align: center;
-  font-family: "Caudex", serif;
+  font-family: "Bellefair", serif;
   color: #adadad;
 }
 
@@ -4733,6 +4738,7 @@ nav {
   font-family: "Bellefair", serif;
   color: #adadad;
   text-align: center;
+  margin-top: 4px;
 }
 
 .tutorial-cont .onleft {
@@ -4740,41 +4746,25 @@ nav {
 }
 
 .tutorial-cont .tut-btn {
-  position: fixed;
-  bottom: -20%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
-  background: url("../images/UI/btnBackG.jpg");
-  padding: 1px 35px;
-  color: whitesmoke;
+  width: 30%;
+  margin-top: 20px;
   cursor: pointer;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  font-size: 1rem;
-  -webkit-box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-          box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-  border: none;
-  height: 20px;
-  width: 100px;
-  z-index: 4;
-  border-radius: 5px;
 }
 
 .tutorial-cont .tut-btn:active {
   opacity: 0.9;
-  bottom: -18%;
-  -webkit-transition: 0.1s;
-  transition: 0.1s;
+  -webkit-transform: scale(0.95);
+          transform: scale(0.95);
 }
 
 @media (max-height: 450px) {
   .tutorial-cont {
     width: 60%;
-    height: 50%;
+    height: 60%;
+    padding: 15px 5px;
   }
   .tutorial-cont .tut-ttle {
     text-align: center;
-    font-family: "Caudex", serif;
     color: #adadad;
   }
   .tutorial-cont .tut-line {
@@ -5376,6 +5366,13 @@ nav {
   .db-logo {
     -webkit-transform: translate(-50%, -50%) scale(0.15);
             transform: translate(-50%, -50%) scale(0.15);
+  }
+}
+
+@media (max-width: 450px) {
+  .db-logo {
+    -webkit-transform: translate(-50%, -50%) scale(0.35);
+            transform: translate(-50%, -50%) scale(0.35);
   }
 }
 

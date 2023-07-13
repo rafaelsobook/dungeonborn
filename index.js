@@ -98,33 +98,39 @@ const allRegClass = document.querySelectorAll(".toreg")
 const installGame = document.getElementById("installGame")
 const continueBtn = document.getElementById("continue")
 
-let mobileMaxWidth = 700
+let mobileMaxWidth = 500
+let maxWidthForGameplay = 650
 let deferredPrompt
 
-// if(window.innerWidth < mobileMaxWidth){
-//     installGame.style.display = 'block'
-//     console.log("its on mobile mode")
-//     window.addEventListener("beforeinstallprompt", e => {
-//         log(e)
-//         deferredPrompt = e
-//     })        
-//     installGame.addEventListener("click", e => {
-//         if(!deferredPrompt) return fitScreenWarn("The App is already Installed <br /> on your device")
-//         deferredPrompt.prompt()
-//         deferredPrompt.userChoice
-//         .then( choiceResult => {
-//             if(choiceResult.outcome === "accepted"){
-//                 console.log("User want to install the game")
-//             }
-//             deferredPrompt = null
+if(window.innerWidth < mobileMaxWidth){
+    // the login register nav 
+    const logingRegisterDiv = document.querySelector(".dark-nav")
+    logingRegisterDiv.style.display = 'none'
+    loginPage.style.display = 'none'
+    
 
-//             localStorage.setItem("dbapp", JSON.stringify({isInstalled: true})) === null
-//         })
-//         .catch(error => console.log(error))
-//     })
-// }else{
-//     installGame.style.display = 'none'
-// }
+    installGame.style.display = 'block'
+    window.addEventListener("beforeinstallprompt", e => {
+        log(e)
+        deferredPrompt = e
+    })        
+    installGame.addEventListener("click", e => {
+        if(!deferredPrompt) return fitScreenWarn("The App is already Installed <br /> on your device")
+        deferredPrompt.prompt()
+        deferredPrompt.userChoice
+        .then( choiceResult => {
+            if(choiceResult.outcome === "accepted"){
+                console.log("User want to install the game")
+            }
+            deferredPrompt = null
+
+            localStorage.setItem("dbapp", JSON.stringify({isInstalled: true})) === null
+        })
+        .catch(error => console.log(error))
+    })
+}else{
+    installGame.style.display = 'none'
+}
 // login page
 const homeInputs = document.querySelectorAll(".inputs")
 homeInputs.forEach(inp => inp.value = '')
@@ -671,7 +677,7 @@ class App{
             if(elem.className && elem.className.includes('exp')) elem.innerHTML = `Exp: ${Math.floor(parseInt(data.exp)/parseInt(data.maxExp) * 100)}%`
             if(elem.className && elem.className.includes('str')) elem.innerHTML = `Physical Damage: ${this.det.stats.core * this.physicalX}`
             if(elem.className && elem.className.includes('weaponDmg')) elem.innerHTML = `Plus Weapon Damage: ${this.det.stats.sword * this.weaponX} + ${this.det.weapon.name !== "none" ? this.det.weapon.plusDmg : 0}`
-            if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.det.stats.def*1.5)} + ${(Math.floor(this.recalPhyDefense(0))-this.det.stats.def*1.5)}`
+            if(elem.className && elem.className.includes('deftotal')) elem.innerHTML = `Body Defense: ${Math.floor(this.det.stats.def*1.5)}}`
             if(elem.className && elem.className.includes('magicDmg')) elem.innerHTML = `Magic Damage: ${Math.floor(this.det.stats.magic * this.magX)}`
             if(elem.className && elem.className.includes('speed')) elem.innerHTML = `Movement Speed: ${Math.floor(this.det.stats.spd)}`
             if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" || ")}`
@@ -1410,19 +1416,19 @@ class App{
                         log("core material " + itemRec.craftMaterial.name)
                         switch(itemRec.craftMaterial.name){
                             case "mincore":
-                                costForCraft = 700
-                                ironCost = 2
-                                successChance = 7
+                                costForCraft = 800
+                                ironCost = 4
+                                successChance = 6
                             break
                             case "vipcore":
                                 costForCraft = 2000
-                                ironCost = 3
+                                ironCost = 5
                                 successChance = 5
                             break;
                             default:    
-                                costForCraft = 100
-                                ironCost = 1
-                                successChance = 8
+                                costForCraft = 400
+                                ironCost = 3
+                                successChance = 7
                             break;
                         }
             
@@ -1454,11 +1460,19 @@ class App{
                             }
 
                             const theItemToFix = this.det.items.find(myItm => myItm.meshId === itm.meshId)
+                            log('before enhance ', theItemToFix)
                             theItemToFix.durability += theItemToFix.durability/3
                             theItemToFix.cState = theItemToFix.durability
-                            if(theItemToFix.plusDmg) theItemToFix.plusDmg += Math.floor(theItemToFix.plusDmg/4)
-                            if(theItemToFix.plusDef) theItemToFix.plusDef += Math.floor(theItemToFix.plusDef/4)
-                                
+                            switch(theItemToFix.itemType){
+                                case "sword":
+                                    theItemToFix.plusDmg += Math.floor(theItemToFix.plusDmg/4)
+                                break;
+                                default:
+                                    // for now default is armor so plusDef
+                                    theItemToFix.plusDef += Math.floor(theItemToFix.plusDef/4)
+                                break
+                            }
+                            log('after enhance ', theItemToFix)
                             // no need to update my this.det.weapon or det.armor because you cannot see
                             // the item in the box if you didnt unequip them
                             this.showTransaction("The Item is Enhanced and Fixed", 3500)
@@ -1510,6 +1524,18 @@ class App{
                 this.setSellItems(this.det.items, toAvoids)          
             })
             newDiv.append(pricebtn)
+            if(item.qnty > 1){
+                const totalAllPrice = item.price*item.qnty
+                const sellAllBtn = createElement("button", "shopitem-btn", `sell All ${totalAllPrice}`, async () => {
+                    await this.deductItem(item.meshId, item.qnty)
+                    this.det.coins+=parseInt(totalAllPrice)
+                    await this.updateMyDetailsOL(this.det, true)
+                    this._allSounds.coinReceivedS.play()              
+                    this.showTransaction(`${item.name} Successfully Sold`, 1600)
+                    this.setSellItems(this.det.items, toAvoids)          
+                })
+                newDiv.append(sellAllBtn)
+            }
             shopList.append(newDiv)
         })
     }
@@ -4135,6 +4161,7 @@ class App{
     }
     reduceDurability(theArmorItem, todeduct){
         log(theArmorItem.itemType)
+        if(toDeduct <=0 ) return
         switch(theArmorItem.itemType){
             case "armor":
                 this.det.items.forEach(item => {
@@ -4475,6 +4502,7 @@ class App{
     }
     recalPhyDefense(dmgTaken){
         let myDef = this.det.stats.def*1.5;
+
         if(this.det.armor.name !== "none") {
             myDef+= this.det.armor.plusDef
             this.reduceDurability(this.det.armor, dmgTaken/4)
@@ -6496,7 +6524,9 @@ class App{
         // dwarven torch
         this.createBigTorch(leftTorch, {x: -38, y:0, z:13})
         this.createBigTorch(leftTorch, {x: -20, y:0, z:13})
+        this.createBigTorch(leftTorch, {x: -9, y:0, z:13})
         this.createBigTorch(leftTorch, {x: -32, y:0, z:27.6})
+        this.createBigTorch(leftTorch, {x: -10, y:0, z:27.6})
         this.createBigTorch(leftTorch, {x: -10, y:0, z:55})
         
         await this.createWagon({x:-25.33,y:0,z:69}, {x:15,y:0,z:59},scene)
@@ -8143,7 +8173,6 @@ class App{
         })
     }
     stopMoving(){
-        
         this.myChar._moving = false
 
         this.stopAnim(this.myChar.anims, "running", true)
@@ -8258,6 +8287,7 @@ class App{
                 break
                 case "alt":
                     log("clicking the alt")
+                    this.stopMoving()
                 break
             }
             const btfPos = this.btf.position
@@ -9397,10 +9427,6 @@ class App{
         })
         
         if(det.displayW.name !== "none"){
-            if(det.name.toLowerCase() === "nick"){
-                   
-                log(allsword)
-            }
             allsword.forEach(sword => {
          
                if(sword.name.split(".")[1] === det.displayW.name){
@@ -9409,10 +9435,7 @@ class App{
                     if(sword.name.includes("glow")){
                         log(`merong glow sa sword ni ${det.name}`)
                         const {x,y,z} = rootSword.getAbsolutePosition()
-                        this.createParticle("fireTex", 50, {x,y,z}, .05, {min: .5, max: .6}, .09, .7, 0, "cone", true, rootSword, false)
-                        this.createParticle("flare", 100, {x,y,z}, .02, {min: .5, max: 1.4}, .08, .11, -.5, "sphere", true, rootSword, "red")
-                        this.createParticle("flare", 100, {x,y,z}, .04, {min: .5, max: 1.1}, .05, .2, 0, "cone", true, rootSword, "red")
-                        
+                        this.createParticle("flare", 100, {x,y,z}, .02, {min: .5, max: 1.4}, .08, .11, -.3, "sphere", true, rootSword, "red")
                     }
                 }
           
@@ -11168,7 +11191,7 @@ const checkIfRecordExist = () => {
         log("there is record")
         continueBtn.style.display = "block"
         loginPage.style.display = "none"
-
+        if(window.innerWidth < mobileMaxWidth) continueBtn.style.display = "none";
     }else{
         log("walang record")
         continueBtn.style.display = "none"
@@ -11177,10 +11200,11 @@ const checkIfRecordExist = () => {
         registerBtn.style.display = "none"
         loginBtn.style.display = "block"
         allRegClass.forEach(elemnt => elemnt.style.display = "none")
+        if(window.innerWidth < maxWidthForGameplay) loginPage.style.display = "none"
     }
 }
 function checkScreen(){
-    if(window.innerWidth < mobileMaxWidth) return warningCont.style.display = "flex"
+    if(window.innerWidth < maxWidthForGameplay) return warningCont.style.display = "flex"
     warningCont.style.display = "none"
 }
 checkIfRecordExist()
@@ -11397,6 +11421,7 @@ continueBtn.addEventListener("click", async e => {
     if(!charDet) return window.location.reload()
     log("sessionStorage dungeonBorn found...")
     log("Proceed to Play Game.. evaluate token")
+    checkScreen()
     try {
         showLoadingScreen(false, 'wizard', false)
         const response = await fetch(`${APIURL}/users/${charDet.details._id}`, apiOpt('GET', null, charDet.token))
@@ -11467,7 +11492,7 @@ loginBtn.addEventListener("click", async () => {
         username: usernameInp.value, 
         password: passwordInp.value
     }
-    
+    checkScreen()
     loadingBtn(loginBtn)
     try {
         const response = await fetch(`${APIURL}/users/login`, apiOpt("POST", toPOST))
@@ -11497,6 +11522,7 @@ registerBtn.addEventListener("click", async () => {
         username: usernameInp.value, 
         password: passwordInp.value
     }
+    checkScreen()
     loadingBtn(registerBtn)
     try {
         
