@@ -17,6 +17,7 @@ import oneIntroSpeech from "./creations/speeches/OneIntroSpeech.js"
 import bonusItems from './creations/bonuses/bonusItems.js';
 import bonusInfos from "./creations/bonuses/bonusInfo.js"
 import allElements from './creations/elements.js';
+import skills from "./creations/skills.js"
 const log = console.log
 
 
@@ -64,7 +65,7 @@ let rgbColors = [
         name: 'wind',
         rgb: {r:0.03, g:0.92, b:0}
     },
-    {
+    { //walang water pero saka mona burahin to
         name: 'water',
         rgb: {r:0, g:0.62, b:0.73}
     },
@@ -314,6 +315,8 @@ const deleteQuestBtn = document.querySelector(".delete-quest-btn")
 const topAdventurersCont = document.querySelector(".alladventurer-detail-cont")
 const toplist = document.querySelector(".adc-list")
 
+// MY SKILLS
+const skillCont = document.querySelector(".skills-container")
 // CRAFTING SWORS
 const compatibleCont = document.querySelector(".compatible-mat-cont")
 const ttleOfItemsDisplay = document.querySelector('.cmc-ttle')
@@ -589,6 +592,9 @@ class App{
         this._canpress = false
         this._enableKeyPessTimeout
 
+        // SKILL RELATED
+        this._skillReleaseTimeOut
+
         // Tyoes of attacks
         this._atkNum = 0
         this._meeleeNum = 0
@@ -657,6 +663,7 @@ class App{
         this.currentPlace = details.currentPlace
   
         userId = this.det._id
+        this.setMySkills()
     }
     setHTMLUI(data){
         const { sword, def, core, magic} = data.stats
@@ -939,7 +946,7 @@ class App{
     }
     getMyPos(playerBx, localT){
         const inviMesh = new BABYLON.TransformNode("transformNode", scene, false)
-        const myFoz = playerBx.position
+ 
         inviMesh.parent = playerBx
         inviMesh.position = new Vector3(0,0,0)
 
@@ -1839,6 +1846,58 @@ class App{
         this.craftFunc = undefined
         this.myChar._crafting = false
     }
+    
+    disposeMeeleeMesh(collisionForEnemy){
+        collisionForEnemy.parent = null
+        collisionForEnemy.position.y = 100
+        collisionForEnemy.dispose()
+    }
+    disposeSounds(soundsArray, disposeAfterDura){
+        if(disposeAfterDura){
+            setTimeout(() => {
+                soundsArray.forEach(sound => sound && sound.dispose())
+            }, disposeAfterDura)
+        }else{
+            soundsArray.forEach(sound => sound && sound.dispose())
+        }
+        
+    }
+    setAttachSound(skillName, soundNameAndId, attachTo, willPlay){
+        let theSound = this._scene.getSoundByName(soundNameAndId)
+        if(!theSound){
+            log("no sound made with this")
+            switch (skillName) {
+                case "fireBall":
+                    theSound = this._allSounds.fireBall.clone(soundNameAndId)
+                break;
+                case "superPunch":
+                    theSound = this._allSounds.superPunched.clone(soundNameAndId)
+                break
+                default:
+                break;
+            }
+            
+            theSound.attachToMesh(attachTo)
+            willPlay && theSound.play();
+        }else{
+            log("this user already have so no need to make")
+            willPlay && theSound.play()
+        }
+
+        return theSound
+    }
+    logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord){
+        if(player._id === this.det._id){
+            if(this.socketAvailable){
+                this.socket.emit("monsterIsHit", {monsId: mons.monsId, dmgTaken: physicalDmg + skillRecord.effects.plusDmg, _id: player._id,
+                    pos: {x: monsFos.x, z: monsFos.z}, mypos: {x: pFos.x, z: pFos.z}, mode: player.mode, isCritical: true })
+            }else{
+                this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillRecord.effects.plusDmg, monsFos, "fist", true)
+            }
+        }else{
+            this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillRecord.effects.plusDmg, monsFos, "fist", true)
+        }
+    }
     initializeMesh(toClone, posY, meshName, cb){
         this.toDropMesh = toClone.clone(meshName)
         
@@ -1860,6 +1919,180 @@ class App{
             })
         })
     }
+    initiateSkill(skillName, player, physicalDmg, kolor, forwardDir, isMonster){
+
+        const skillRecord = skills.find(skl => skl.name === skillName)
+        if(!skillRecord) return log("the skill is not found")
+        if(isLoading) return log("other player cast skill, my pc is still loading ...")
+        const particleMesh = MeshBuilder.CreateGround("particleMesh", {width: 1, height: 1}, this._scene)
+        particleMesh.isVisible = false
+        
+        const pFos = player.bx.position        
+
+        const collisionForEnemy = MeshBuilder.CreateGround(skillName, {size: .5}, this._scene)
+        collisionForEnemy.isVisible = false
+        switch(skillName){
+            case "superPunch":
+                // wag idispose etong sound kase sa setAttachSound hinahanap niya yan
+                const superPunchedS = this.setAttachSound(skillName, `${skillName}.${player._id}`, player.bx, false)
+    
+                collisionForEnemy.actionManager = new ActionManager(this._scene)
+                collisionForEnemy.position.y += 1
+                collisionForEnemy.parent = player.rHand
+                const theParticle = this.createParticle("flare", 30, false, .05, {min: 1, max: 2}, .1,.5, 0, "cone", false, collisionForEnemy, kolor)
+                theParticle.disposeOnStop = true
+                theParticle.start()
+                theParticle.targetStopDuration = 1   
+                Monsterz.forEach(mons => {
+                    this.toRegAction(collisionForEnemy, mons.body, () => {
+                        log(`I hit ${mons.monsName}`)
+                        const monsFos = mons.body.position
+                        superPunchedS.play()
+                        this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord);
+
+                        this.createBloodParticle("blood", 50, monsFos, "sphere", true, 1, true, false);
+                        const colFos = collisionForEnemy.getAbsolutePosition()
+
+                        particleMesh.position = new Vector3(colFos.x,colFos.y,colFos.z)
+                        particleMesh.lookAt(new Vector3(monsFos.x, colFos.y,monsFos.z),0,0,0, BABYLON.Space.WORLD)
+                        const burstEffect = this.createParticle("flare", 300,{ x: 0, y: 0,z: 0}, .06, {min: .3, max: .5}, .1,.3, 0, "cone", true, particleMesh, kolor, {x: .4,y:1})
+                        particleMesh.addRotation(Math.PI/2,0,0)
+                        burstEffect.disposeOnStop = true
+                        burstEffect.targetStopDuration = 2
+                        this.disposeMeeleeMesh(collisionForEnemy)
+                    })
+                })
+                setTimeout(() => {
+                    this.disposeMeeleeMesh(collisionForEnemy)
+                }, skillRecord.returnModeDura)
+            break
+            case "fireBall":
+                this.setAttachSound(skillName, `fireBall.${player._id}`, player.bx, true)
+                
+                // particles for explosion
+                const fireExplosionJson = {"name":"Explode Particle","id":"default system","capacity":10000,"disposeOnStop":false,"manualEmitCount":-1,"emitter":[0,0,0],"particleEmitterType":{"type":"SphereParticleEmitter","radius":1,"radiusRange":1,"directionRandomizer":0},"texture":{"tags":null,"url":"https://www.babylonjs.com/assets/Flare.png","uOffset":0,"vOffset":0,"uScale":1,"vScale":1,"uAng":0,"vAng":0,"wAng":0,"uRotationCenter":0.5,"vRotationCenter":0.5,"wRotationCenter":0.5,"homogeneousRotationInUVTransform":false,"isBlocking":true,"name":"https://www.babylonjs.com/assets/Flare.png","hasAlpha":false,"getAlphaFromRGB":false,"level":1,"coordinatesIndex":0,"coordinatesMode":0,"wrapU":1,"wrapV":1,"wrapR":1,"anisotropicFilteringLevel":4,"isCube":false,"is3D":false,"is2DArray":false,"gammaSpace":true,"invertZ":false,"lodLevelInAlpha":false,"lodGenerationOffset":0,"lodGenerationScale":0,"linearSpecularLOD":false,"isRenderTarget":false,"animations":[],"invertY":true,"samplingMode":3,"_useSRGBBuffer":false},"isLocal":false,"animations":[],"beginAnimationOnStart":false,"beginAnimationFrom":0,"beginAnimationTo":60,"beginAnimationLoop":false,"startDelay":0,"renderingGroupId":0,"isBillboardBased":true,"billboardMode":7,"minAngularSpeed":0,"maxAngularSpeed":0,"minSize":0.1,"maxSize":0.1,"minScaleX":1,"maxScaleX":1,"minScaleY":1,"maxScaleY":1,"minEmitPower":3,"maxEmitPower":3,"minLifeTime":2.9,"maxLifeTime":3,"emitRate":800,"gravity":[0,0,0],"noiseStrength":[10,10,10],"color1":[0.10588235294117647,0,0,1],"color2":[0.1803921568627451,0.01568627450980392,0,1],"colorDead":[0.1568627450980392,0,0,1],"updateSpeed":0.083,"targetStopDuration":0,"blendMode":0,"preWarmCycles":0,"preWarmStepOffset":1,"minInitialRotation":0,"maxInitialRotation":0,"startSpriteCellID":0,"spriteCellLoop":true,"endSpriteCellID":0,"spriteCellChangeSpeed":1,"spriteCellWidth":0,"spriteCellHeight":0,"spriteRandomStartCell":false,"isAnimationSheetEnabled":false,"sizeGradients":[{"gradient":0,"factor1":1.4,"factor2":2},{"gradient":1,"factor1":0.01,"factor2":0.25}],"textureMask":[1,1,1,1],"customShader":null,"preventAutoStart":false}
+                const fireExplode = new BABYLON.ParticleSystem.Parse(fireExplosionJson, this._scene, "")
+                fireExplode.stop()
+                
+                collisionForEnemy.actionManager = new ActionManager(this._scene)
+                collisionForEnemy.position = new Vector3(pFos.x, this.yPos, pFos.z)
+                const fireClone = fire.clone("fireclone")
+                const smokeClone = smoke.clone("smokeClone")
+                collisionForEnemy.lookAt(new Vector3(forwardDir.x, this.yPos, forwardDir.z),0,0,0)
+                if(!isMonster){
+                    Monsterz.forEach(mons => {
+                        this.toRegAction(collisionForEnemy, mons.body, () => {
+                            const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
+                            log(`fireball hit ${mons.monsName}`);
+
+                            // sound
+                            fireExplodeS.attachToMesh(mons.body)
+                            fireExplodeS.play()
+                            this.disposeSounds([fireExplodeS], 4000)
+                            // particle
+                            fireExplode.emitter = mons.body                            
+                            fireExplode.disposeOnStop = true
+                            fireExplode.targetStopDuration = 1
+                            fireExplode.start();
+
+                            const monsFos = mons.body.position
+                            this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord)
+
+                            particleMesh.parent = null
+                            const newColPos = collisionForEnemy.getAbsolutePosition()
+                            particleMesh.position = new Vector3(newColPos.x,newColPos.y,newColPos.z)
+                            fireClone.disposeOnStop = true
+                            fireClone.targetStopDuration = 1
+                            smokeClone.disposeOnStop = true
+                            smokeClone.targetStopDuration = 1
+                            this.createBloodParticle("blood", 50, monsFos, "sphere", true, 1, true, false);
+                            this.disposeMeeleeMesh(collisionForEnemy)
+                        
+                            this.chaseSomeone(player, mons)
+                        })
+                    })
+                }else{
+                    this.toRegAction(collisionForEnemy, this.myChar.bx, () => {
+                        this.hitByNonMultiAI(this.myChar.bx, player.body, physicalDmg + skillRecord.effects.plusDmg, "hit", player._id, false)
+                    })
+                }
+
+                
+                collisionForEnemy.locallyTranslate(new Vector3(0,0,1))
+                const thePlayer = players.find(pl => pl._id === player._id)
+                if(!thePlayer._casting){
+                    this.disposeMeeleeMesh(collisionForEnemy)
+                    return log("will not continue")
+                }
+                
+                fireClone.emitter = particleMesh
+                smokeClone.emitter = particleMesh
+                particleMesh.parent = collisionForEnemy
+                particleMesh.addRotation(-Math.PI/2,0,0)
+                this.flyingWeaponz.push({meshId: makeRandNum(), mesh: collisionForEnemy})
+            
+            break
+        }
+        setTimeout(() => {
+            particleMesh.dispose()
+            if(collisionForEnemy){
+                this.disposeMeeleeMesh(collisionForEnemy)
+            }
+        }, 10000)
+        setTimeout(() => {
+            
+            player._casting = false
+            player.mode = skillRecord.requireMode
+            
+        }, skillRecord.returnModeDura)
+    }
+    initMonsterThrow(monsId, player, dmg, effects){
+        const theMonster = Monsterz.find(mon => mon.monsId === monsId)
+        if(!theMonster) return log("monster no longer here")
+        let objectToThrow
+        let objectMat
+        
+        let impactSound
+        switch(theMonster.monsName){
+            case "monoloth":
+                objectToThrow = MeshBuilder.CreateBox("stinger", { size: .5, depth: 2}, scene)
+            break;
+            case "golem":
+                const littleSmoke = smoke.clone("rockSmoke")
+                this.playAnim(theMonster.anims, "throw")
+                objectMat = new StandardMaterial("golemMat", this._scene)
+                objectMat.diffuseTexture = new Texture("./images/modeltex/stonefloor.jpg")
+
+                objectToThrow = BABYLON.Mesh.CreateIcoSphere("icosphere", {radius:.4, flat:true, subdivisions: 1}, scene);
+                objectToThrow.material = objectMat
+                impactSound = this._allSounds.superPunched.clone("golemRock")
+                impactSound.attachToMesh(objectToThrow)
+                littleSmoke.emitter = objectToThrow
+                setTimeout(() => {
+                    objectMat.dispose()
+                    this.disposeMeeleeMesh(objectToThrow)
+                    this.disposeSounds([impactSound])
+                
+                }, 5000)
+            break;
+        }
+        objectToThrow.actionManager = new ActionManager(this._scene)
+        this.toRegAction(objectToThrow, player.bx, () => {
+            if(impactSound) impactSound.play()
+            this.hitByNonMultiAI(player.bx, theMonster.body, dmg, "hit", monsId)
+            this.socketAvailable && this.socket.emit('userBump', {_id: player._id, pos:{ x: player.bx.position.x, z: player.bx.position.z }, 
+            dirTarg: {x: theMonster.body.position.x, z: theMonster.body.position.z} })
+        })
+        
+        const mPos = theMonster.body.position
+        const pFos = player.bx.position
+        objectToThrow.position = new Vector3(mPos.x, mPos.y+1, mPos.z)
+        objectToThrow.lookAt(new Vector3(pFos.x, objectToThrow.position.y, pFos.z),0,0,0, BABYLON.Space.WORLD)
+        objectToThrow.locallyTranslate(new Vector3(0,0,.6));
+        this.flyingWeaponz.push({mesh: objectToThrow, spd: 15})
+
+        
+    }
     async deductItemForCrafting(theRequirements){
         theRequirements.forEach(rqmnt => {
             const theItemReq = this.det.items.find(itm=>itm.name === rqmnt.name)
@@ -1871,6 +2104,20 @@ class App{
             }
         })
         await this.updateMyDetailsOL(this.det, false);
+    }
+    chaseSomeone(player, mons){
+        if(this.socketAvailable){
+            if(player._id === this.det._id){ // so it will only run once
+                log("is online will chase")
+                this.socket.emit("monsWillChase", {monsId: mons.monsId, targHero: this.det._id})
+            }
+        }else{
+            if(player._id === this.det._id){
+                mons.isAttacking = false
+                mons.targHero = this.det._id
+                mons.isChasing = true
+            }
+        }
     }
     checkAllMyCrafts(){
         craftCont.style.display = "flex"
@@ -2053,7 +2300,70 @@ class App{
             myCharDet.runningS.setPlaybackRate(.74)
         }
     }
+    setCoolDownSkillUI(skillRec){
+        skillCont.childNodes.forEach(chld => {
+            if(!chld.className) return
+            if(chld.className.split(" ")[1] === skillRec.name){
+                this.blurButtons([chld])
+
+                setTimeout(() => {
+                    this.returnButtons([chld])
+                }, skillRec.skillCoolDown)
+            }
+        })
+        
+    }
     setEventListeners(){
+        skillCont.addEventListener("click", e => {
+            const targ = e.target.className
+            if(!targ.includes("skill-bx")) return log("not skill")
+            const skillName = targ.split(" ")[1]
+            const skillRecord = skills.find(skl => skl.name === skillName)
+            if(!skillRecord) return log("skill not found")
+            if(skillRecord.requireMode !== this.myChar.mode) return log("required different mode")
+            
+            const phyDmg = this.recalMeeleDmg()
+            const elemColor = rgbColors.find(det => det.name === this.det.aptitude[0].name)
+            
+            // normally this is only for long range skills
+            const forwardDir = this.getMyPos(this.myChar.bx, 1);
+            const inFrontPos = {x:forwardDir.x,y:this.yPos,z:forwardDir.z}
+            this.myChar._casting = true
+            if(this.socketAvailable){
+                this.socket.emit("willcast", {
+                    _id: this.myChar._id,
+                    skillName,
+                    inFrontPos,
+                    place: this.currentPlace
+                })
+            }else{   
+                this.myChar.mode = "none";
+                this.myChar._casting = true;
+                this.playAnim(this.myChar.anims, skillRecord.name)
+                
+                setTimeout(() => {
+                    this.myChar.mode = skillRecord.requireMode;
+                    this.myChar._casting = false;
+                }, skillRecord.returnModeDura)
+            }
+            this._skillReleaseTimeOut = setTimeout(() => {
+                if(this.socketAvailable){
+                    this.socket.emit("cast-skill", {
+                        _id: this.myChar._id,
+                        skillName,
+                        phyDmg,
+                        elemColor: elemColor.rgb,
+                        inFrontPos,
+                        place: this.currentPlace
+                    })
+                }else{
+                    this.initiateSkill(skillName, this.myChar, phyDmg, elemColor.rgb, inFrontPos)
+                }
+            }, skillRecord.castDuration)
+
+            
+            this.setCoolDownSkillUI(skillRecord)
+        })
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
             if(theTargBtn.includes(" ")) return log('this is not it')
@@ -4044,7 +4354,7 @@ class App{
         if(!monster) return log("did not found the monster")
         
         monster.isHit = true
-   
+        
         let monsHaveBlood = true
         const monsFos = monster.body.position
         switch(mode){
@@ -4088,7 +4398,7 @@ class App{
         
         monster.hp -= dmgTaken
         monster.robHealthGui.width = `${(parseInt(monster.hp)/parseInt(monster.maxHp) * 100) * 4}px`;
-
+        log(`monster rem hp ${monster.hp}`)
         const {x,z} = playerPos
         monster.body.position.x = monspos.x
         monster.body.position.z = monspos.z
@@ -4109,8 +4419,10 @@ class App{
             this.stopAnim(monster.anims, 'hit', true);
             this.monsterDied(monsId)
 
-            this.socketAvailable && this.socket.emit("monsDied", {monsId})
-            this.removeToBash({_id: monster.monsId})          
+            this.socketAvailable && this.socket.emit("monsDied", {monsId, place: this.currentPlace})
+            this.removeToBash({_id: monster.monsId})
+            Monsterz = Monsterz.filter(mons => mons.monsId !== monsId);
+            log(Monsterz.length)    
         }
         // this.addToBash({_id: monster.monsId, mesh: monster.body, bashPower})
     }
@@ -4130,7 +4442,7 @@ class App{
         if(theMons.monsSoundDied !== undefined) theMons.monsSoundDied.play()
         theMons.nameMesh.dispose()
         Monsterz = Monsterz.filter(mons => mons.monsId !== theMons.monsId)
-
+        theMons.robHealthGui.width = `0px`;
         setTimeout(() => {
             theMons.body.dispose()
         }, 40000)
@@ -4161,7 +4473,7 @@ class App{
     }
     reduceDurability(theArmorItem, todeduct){
         log(theArmorItem.itemType)
-        if(toDeduct <=0 ) return
+        if(todeduct <=0 ) return
         switch(theArmorItem.itemType){
             case "armor":
                 this.det.items.forEach(item => {
@@ -4230,6 +4542,23 @@ class App{
         })
     }
     async hitByNonMultiAI(body, enemBody, dmgTaken, animName, monsId, effects){
+        // const myPlayerDet = players.find(pl => pl._id === this.det._id)
+        // if(myPlayerDet){
+        //     log(myPlayerDet._casting)
+        //     if(myPlayerDet._casting){
+        //         log("I am still casting")
+        //         myPlayerDet._casting = false
+        //         const bPos = body.position
+        //         this.createTextMesh(makeRandNum(), "cancelled", "red", bPos, 80, this._scene, true, body)
+        //         log(players)
+        //     }
+        // }
+        if(this.myChar._casting){
+            clearTimeout(this._skillReleaseTimeOut)
+            this.createTextMesh(makeRandNum(), "cancelled", "red", this.myChar.bx.position, 90, this._scene, true, this.myChar.bx)
+            this.myChar._casting = false
+        }
+
         let effectTimeOut
         let returnBtnSec = 200
         let myDef = this.det.stats.def*2;
@@ -4775,6 +5104,7 @@ class App{
 
         Monsterz = [];
         players = [];
+        bonFirezz = []
 
         this.blocks = [];
         this.socketAvailable = isSocketAvail
@@ -4806,6 +5136,23 @@ class App{
         let itemElementz = []
         document.querySelectorAll(".topick-bx").forEach(itmElem =>itemElementz.push(itmElem))
         if(itemElementz.length) displayElems(itemElementz, "block")
+    }
+    setMySkills(){
+        skillCont.innerHTML = ''
+        this.det.skills.forEach(skil => {
+            const skillBx = createElement("div", `skill-bx ${skil.name}`)
+            const skillImg = createElement("img", "skill-img")
+            skillImg.src = `./images/skills/${skil.name}.png`
+            skillBx.append(skillImg)
+            
+            switch(skil.element){
+                case "fire":
+                    skillBx.style.border = "1px solid crimson"
+                break
+                
+            }
+            skillCont.append(skillBx)
+        })
     }
     disablePointerPicks(scene){
         scene.pointerMovePredicate = () => false;
@@ -5058,6 +5405,15 @@ class App{
     }
     async _loadCharacterSounds(scene){
 
+        const hitByFireS = new BABYLON.Sound("firehit", "sounds/firehit.mp3", scene,
+        null, {spatialSound: true, maxDistance: 60, volume: 1})
+
+        const superPunched = new BABYLON.Sound("superPunched", "sounds/superPunched.mp3", scene,
+        null, {spatialSound: true, maxDistance: 60, volume: 1})
+
+        const fireBall = new BABYLON.Sound("fireBall", "sounds/fireBall.mp3", scene,
+        null, {spatialSound: true, maxDistance: 50, volume: .8})
+
         const poisonS = new BABYLON.Sound("poisonS", "sounds/poisonS.mp3", scene,
         null, {volume: .4, spatialSound: true, maxDistance: 40, autoplay: false, loop: false})
         poisonS.setPlaybackRate(1.1)
@@ -5175,6 +5531,9 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            superPunched,
+            hitByFireS,
+            fireBall,
             beeS,
             poisonS,
             snakeBitS,
@@ -5499,7 +5858,8 @@ class App{
             z: -30,
             aptitude: getAptitudes(),
             storyQue: ['wakingUp', 'numberOneTalk', 'firstFriend',"firstItem", 'numberTwoTalk'],
-            mainObj: { name: "", dn: ""}
+            mainObj: { name: "", dn: ""},
+            skills: []
         }
         // GUI
         var hairColorTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -7543,7 +7903,38 @@ class App{
                 }
             })
         })
+        
         // ACTIONS SOCKET
+        this.socket.on("user-iscasting", data => {
+            if(data.place !== this.currentPlace) return log("someone cast skill from diff place")
+            const skillRecord = skills.find(skl => skl.name === data.skillName)
+            players.forEach(player => {
+                if(player._id === data._id) {
+                    log("A player will cast a skill")
+                    player.mode = "none";
+                    player._casting = true;
+                    this.playAnim(player.anims, data.skillName, skillRecord.animationLoop)
+                    
+                    setTimeout(() => {
+                        player.mode = skillRecord.requireMode;
+                        player._casting = false;
+                    }, skillRecord.returnModeDura)
+                }
+            })
+            
+        })
+        this.socket.on("user-cast", data => {
+            const {skillName, place, elemColor, phyDmg, inFrontPos} = data
+            if(place !== this.currentPlace) return log("someone cast skill from diff place")
+            players.forEach(player => {
+                if(player._id === data._id) {
+                    log("A player cast skill")
+                    player.mode = "none";
+                    player._casting = true;
+                    this.initiateSkill(skillName, player, phyDmg, elemColor, inFrontPos)
+                }
+            })
+        })
         this.socket.on("userAttack", data => {
             if(data._id === this.det._id) return
             players.forEach(player => {
@@ -7700,9 +8091,23 @@ class App{
             theBonFirez = allbonzfire
             this.checkBonFirez()
         })
-
-        this.socket.on("monsterGotHit", data => {
+        this.socket.on("check-monsdied", data => {
+            if(data.place !== this.currentPlace) return
             const theMons = Monsterz.find(mons => mons.monsId === data.monsId)
+            if(!theMons) return log("monster maybe already removed");
+
+            log("there is one monster that died on other client")
+            clearTimeout(theMons.intervalWillAttack)
+            this.stopAnim(theMons.anims, 'hit', true);
+            this.monsterDied(data.monsId)
+
+            this.removeToBash({_id: data.monsId})
+            Monsterz = Monsterz.filter(mons => mons.monsId !== data.monsId);
+        })
+        this.socket.on("monsterGotHit", data => {
+            const { detal, theMonsterHP} = data
+            log("hp of monster from server " + theMonsterHP)
+            const theMons = Monsterz.find(mons => mons.monsId === detal.monsId)
             if(!theMons) return log("not found monster");
             log(`I damaged the ${theMons.monsName}`)
             if(Math.random() > .5){
@@ -7717,7 +8122,10 @@ class App{
                     break
                 }
             }
-            this.monsterIsHit(data.monsId, {x: data.mypos.x, z: data.mypos.z}, data.dmgTaken, data.pos, data.mode, data.isCritical)
+            
+            this.monsterIsHit(detal.monsId, {x: detal.mypos.x, z: detal.mypos.z}, detal.dmgTaken, detal.pos, detal.mode, detal.isCritical)
+            theMons.hp = theMonsterHP
+            theMons.robHealthGui.width = `${(parseInt(theMons.hp)/parseInt(theMons.maxHp) * 100) * 4}px`;
         })
         this.socket.on("monsIsChasing", data => {
             Monsterz.forEach(mons => {
@@ -7736,11 +8144,12 @@ class App{
             theMons.body.position = new Vector3(data.pos.x, theMons.body.position.y, data.pos.z)
         })
         this.socket.on("monsAttack", data => {
-            const theMons = Monsterz.find(mons => mons.monsId === data.monsId)
+            const { detal, theMonsterHP } = data
+            const theMons = Monsterz.find(mons => mons.monsId === detal.monsId)
             if(!theMons) return log("cannot attack undefined monster from TCP server")
             theMons.isChasing = false
             theMons.isAttacking = true
-            log('monster attacked from tcp server ', data)
+
             const theTargeIsHere = this._scene.getMeshByName(`box.${theMons.targHero}`)
             if(!theTargeIsHere){
                 theMons.isChasing = false
@@ -7748,8 +8157,18 @@ class App{
                 theMons.targHero = undefined
                 log("targ not here")
             }else{
-                this.monsterAttack(theMons.monsId, theMons.monsName, data.pos, theMons.targHero, data.animaName)
+                this.monsterAttack(theMons.monsId, theMons.monsName, detal.pos, theMons.targHero, detal.animaName)
             }
+            theMons.hp = theMonsterHP
+            theMons.robHealthGui.width = `${(parseInt(theMons.hp)/parseInt(theMons.maxHp) * 100) * 4}px`;
+        })
+        this.socket.on("mons-thrown", data => {
+            
+            const theMons = Monsterz.find(mons => mons.monsId === data.monsId)
+            if(!theMons) return log("cannot attack undefined monster from TCP server")
+            const theTargPlayer = players.find(pl => pl._id === data.playerId)
+            if(!theTargPlayer) return log("throw to player not found")
+            this.initMonsterThrow(data.monsId, theTargPlayer, data.dmg)
         })
         this.socket.on("playerHitted", data => {
             const thePl = players.find(pl => pl._id === data._id)
@@ -8157,7 +8576,7 @@ class App{
             if(weapnz.mesh.name === "sharpRock"){
                 weapnz.mesh.locallyTranslate(new Vector3(0,28*(this._engine.getDeltaTime()/1000),0))
             }else{
-                weapnz.mesh.locallyTranslate(new Vector3(0,0,25*(this._engine.getDeltaTime()/1000)))
+                weapnz.mesh.locallyTranslate(new Vector3(0,0,weapnz.spd ? weapnz.spd * (this._engine.getDeltaTime()/1000) : 20*(this._engine.getDeltaTime()/1000)))
             }
             
         })
@@ -8314,6 +8733,19 @@ class App{
                     
                 //     this._statPopUp("+spd +coins +lvl", 100);
                 // }
+                if(!this.det.skills.length){
+                    closeGameUI()
+                    this.det.skills = skills
+                    this.updateMyDetailsOL(this.det, true)
+                    let intervalWait
+                    intervalWait = setInterval(() => {
+                        if(this.det.skills.length){
+                            clearInterval(intervalWait)
+                            openGameUI()
+                            this.setMySkills()
+                        }
+                    }, 1000)
+                }
             } 
             if(keyPressed === " "){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
@@ -8982,9 +9414,11 @@ class App{
         myParticleSystem.gravity = new BABYLON.Vector3(0, -.5, 0);
         return myParticleSystem
     }
-    createParticle(imgTex, capac, pos, spd, lifetime, minSize, maxSize, gravityY, particleType, willStart, emitterMesh, haveColor){
+    createParticle(imgTex, capac, pos, spd, lifetime, minSize, maxSize, gravityY, particleType, willStart, emitterMesh, haveColor, haveScale){
         const myParticleSystem = new BABYLON.ParticleSystem(`particle.${makeRandNum()}`, capac)
-        
+
+        myParticleSystem.minEmitPower = 1
+        myParticleSystem.maxEmitPower = 1
         switch(particleType){
             case "sphere":
                 myParticleSystem.createSphereEmitter(1);
@@ -9016,6 +9450,19 @@ class App{
                     myParticleSystem.colorDead = new BABYLON.Color4(0.29, 0.01, 0, 0);
                 break;
             }
+            if(haveColor.r){
+                const {r,g,b} = haveColor
+                myParticleSystem.color1 = new BABYLON.Color4(r,g,b);
+                myParticleSystem.color2 = new BABYLON.Color4(r+.2,g+.2,b+.2);
+                myParticleSystem.colorDead = new BABYLON.Color4(r-.6,g-.6,b-.6);
+            }
+        }
+        if(haveScale){
+            myParticleSystem.minScaleX = haveScale.x
+            myParticleSystem.maxScaleX = haveScale.x+.5
+
+            myParticleSystem.minScaleY = haveScale.y
+            myParticleSystem.minScaleY = haveScale.y+.5
         }
         return myParticleSystem
     }
@@ -10402,6 +10849,7 @@ class App{
             _minning: det._minning ? det._minning : false,
             _training: det._training ? det._training : false,
             _crafting: det._crafting ? det._crafting : false,
+            _casting: false,
             mode: det.mode === undefined ? 'stand' : det.mode,
             status: [], // bashed(will be moved backwards)
             moveActionName: "none",
@@ -10532,10 +10980,10 @@ class App{
         return newCircle
     }
     createFlyingWeapon(mypos, weapDmg, myMode, weaponMesh, pos, dirTarg, weaponDetail, ownerId){
-        const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .3}, this._scene) // size : .3
-        weapMesh.position = new Vector3(pos.x,1.4,pos.z)
+        const weapMesh = MeshBuilder.CreateBox("sword.flying", { size: .5}, this._scene) // size : .3
+        weapMesh.position = new Vector3(pos.x,this.yPos+1,pos.z)
         weapMesh.isVisible = false
-        log(dirTarg)
+     
         this.playerLookAt(weapMesh, dirTarg)
         weapMesh.locallyTranslate(new Vector3(.1,0,-.5))
         weapMesh.actionManager = new ActionManager(this._scene)
@@ -10568,8 +11016,9 @@ class App{
                     pos: {x: mpos.x, z: mpos.z}, mypos: {x: mypos.x, z: mypos.z}, mode: "throw", isCritical: true})
                 }
                 
+                const theOwnerOfSpear = players.find(pl => pl._id === ownerId)
+                theOwnerOfSpear && this.chaseSomeone(theOwnerOfSpear, mons)
                 
-                log(mons.monsName + "is Hit")
                 this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
                 weapMesh.parent = mons.rootMesh
                 weapMesh.position = new Vector3(0,0,0)
@@ -10773,7 +11222,7 @@ class App{
                 this.putFakeShadow(body, 4)
             break
             case "golem":
-                rMeshSize = {size: .7, height: 1.4}
+                rMeshSize = {size: 1, height: 1.5}
                 this.putFakeShadow(body, 7)
             break
         }
@@ -10788,8 +11237,8 @@ class App{
             }
             if(mes.name === "Armature"){
                 mes.getChildren().forEach(arm => {
-                    if(arm.name.includes("rootBone")) {
-                        // log(`${monsName} have rootBone`)
+                    
+                    if(arm.name.includes("root")) {
                         rBone = arm
                         if(monsName.includes("minotaur")){
                             arm.getChildren().forEach(bns => {
@@ -10911,23 +11360,7 @@ class App{
                         theMons.isChasing = true
                     }
                     let willAtackLR = false
-                    // let objectToThrow
-                    // switch(monsName){
-                    //     case "monoloth":
-                    //         willAtackLR = true
-                    //         objectToThrow = MeshBuilder.CreateBox("stinger", { size: .5, depth: 2}, scene)
-                    //     break;
-                    // }
-                    // if(willAtackLR){
-                    //     clearInterval(intervalLR);
-                    //     intervalLR = setInterval(() => {
-                    //         const toThrow = objectToThrow.clone(monsName);
-                    //         const mPos = body.position
-                    //         toThrow.position = new Vector3(mPos.x, mPos.y, mPos.z)
-                    //         toThrow.locallyTranslate(new Vector3(0,0,.6));
-                    //         this.flyingWeaponz.push({mesh: toThrow})
-                    //     }, atkInterval)
-                    // }
+
                     return
                 }
                 if(isMyTargetHere) return log("the target is here return")
@@ -10939,6 +11372,30 @@ class App{
                 trigger: ActionManager.OnIntersectionExitTrigger,
                 parameter: this.myChar.bx
             }, e => {
+ 
+            const theMonster = Monsterz.find(mn => mn.monsId === monsId)
+            
+            if(theMonster){
+                log("yeah found the monster")
+                switch (theMonster.monsName) {
+                    case "golem":
+                        this.playAnim(animationGroups, "throw")
+                    break;
+                }
+                if(this.socketAvailable){
+                    this.socket.emit("monster-willthrow", {
+                        monsId,
+                        playerId: this.myChar._id,
+                        dmg: 10,
+                        place: this.currentPlace
+                    })
+                  
+                }else{
+                    this.initMonsterThrow(monsId, this.myChar, 10)
+                }
+            }else{
+                log("not found")
+            }
                 // const bdypos = body.position
                 // monsHealthPlane.isVisible = false;
                 // if(this.socketAvailable){
