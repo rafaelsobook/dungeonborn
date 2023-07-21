@@ -1482,9 +1482,10 @@ class App{
                             log('after enhance ', theItemToFix)
                             // no need to update my this.det.weapon or det.armor because you cannot see
                             // the item in the box if you didnt unequip them
-                            this.showTransaction("The Item is Enhanced and Fixed", 3500)
-                            this._allSounds.itemEquipedS.play();
+ 
                             await this.updateMyDetailsOL(this.det, true);
+                            this.showTransaction("Successfully Enhanced", 3500)
+                            this._allSounds.itemEquipedS.play();
                             log(this.det.items)
                         }
                         this.returnButtons([craftWeaponBtn])
@@ -2049,49 +2050,79 @@ class App{
     initMonsterThrow(monsId, player, dmg, effects){
         const theMonster = Monsterz.find(mon => mon.monsId === monsId)
         if(!theMonster) return log("monster no longer here")
+        
         let objectToThrow
         let objectMat
-        
+        let animName
         let impactSound
+        let effect
+        let willStick = false
+        
         switch(theMonster.monsName){
             case "monoloth":
-                objectToThrow = MeshBuilder.CreateBox("stinger", { size: .5, depth: 2}, scene)
+                willStick = true
+                const sting = this.likeSting.clone("beeSting")
+                impactSound = this._allSounds.spearStruckS.clone("beeStruck")
+                
+                objectToThrow = MeshBuilder.CreateGround("theSting", {width: .3, height: .5}, this._scene)
+                sting.parent = objectToThrow
+                sting.addRotation(Math.PI/2,0,0)
+                objectToThrow.isVisible = false;
+                animName = "attack1"
+                impactSound.attachToMesh(objectToThrow)
             break;
             case "golem":
-                const littleSmoke = smoke.clone("rockSmoke")
-                this.playAnim(theMonster.anims, "throw")
-                objectMat = new StandardMaterial("golemMat", this._scene)
-                objectMat.diffuseTexture = new Texture("./images/modeltex/stonefloor.jpg")
-
-                objectToThrow = BABYLON.Mesh.CreateIcoSphere("icosphere", {radius:.4, flat:true, subdivisions: 1}, scene);
-                objectToThrow.material = objectMat
+                effect = "fall"
+                
+                objectToThrow = this.likeRock.clone("golemRock")
                 impactSound = this._allSounds.superPunched.clone("golemRock")
                 impactSound.attachToMesh(objectToThrow)
-                littleSmoke.emitter = objectToThrow
                 setTimeout(() => {
-                    objectMat.dispose()
                     this.disposeMeeleeMesh(objectToThrow)
                     this.disposeSounds([impactSound])
-                
                 }, 5000)
+                animName = "throw"
             break;
         }
-        objectToThrow.actionManager = new ActionManager(this._scene)
-        this.toRegAction(objectToThrow, player.bx, () => {
-            if(impactSound) impactSound.play()
-            this.hitByNonMultiAI(player.bx, theMonster.body, dmg, "hit", monsId)
-            this.socketAvailable && this.socket.emit('userBump', {_id: player._id, pos:{ x: player.bx.position.x, z: player.bx.position.z }, 
-            dirTarg: {x: theMonster.body.position.x, z: theMonster.body.position.z} })
-        })
-        
         const mPos = theMonster.body.position
         const pFos = player.bx.position
-        objectToThrow.position = new Vector3(mPos.x, mPos.y+1, mPos.z)
+        this.playAnim(theMonster.anims, animName)
+        objectToThrow.actionManager = new ActionManager(this._scene)
+        players.forEach(pl => {
+            this.toRegAction(objectToThrow, pl.bx, () => {
+                if(pl._id === this.det._id){
+                    this.stopPress();
+                    this.disableMoving()
+                    this.stopMoving()
+                    const prevMode = this.myChar.mode
+                    this.myChar.mode = "none"
+                    setTimeout(() => {
+                        this.allCanPress()
+                        this.myChar.mode = prevMode
+                    }, 400)
+                    if(effect){
+                        switch(effect){
+                            case "fall":
+                                this.socketAvailable && this.socket.emit('userBump', {_id: pl._id, pos:{ x: pl.bx.position.x, z: pl.bx.position.z }, 
+                                dirTarg: {x: theMonster.body.position.x, z: theMonster.body.position.z} })
+                                if(!this.socketAvailable) this.bump(pl)
+                            break
+                        }
+                    }
+                    this.hitByNonMultiAI(pl.bx, theMonster.body, dmg, "hit", monsId)
+                    this.socketAvailable && this.socket.emit("playerIsHit", {_id: pl._id, monsId, animName: 'hit', dmg})
+                }
+
+                this.createBloodParticle("blood", 20, mPos, "sphere", true, 1, true, pl.bx)
+                if(impactSound) impactSound.play()
+            })
+        })
+        
+
+        objectToThrow.position = new Vector3(mPos.x, this.yPos+.4, mPos.z)
         objectToThrow.lookAt(new Vector3(pFos.x, objectToThrow.position.y, pFos.z),0,0,0, BABYLON.Space.WORLD)
         objectToThrow.locallyTranslate(new Vector3(0,0,.6));
         this.flyingWeaponz.push({mesh: objectToThrow, spd: 15})
-
-        
     }
     async deductItemForCrafting(theRequirements){
         theRequirements.forEach(rqmnt => {
@@ -5124,6 +5155,10 @@ class App{
         this.lootz = []
         this.Crytalz = []
 
+        // MONSTERS THROWING
+        this.likeRock
+        this.likeSting
+
         // CRAFT RELATED
         this.canDropHere = true
         this.craftFunc = undefined
@@ -6043,7 +6078,7 @@ class App{
         // update naten muna ang loc naten para di magkagulo sa socketio
         // this.createFog(scene, 0.002)
 
-        const Ground = await this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
+        this.createGround(scene, "./images/modeltex/swampFTex.jpg",200)
         this.createSwmpTile(scene)
 
         const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
@@ -6135,6 +6170,9 @@ class App{
         this._scene.dispose()
         this._scene = scene
         
+        this.createGolemRock(scene)
+        this.createBeeSting(scene)
+
         this.arrangeCam(-1.4, 1.15)
 
         removeHomePage()
@@ -8706,7 +8744,7 @@ class App{
                 break
                 case "alt":
                     log("clicking the alt")
-                    this.stopMoving()
+                    this.disableMoving()
                 break
             }
             const btfPos = this.btf.position
@@ -8771,7 +8809,7 @@ class App{
             switch(keyPressed){
                 case "w":
                     moveNums.straight = 0
-                    // this.stopMoving()
+                    
                     if(moveNums.leftRight === 0) {this.stopMoving()}else{
                         resetBtfLookAndPos()
                         this.btf.locallyTranslate(new Vector3(moveNums.leftRight * btfRadius,0,moveNums.straight * btfRadius))
@@ -8780,7 +8818,7 @@ class App{
                 break
                 case "a":
                     moveNums.leftRight = 0
-                    // this.stopMoving()
+                    
                     if(moveNums.straight === 0) {this.stopMoving()}else{
                         resetBtfLookAndPos()
                         this.btf.locallyTranslate(new Vector3(moveNums.leftRight * btfRadius,0,moveNums.straight * btfRadius))
@@ -8789,7 +8827,7 @@ class App{
                 break;
                 case "d":
                     moveNums.leftRight = 0
-                    // this.stopMoving()
+                    
                     if(moveNums.straight === 0) {this.stopMoving()}else{
                         resetBtfLookAndPos()
                         this.btf.locallyTranslate(new Vector3(moveNums.leftRight * btfRadius,0,moveNums.straight * btfRadius))
@@ -8798,7 +8836,7 @@ class App{
                 break;
                 case "s":
                     moveNums.straight = 0   
-                    // this.stopMoving()
+                   
                     if(moveNums.leftRight === 0) {this.stopMoving()}else{
                         resetBtfLookAndPos()
                         this.btf.locallyTranslate(new Vector3(moveNums.leftRight * btfRadius,0,moveNums.straight * btfRadius))
@@ -9012,6 +9050,21 @@ class App{
             swordv.position.y = 100
         })
 
+    }
+    createGolemRock(scene){
+        const littleSmoke = smoke.clone("rockSmoke")
+        const mat = new StandardMaterial("golemMat", scene)
+        mat.diffuseTexture = new Texture("./images/modeltex/stonefloor.jpg")
+        mat.specularColor = new Color3(0,0,0)
+        this.likeRock = BABYLON.Mesh.CreateIcoSphere("icosphere", {radius:.4, flat:true, subdivisions: 1}, scene);
+        this.likeRock.material = mat
+        littleSmoke.emitter = this.likeRock
+    }
+    createBeeSting(scene){
+        
+        this.likeSting = BABYLON.MeshBuilder.CreateCylinder("cylinder", {diameterTop: 0}, scene);
+        this.likeSting.scaling = new Vector3(.1,.5,.1)
+        
     }
     createHeartLandTile(scene){
         //groundTex
@@ -11380,6 +11433,9 @@ class App{
                 switch (theMonster.monsName) {
                     case "golem":
                         this.playAnim(animationGroups, "throw")
+                    break;
+                    case "monoloth":
+                        this.playAnim(animationGroups, "attack1")
                     break;
                 }
                 if(this.socketAvailable){
