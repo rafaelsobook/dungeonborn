@@ -1822,6 +1822,7 @@ class App{
                     this.myChar.mode = "fist"
                     this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
                     this.changeAtkBtnImg()
+                    this.hideAllSword(this.myChar.swordz)
                 }
             break
             case "helmet":
@@ -1944,7 +1945,7 @@ class App{
             })
         })
     }
-    initiateSkill(skillName, player, physicalDmg, kolor, forwardDir, skillDmg){
+    initiateSkill(skillName, player, physicalDmg, kolor, forwardDir, skillDmg, prevMode){
 
         const skillRecord = skills.find(skl => skl.name === skillName)
         if(!skillRecord) return log("the skill is not found")
@@ -1952,7 +1953,7 @@ class App{
         const particleMesh = MeshBuilder.CreateGround("particleMesh", {width: 1, height: 1}, this._scene)
         particleMesh.isVisible = false
         
-        const pFos = player.bx.position        
+        const pFos = player.bx.position 
 
         const collisionForEnemy = MeshBuilder.CreateGround(skillName, {size: .5}, this._scene)
         collisionForEnemy.isVisible = false
@@ -2089,10 +2090,12 @@ class App{
             }
         }, 10000)
         setTimeout(() => {
-            
             player._casting = false
-            player.mode = skillRecord.requireMode
-            
+            if(skillRecord.requireMode === "any"){
+                player.mode = prevMode
+            }else{
+                player.mode = skillRecord.requireMode
+            }
         }, skillRecord.returnModeDura)
     }
     initMonsterThrow(monsId, player, dmg, effects){
@@ -2529,7 +2532,7 @@ class App{
             const forwardDir = this.getMyPos(this.myChar.bx, 1);
             const inFrontPos = {x:forwardDir.x,y:this.yPos,z:forwardDir.z}
             this.myChar._casting = true
-
+            const prevMode = this.myChar.mode
             if(this.socketAvailable){
                 this.socket.emit("willcast", {
                     _id: this.myChar._id,
@@ -2549,10 +2552,11 @@ class App{
                         elemColor: elemColor.rgb,
                         inFrontPos,
                         place: this.currentPlace,
-                        skillDmg: skillRecord.effects.plusDmg
+                        skillDmg: skillRecord.effects.plusDmg,
+                        prevMode
                     })
                 }else{
-                    this.initiateSkill(skillName, this.myChar, phyDmg, elemColor.rgb, inFrontPos, skillRecord.effects.plusDmg)
+                    this.initiateSkill(skillName, this.myChar, phyDmg, elemColor.rgb, inFrontPos, skillRecord.effects.plusDmg, prevMode)
                 }
             }, skillRecord.castDuration)
 
@@ -6462,7 +6466,7 @@ class App{
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
         goblinRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "goblinGreen.glb", scene)
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
-        wolfRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "wolf.glb", scene)
+        
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
         golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
         monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
@@ -6693,7 +6697,8 @@ class App{
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
         golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
-
+        wolfRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "wolf.glb", scene)
+        
         // const Golem = await this.importMesh(scene, "./models/mons/", "golem.glb");
         // Golem.meshes[0].position.z = -31
         // box to follow
@@ -7064,7 +7069,7 @@ class App{
             const houndInfo = {
                 effects: { effectType: "absorb", absorbType: "weapon", defaultAbs: 20, chance: 9, dura: 100, plusDmg: 10, dmgPm: 0 }
             }
-            if(floorNumber > 1) this.createMonster(wolfRoot, shadowGen, false, makeRandNum(), "hellhound", "normal", {x: -30 + Math.random()*60, z: -100 + Math.random()*200}, 6, 300 * floorNumber, 300 * floorNumber, floorNumber, 1200, 12 * floorNumber, scene, false, 40 * floorNumber, "normal", houndInfo.effects)
+            if(floorNumber > 4) this.createMonster(wolfRoot, shadowGen, false, makeRandNum(), "hellhound", "normal", {x: -30 + Math.random()*60, z: -100 + Math.random()*200}, 6, 300 * floorNumber, 300 * floorNumber, floorNumber, 1500, 12 * floorNumber, scene, false, 20 * floorNumber, "normal", houndInfo.effects)
         }
 
         this.createMonsterToChase(Monsterz, 'ghost', {x: 0, z: -30}, {width: 30}, 0, scene)
@@ -8390,14 +8395,14 @@ class App{
             thePlayer.rootSword.addRotation(Math.PI,0,0)
         })
         this.socket.on("user-cast", data => {
-            const {skillName, place, elemColor, phyDmg, inFrontPos} = data
+            const {skillName, prevMode, place, elemColor, phyDmg, inFrontPos} = data
             if(place !== this.currentPlace) return log("someone cast skill from diff place")
             players.forEach(player => {
                 if(player._id === data._id) {
                     log("A player cast skill")
                     player.mode = "none";
                     player._casting = true;
-                    this.initiateSkill(skillName, player, phyDmg, elemColor, inFrontPos, data.skillDmg)
+                    this.initiateSkill(skillName, player, phyDmg, elemColor, inFrontPos, data.skillDmg, prevMode)
                 }
             })
         })
@@ -9219,19 +9224,19 @@ class App{
                     
                 //     this._statPopUp("+spd +coins +lvl", 100);
                 // }
-                if(!this.det.skills.length){
-                    closeGameUI()
-                    this.det.skills = skills
-                    this.updateMyDetailsOL(this.det, true)
-                    let intervalWait
-                    intervalWait = setInterval(() => {
-                        if(this.det.skills.length){
-                            clearInterval(intervalWait)
-                            openGameUI()
-                            this.setMySkills()
-                        }
-                    }, 1000)
-                }
+                
+                closeGameUI()
+                this.det.skills = skills
+                this.updateMyDetailsOL(this.det, true)
+                let intervalWait
+                intervalWait = setInterval(() => {
+                    if(this.det.skills.length >= 4){
+                        clearInterval(intervalWait)
+                        openGameUI()
+                        this.setMySkills()
+                    }
+                }, 1000)
+                
             }  
             if(keyPressed === " "){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
@@ -9381,7 +9386,12 @@ class App{
         })
     }
     hideAllSword(swordz){
-        swordz.forEach(sword => sword.isVisible = false)
+        swordz.forEach(sword => {
+            sword.isVisible = false
+            if(sword.getChildren()){
+                sword.getChildren().forEach(chld => chld.isVisible = false)
+            }
+        })
     }
     freeze(mesh){
         mesh.material.freeze()
