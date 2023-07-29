@@ -317,13 +317,16 @@ const toplist = document.querySelector(".adc-list")
 
 // MY SKILLS
 const skillCont = document.querySelector(".skills-container")
+const AllSkillInfoCont = document.querySelector(".all-myskills-container")
+const skillCateg = document.querySelector(".skill-categ")
+const myskillLists = document.querySelector(".myskill-list")
+
 // CRAFTING SWORS
 const compatibleCont = document.querySelector(".compatible-mat-cont")
 const ttleOfItemsDisplay = document.querySelector('.cmc-ttle')
 const compatibleItemList = document.querySelector('.cmc-list')
 const craftWeaponBtn = document.querySelector('.cmc-button')
 const craftCost = document.querySelector('.cmc-cost')
-
 
 // ABOUT PAGE
 const aboutCont = document.querySelector(".about-container")
@@ -334,7 +337,6 @@ const abtBackBtn = document.querySelector(".back-btn")
 let divFps = document.querySelector(".fps");
 // tutorial container
 let tutorialCont = document.querySelector(".tutorial-cont");
-
 
 
 // for creating element
@@ -405,6 +407,7 @@ let theLootz = []
 
 // meshes
 let theCharacterRoot
+let wolfRoot
 let goblinRoot
 let minotaurRoot
 let snakeRoot
@@ -550,9 +553,9 @@ class App{
         this.plusCore = 0
         this.plusmagic = 0
         // DAMAGE MULTIPLIED TO FIX
-        this.physicalX = 5
-        this.weaponX = 8
-        this.magX = 10
+        this.physicalX = 3
+        this.weaponX = 4
+        this.magX = 5
 
         this.hpRegenInterval
         this.mpRegenInterval
@@ -725,7 +728,7 @@ class App{
             setTimeout(() => popUpUI.classList.remove("lvladdon"), 1200)
         }, dura)
     }
-    popItemInfo(itemDet, capName, onMiddle, cback){
+    popItemInfo(itemDet, capName, onMiddle){
         log("pop up now")
         this._allSounds.itemEquipedS.play()
         const newBx = createElement("div", "topick-bx")
@@ -944,6 +947,18 @@ class App{
             isStillGood = false
         }
     }
+    getMeshHeight(mesh){
+        var boundingBox = mesh.getBoundingInfo().boundingBox;
+
+        // Get the minimum and maximum Y-coordinates of the bounding box
+        var minY = boundingBox.minimumWorld.y;
+        var maxY = boundingBox.maximumWorld.y;
+
+        // Calculate the height of the mesh
+        var height = maxY - minY;
+
+        return height
+    }
     getMyPos(playerBx, localT){
         const inviMesh = new BABYLON.TransformNode("transformNode", scene, false)
  
@@ -1116,7 +1131,6 @@ class App{
         log(`my max exp is ${this.det.maxExp}`)
         if(this.det.exp >= this.det.maxExp){
             excessExp = this.det.exp - this.det.maxExp
-            this.det.exp = excessExp
             this.det.maxExp += this.det.maxExp/2
 
             this.det.points +=1
@@ -1126,6 +1140,7 @@ class App{
             this.det.sp = this.det.maxSp
             log(this.det)
             this.setHTMLUI(this.det)
+            if(excessExp > this.det.maxExp) return this.expGain(excessExp)
             await this.updateMyDetailsOL(this.det, true)
             this.showTransaction(`Level Raised To ${this.det.lvl}`, 1500)
             this._allSounds.congratsS.play()
@@ -1549,7 +1564,7 @@ class App{
     }
     setToBuyItems(items){
         shopList.innerHTML = ''
-        shopCateg.innerHTML = `My coins: ${this.det.coins}`
+        shopCateg.innerHTML = `My coins: ${Math.floor(this.det.coins)}`
         items.forEach(item => {
             const newDiv = createElement('div', 'shopbx')
             const newImg = createElement('img', 'shop-img')
@@ -1789,7 +1804,7 @@ class App{
             }
         })
     }
-    unEquip(itemInfo){
+    unEquip(itemInfo, isDropping){
         switch(itemInfo.itemType){
             case "armor":
                 this.hideMesh(this.myChar.armorz, itemInfo.name);
@@ -1803,7 +1818,7 @@ class App{
                 this.det.weapon.meshId = "none"
                 throwBtn.style.display = "none"
                 swordPicBtn.style.display ="none"
-                if(this.myChar.mode === "weapon"){
+                if(this.myChar.mode === "weapon" || isDropping){
                     this.myChar.mode = "fist"
                     this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
                     this.changeAtkBtnImg()
@@ -1847,11 +1862,20 @@ class App{
         this.craftFunc = undefined
         this.myChar._crafting = false
     }
-    
-    disposeMeeleeMesh(collisionForEnemy){
-        collisionForEnemy.parent = null
-        collisionForEnemy.position.y = 100
-        collisionForEnemy.dispose()
+    disposeMeeleeMesh(collisionForEnemy, dura){
+        if(dura){
+            setTimeout(() => {
+                collisionForEnemy.parent = null
+                collisionForEnemy.position.y = 100
+                collisionForEnemy.dispose();
+            }, dura)
+        }else{
+
+            collisionForEnemy.parent = null
+            collisionForEnemy.position.y = 100
+            collisionForEnemy.dispose();
+
+        }
     }
     disposeSounds(soundsArray, disposeAfterDura){
         if(disposeAfterDura){
@@ -1887,16 +1911,16 @@ class App{
 
         return theSound
     }
-    logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord){
+    logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillDmg){
         if(player._id === this.det._id){
             if(this.socketAvailable){
-                this.socket.emit("monsterIsHit", {monsId: mons.monsId, dmgTaken: physicalDmg + skillRecord.effects.plusDmg, _id: player._id,
+                this.socket.emit("monsterIsHit", {monsId: mons.monsId, dmgTaken: physicalDmg + skillDmg, _id: player._id,
                     pos: {x: monsFos.x, z: monsFos.z}, mypos: {x: pFos.x, z: pFos.z}, mode: player.mode, isCritical: true })
             }else{
-                this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillRecord.effects.plusDmg, monsFos, "fist", true)
+                this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillDmg, monsFos, "fist", true)
             }
         }else{
-            this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillRecord.effects.plusDmg, monsFos, "fist", true)
+            this.monsterIsHit(mons.monsId, player.bx.position,physicalDmg + skillDmg, monsFos, "fist", true)
         }
     }
     initializeMesh(toClone, posY, meshName, cb){
@@ -1920,7 +1944,7 @@ class App{
             })
         })
     }
-    initiateSkill(skillName, player, physicalDmg, kolor, forwardDir, isMonster){
+    initiateSkill(skillName, player, physicalDmg, kolor, forwardDir, skillDmg){
 
         const skillRecord = skills.find(skl => skl.name === skillName)
         if(!skillRecord) return log("the skill is not found")
@@ -1949,7 +1973,7 @@ class App{
                         log(`I hit ${mons.monsName}`)
                         const monsFos = mons.body.position
                         superPunchedS.play()
-                        this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord);
+                        this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillDmg);
 
                         this.createBloodParticle("blood", 50, monsFos, "sphere", true, 1, true, false);
                         const colFos = collisionForEnemy.getAbsolutePosition()
@@ -1967,6 +1991,29 @@ class App{
                     this.disposeMeeleeMesh(collisionForEnemy)
                 }, skillRecord.returnModeDura)
             break
+            case "leap":
+                smoke.targetStopDuration = 1.5
+                smoke.emitter = player.bx
+                smoke.start()
+                this.animStopAll(player, ["walk", "running", "attack"], true)
+                this.playAnim(player.anims, skillRecord.name)
+
+                this.flyingWeaponz.push({meshId: player._id, mesh: player.bx, spd: skillDmg})
+                setTimeout(() => {
+                    this.flyingWeaponz = this.flyingWeaponz.filter(mesz => mesz.meshId !== player._id)
+                }, 400) // 500 is fix the spd is not fixed
+            break
+            case "backdash":
+                smoke.targetStopDuration = 1.5
+                smoke.emitter = player.bx
+                smoke.start()
+                this.animStopAll(player, ["walk", "running", "attack"], true)
+                this.playAnim(player.anims, skillRecord.name)
+                this.flyingWeaponz.push({meshId: player._id, mesh: player.bx, spd: -skillDmg})
+                setTimeout(() => {
+                    this.flyingWeaponz = this.flyingWeaponz.filter(mesz => mesz.meshId !== player._id)
+                }, 400) // 500 is fix the spd is not fixed
+            break;
             case "fireBall":
                 this.setAttachSound(skillName, `fireBall.${player._id}`, player.bx, true)
                 
@@ -1980,44 +2027,45 @@ class App{
                 const fireClone = fire.clone("fireclone")
                 const smokeClone = smoke.clone("smokeClone")
                 collisionForEnemy.lookAt(new Vector3(forwardDir.x, this.yPos, forwardDir.z),0,0,0)
-                if(!isMonster){
-                    Monsterz.forEach(mons => {
-                        this.toRegAction(collisionForEnemy, mons.body, () => {
-                            const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
-                            log(`fireball hit ${mons.monsName}`);
+            
+                Monsterz.forEach(mons => {
+                    this.toRegAction(collisionForEnemy, mons.body, () => {
+                        const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
+                        log(`fireball hit ${mons.monsName}`);
 
-                            // sound
-                            fireExplodeS.attachToMesh(mons.body)
-                            fireExplodeS.play()
-                            this.disposeSounds([fireExplodeS], 4000)
-                            // particle
-                            fireExplode.emitter = mons.body                            
-                            fireExplode.disposeOnStop = true
-                            fireExplode.targetStopDuration = 1
-                            fireExplode.start();
+                        // sound
+                        fireExplodeS.attachToMesh(mons.body)
+                        fireExplodeS.play()
+                        this.disposeSounds([fireExplodeS], 4000)
+                        // particle
+                        fireExplode.emitter = mons.body                            
+                        fireExplode.disposeOnStop = true
+                        fireExplode.targetStopDuration = 1
+                        fireExplode.start();
 
-                            const monsFos = mons.body.position
-                            this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillRecord)
+                        const monsFos = mons.body.position
+                        this.logicWhenMonsterIsHit(player, mons, monsFos, pFos, physicalDmg, skillDmg)
 
-                            particleMesh.parent = null
-                            const newColPos = collisionForEnemy.getAbsolutePosition()
-                            particleMesh.position = new Vector3(newColPos.x,newColPos.y,newColPos.z)
-                            fireClone.disposeOnStop = true
-                            fireClone.targetStopDuration = 1
-                            smokeClone.disposeOnStop = true
-                            smokeClone.targetStopDuration = 1
-                            this.createBloodParticle("blood", 50, monsFos, "sphere", true, 1, true, false);
-                            this.disposeMeeleeMesh(collisionForEnemy)
-                        
-                            this.chaseSomeone(player, mons)
-                        })
+                        particleMesh.parent = null
+                        const newColPos = collisionForEnemy.getAbsolutePosition()
+                        particleMesh.position = new Vector3(newColPos.x,newColPos.y,newColPos.z)
+                        fireClone.disposeOnStop = true
+                        fireClone.targetStopDuration = 1
+                        smokeClone.disposeOnStop = true
+                        smokeClone.targetStopDuration = 1
+                        this.createBloodParticle("blood", 50, monsFos, "sphere", true, 1, true, false);
+                        this.disposeMeeleeMesh(collisionForEnemy)
+                    
+                        this.chaseSomeone(player, mons)
                     })
-                }else{
-                    this.toRegAction(collisionForEnemy, this.myChar.bx, () => {
-                        this.hitByNonMultiAI(this.myChar.bx, player.body, physicalDmg + skillRecord.effects.plusDmg, "hit", player._id, false)
-                    })
-                }
-
+                })
+ 
+                // this.toRegAction(collisionForEnemy, this.myChar.bx, () => {
+                //     this.hitByNonMultiAI(this.myChar.bx, player.bx, physicalDmg + skillRecord.effects.plusDmg, "hit", player._id, false)
+                //     if(this.socketAvailable){
+                //         this.socket.emit()
+                //     }
+                // })
                 
                 collisionForEnemy.locallyTranslate(new Vector3(0,0,1))
                 const thePlayer = players.find(pl => pl._id === player._id)
@@ -2315,6 +2363,89 @@ class App{
             })
         })
     }
+    showSkillList(skillz, isMine){
+        myskillLists.innerHTML = ''
+        let canShow = true
+        let totalOfList = 0
+        skillz.forEach(skl => {
+            if(!isMine){
+                if(skl.pointsToClaim > this.det.points) canShow = false
+                const alreadyLearned = this.det.skills.some(myskl => myskl.name === skl.name)
+                if(alreadyLearned) return
+            }
+            const bx = createElement("li", `skill-bx ${skl.name}`)
+            const sbLeft = createElement("div", "sb-left")
+
+            const sbImgE = createElement("img", "skill-img");
+            sbImgE.src = `./images/skills/${ !canShow ? 'lock' : skl.name}.png`
+            const skillNE = createElement("p", "sb-skillName", skl.name);
+            const skillLvlE = createElement("p", "sb-skillLvl", `Lvl. ${skl.lvl}`);
+            const skillTierE = createElement("p", "sb-tier", `"${skl.tier}"`);
+            const skillUpBtn = createElement("button", isMine ? "sb-skillup" : "sb-nbtn", `${isMine ? "+" : "Learn"}`);
+            
+            switch(skl.tier){
+                case "common":
+                    skillTierE.style.color = "green"
+                break
+            }
+
+            sbLeft.append(sbImgE)
+            if(canShow){
+                sbLeft.append(skillNE)
+                isMine && sbLeft.append(skillLvlE)
+            }
+            if(!canShow){
+                bx.style.background = "url('../images/skills/lockbg.jpg')"
+                bx.style.opacity = .8
+            }
+            bx.append(sbLeft);
+            bx.append(skillTierE)
+            canShow && bx.append(skillUpBtn)
+            myskillLists.append(bx)
+
+            skillUpBtn.addEventListener("click", async () => {
+                if(isMine){
+                    if(this.det.points < skl.pointsForUpgrade) return this.showTransaction(`Required Points x${skl.pointsForUpgrade}`, 2500)
+                    this.det.skills.forEach(myskl => {
+                        if(myskl.name === skl.name){
+                            myskl.lvl += 1;
+                            myskl.effects.plusDmg += myskl.upgradePlus
+                        }                        
+                    })
+                    this._allSounds.upgradeS.play()
+                }else{
+                    if(this.det.points < skl.pointsToClaim) return this.showTransaction(`Required Points x${skl.pointsToClaim}`, 2500)
+                    const haveAlready = this.det.skills.some(myskl => myskl.name === skl.name)
+                    if(haveAlready) return this.showTransaction('skill already have', 2500)
+
+                    this.det.skills.push(skl)
+                    this._allSounds.skillAcquiredS.play()
+                }
+                this.blurButtons([AllSkillInfoCont])
+
+                this.det.points -= isMine ? skl.pointsForUpgrade : skl.pointsToClaim
+                await this.updateMyDetailsOL(this.det, true)
+                this.setHTMLUI(this.det)
+                this.returnButtons([AllSkillInfoCont])
+                if(!isMine){
+                    this.showTransaction("Skill Learned", 2500)
+                    this.setMySkills()
+                }                
+                this.showSkillList(isMine ? this.det.skills : skills, isMine)
+            })
+            totalOfList++
+        })
+        if(!totalOfList){
+            const noListCap = createElement("p", "no-skills", "No Skills To Show")
+            myskillLists.append(noListCap)
+        }
+    }
+    showAllSkillz(){
+        AllSkillInfoCont.style.display = "block"
+        AllSkillInfoCont.classList.remove("transClose")
+        // this.showSkillList(skills, false)
+        this.showSkillList(this.det.skills, true)
+    }
     setRunningSound(){
         myCharDet.runningS.setPlaybackRate(1.2)
         const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
@@ -2341,18 +2472,56 @@ class App{
                     this.returnButtons([chld])
                 }, skillRec.skillCoolDown)
             }
-        })
+        })        
+    }
+    skillIntro(skillRecord, player){
+        player.mode = "none";
+        player._casting = true;
+        log("will play " + skillRecord.name)
+        this.playAnim(player.anims, skillRecord.name, skillRecord.animationLoop)
         
+        setTimeout(() => {
+            player.mode = skillRecord.requireMode;
+            player._casting = false;
+        }, skillRecord.returnModeDura)
+        let leapSound
+        switch (skillRecord.name) {
+            case "leap":
+                leapSound = this._scene.getSoundByName(`leap.${player._id}`)
+                if(!leapSound){
+                    leapSound = this._allSounds.leapS.clone(`leap.${player._id}`)
+                    leapSound.attachToMesh(player.bx)
+                    leapSound.setPlaybackRate(1.4)
+                }
+                
+                leapSound.play(0,.2)
+            break;
+            case "backdash":
+                leapSound = this._scene.getSoundByName(`leap.${player._id}`)
+                if(!leapSound){
+                    leapSound = this._allSounds.leapS.clone(`leap.${player._id}`)
+                    leapSound.attachToMesh(player.bx)
+                    leapSound.setPlaybackRate(1.4)
+                }
+                
+                leapSound.play(0,.2)
+            break;
+        }
     }
     setEventListeners(){
         skillCont.addEventListener("click", e => {
             const targ = e.target.className
             if(!targ.includes("skill-bx")) return log("not skill")
             const skillName = targ.split(" ")[1]
-            const skillRecord = skills.find(skl => skl.name === skillName)
+            const skillRecord = this.det.skills.find(skl => skl.name === skillName)
             if(!skillRecord) return log("skill not found")
-            if(skillRecord.requireMode !== this.myChar.mode) return log("required different mode")
-            
+            if(this.det.hp <= 0) return skillCont.style.display = "none"
+            // if(skillRecord.requireMode !== this.myChar.mode) return log("required different mode")
+            this.stopPress()
+            this.myChar.runningS.stop()
+            setTimeout(() => {
+                this.allCanPress()
+            }, 600)
             const phyDmg = this.recalMeeleDmg()
             const elemColor = rgbColors.find(det => det.name === this.det.aptitude[0].name)
             
@@ -2360,6 +2529,7 @@ class App{
             const forwardDir = this.getMyPos(this.myChar.bx, 1);
             const inFrontPos = {x:forwardDir.x,y:this.yPos,z:forwardDir.z}
             this.myChar._casting = true
+
             if(this.socketAvailable){
                 this.socket.emit("willcast", {
                     _id: this.myChar._id,
@@ -2368,14 +2538,7 @@ class App{
                     place: this.currentPlace
                 })
             }else{   
-                this.myChar.mode = "none";
-                this.myChar._casting = true;
-                this.playAnim(this.myChar.anims, skillRecord.name)
-                
-                setTimeout(() => {
-                    this.myChar.mode = skillRecord.requireMode;
-                    this.myChar._casting = false;
-                }, skillRecord.returnModeDura)
+                this.skillIntro(skillRecord, this.myChar)
             }
             this._skillReleaseTimeOut = setTimeout(() => {
                 if(this.socketAvailable){
@@ -2385,15 +2548,20 @@ class App{
                         phyDmg,
                         elemColor: elemColor.rgb,
                         inFrontPos,
-                        place: this.currentPlace
+                        place: this.currentPlace,
+                        skillDmg: skillRecord.effects.plusDmg
                     })
                 }else{
-                    this.initiateSkill(skillName, this.myChar, phyDmg, elemColor.rgb, inFrontPos)
+                    this.initiateSkill(skillName, this.myChar, phyDmg, elemColor.rgb, inFrontPos, skillRecord.effects.plusDmg)
                 }
             }, skillRecord.castDuration)
 
-            
             this.setCoolDownSkillUI(skillRecord)
+        })
+        skillCateg.addEventListener("click", e => {
+            const skillCategName = e.target.className.split(" ")[1]
+            if(skillCategName === undefined) return
+            skillCategName === "myskillset" ? this.showSkillList(this.det.skills, true) : this.showSkillList(skills, false) 
         })
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
@@ -2439,6 +2607,9 @@ class App{
                     case "mystats":
                         myStatContainer.classList.remove("my-stat-hidding")
                     break
+                    case "myskills":
+                        this.showAllSkillz()
+                    break;
                 }
             })
         })
@@ -2478,14 +2649,14 @@ class App{
                 modeName = "weapon"
             }
             if(btnName.includes("handpic")){
-                
+                this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
                 this.changeAtkBtnImg()
                 if(this.myChar.mode === "stand"){
                     this.playAnim(this.myChar.anims, "fromstand")
                     this.setMode("fist", 500)
                 }
                 if(this.myChar.mode === "weapon"){
-                    this.keepSword(this.myChar.rootSword, this.myChar.rootBone)
+                    
                     this.playAnim(this.myChar.anims, "tostand")
                     setTimeout(() => this.playAnim(this.myChar.anims, "fromstand"), 300)
                     this.setMode("fist", 600)
@@ -2543,6 +2714,7 @@ class App{
             this.myChar._attacking = true
 
             const stopMoving = () => {
+                this.myChar.runningS.stop()
                 this._canpress = false
                 this.disableMoving()
                 this.disableAttackBtn()
@@ -2571,7 +2743,7 @@ class App{
                     this._weaponAtk = `slash.${this._atkNum}`
                     animName = this._weaponAtk
                     stopMoving()
-                    this.myChar.whoopS.setPlaybackRate(.8)
+                    this.myChar.whoopS.setPlaybackRate(.8 + Math.random()*.3)
                     this.myChar.whoopS.play(.3)
                     this._atkNum++
                 break;
@@ -3098,13 +3270,44 @@ class App{
             if(this.targetRecource.name.includes("sword")){
                 this.playAnim(this.myChar.anims, 'pickup')
                 this.closePopUpAction()
-                this.socketAvailable && this.socket.emit("pickSword", {_id: this.det._id, meshId: this.targDetail.meshId })
-                setTimeout(() => {
-                    this.obtain(this.targDetail.name, 1, false)
+                const stillHere = this.lootz.some(lot => lot.meshId === this.targDetail.meshId)
+                if(!stillHere){
                     this.targetRecource.dispose()
+                    if(this.targetRecource.actionManager){
+                        this.targetRecource.actionManager.dispose()
+                        this.targetRecource.actionManager = null
+                    }
+                    if(this.targetRecource.getChildren()){
+                        this.targetRecource.getChildren().forEach(mzs => mzs.dispose())
+                    }
+                    return  this._statPopUp("Item No Longer Here", 100, "red")
+                }
+                if(this.socketAvailable){
+                    this.socket.emit("pickSword", {_id: this.det._id, meshId: this.targDetail.meshId, place: this.currentPlace })
+                }else{
+                    this.lootz = this.lootz.filter(lot => lot.meshId !== data.meshId)
+                    theLootz = theLootz.filter(lot => lot.meshId !== data.meshId);
+                    this._scene.meshes.forEach(mes => {
+                        if(mes.name.includes("sword")) log(mes.name)
+                    })
+                    let disposingSword = []
+                    this._scene.meshes.forEach(mes => {
+                        if(mes.name.includes("sword")){
+                            if(mes.name.split(".")[1] === data.meshId)disposingSword.push(mes)
+                        }
+                    })
+                    log(`disposing sword `, disposingSword)
+                }
+                await this.addToInventory(this.targDetail)
+                log(`I picked `, this.targDetail);
+                
+                const swordRec = records.find(rec => rec.name === this.targDetail.name)
+                setTimeout(() => {
+                    this.obtain(swordRec ? swordRec.dn : this.targDetail.name, 1, false)
+                    
                     this.targetRecource = undefined
                 }, 300)
-                await this.addToInventory(this.targDetail)
+                // deduct in lootz
                 return log("sword has been pcikedup")
             }
             if(this.det.sp < 1) return log("not enought SP")
@@ -3331,7 +3534,7 @@ class App{
         })
         equipedItemsCont.style.display = "flex"
         equipedList.forEach(elem => {
-            elem.addEventListener("click", e => {
+            elem.addEventListener("click", async e => {
                 if(e.target.id === " ") return log("no equiped")
                 if(e.target.id === "noequiped") return log("no equiped")
                 const itemName = e.target.id
@@ -3348,7 +3551,69 @@ class App{
                     itemInfoCont.style.display = "none"
                     this.unEquip(itemInfo)
                 })
+
                 itemInfoBtns.append(aBtn)
+                if(itemInfo.itemType === "sword"){
+                    const dropBtn = createElement("button", "equipsword item-infobtn", "Drop", async () => {
+                        itemInfoCont.style.display = "none"
+                        closeGameUI()
+                        this.stopPress() 
+                        this.myChar.inVulnerable = true
+                        await this.deductItem(this.det.weapon.meshId, 1);
+                        if(this.socketAvailable){ // only for animation
+                            this.socket.emit("will-drop-sword", {
+                                _id: this.det._id,
+                                place: this.currentPlace
+                            })
+                        }else{
+                            this.myChar.mode = "none"
+                            this.getSword(this.myChar.rootSword, this.myChar.rHand)
+                            this.playAnim(this.myChar.anims, "willStruck")
+                            this.myChar.rootSword.addRotation(Math.PI,0,0)
+                        }
+                        const theSwordMyHand = this.myChar.swordz.find(sword => sword.name.split(".")[1] === itemName)
+                        const theLandGround = this._scene.getMeshByName("ground")
+                        if(!theLandGround) return log("not found ground")
+                        if(theLandGround && theSwordMyHand){
+                            this.myChar.soundColl.actionManager = new ActionManager(this._scene)
+                            this.toRegAction(this.myChar.soundColl, theLandGround, async () => {
+                                log("collided on ground")                              
+                                const swordPOS = this.myChar.soundColl.getAbsolutePosition()
+                                const swordData = {...this.det.weapon,
+                                 x:swordPOS.x,z:swordPOS.z, qnty: 1,
+                                place: this.currentPlace}
+                                
+                                if(this.socketAvailable){
+                                    this.socket.emit("sword-isdroped", {
+                                    _id: this.det._id,
+                                    swordData})
+                                }else{                                    
+                                    this.struckTheSword(this.myChar,theSwordMyHand)
+                                    this.placeSword(swordData, theSwordMyHand, .25, this._scene)
+                                }                                
+
+                                this.myChar.soundColl.actionManager.dispose()
+                                this.myChar.soundColl.actionManager = null
+                                this.unEquip(itemInfo, true)
+
+                                // theSwordMyHand.isVisible = false
+                                setTimeout(() => {
+                                    this.myChar.mode = "fist"
+                                    openGameUI()
+                                    this.allCanPress()
+                                    this.myChar.inVulnerable = false
+                                }, 1000)
+                                await this.updateMyDetailsOL(this.det, true)
+                                log(this.det)
+                            })
+                        }
+                        // await this.updateMyDetailsOL(this.det,true);
+                        // this.setEquipedItems()
+                        // this.setInventory()
+                        // this.socketAvailable && this.socket.emit("equipingSword", {_id: this.det._id, swordDetail: theItemDetail, mode: this.myChar.mode})  
+                    })
+                    itemInfoBtns.append(dropBtn)
+                }
             })
         })
         toCookList.addEventListener("click", async e => {
@@ -3758,6 +4023,7 @@ class App{
                     this.det.weapon = theItemDetail
                     log("I will equip this " , this.det.weapon)
                     this.checkIfHaveWeapon()
+                    
                     await this.updateMyDetailsOL(this.det,true);
                     this.setEquipedItems()
                     this.setInventory()
@@ -4360,7 +4626,7 @@ class App{
         this.stopAnim(thePlayer.anims, "minning")
         this.stopAnim(thePlayer.anims, "upperkick")
     }
-    animStopAll(thePlayer, arrayOfAnim){
+    animStopAll(thePlayer, arrayOfAnim, isIncludes){
         thePlayer._moving = false
         thePlayer._minning = false
         thePlayer._training = false
@@ -4368,7 +4634,12 @@ class App{
         
         if(arrayOfAnim){
             arrayOfAnim.forEach(animName => {
-                this.stopAnim(thePlayer.anims, animName)
+                if(isIncludes){
+                    thePlayer.anims.forEach(ani => ani.name.includes(animName) && ani.stop())
+                }else{
+                    this.stopAnim(thePlayer.anims, animName)
+                }
+                
             })
         }
     }
@@ -4387,9 +4658,9 @@ class App{
         monster.isHit = true
         
         let monsHaveBlood = true
-        const monsFos = monster.body.position
         switch(mode){
             case "weapon":
+                monster.sliceHitS.setPlaybackRate(.9 + Math.random()*.3)
                 monster.sliceHitS.play()
                 if(monster.monsName.includes("slime")) monsHaveBlood = false
                 if(monster.monsName.includes("ghost")) monsHaveBlood = false
@@ -4399,19 +4670,20 @@ class App{
                             //will not create blood particle
                         break
                         default:
-                            this.createBloodParticle("blood",300, monsFos, "sphere", true, 1, true, undefined)
+                            monster.bloodSplat && monster.bloodSplat.start()
                         break
                     }
                 }
             break
             case "throw":
                 log("throw")
+                monster.spearStruck.setPlaybackRate(.9 + Math.random()*.3)
                 monster.spearStruck.play()
                 if(monster.monsName.includes("slime")) monsHaveBlood = false
                 if(monster.monsName.includes("ghost")) monsHaveBlood = false
                 if(monster.monsName.includes("golem")) monsHaveBlood = false
                 if(monsHaveBlood){
-                    this.createBloodParticle("blood",300, monsFos, "sphere", true, 1, true, undefined)
+                    monster.bloodSplat && monster.bloodSplat.start()
                 }
             break
             case "fist":
@@ -4573,25 +4845,18 @@ class App{
         })
     }
     async hitByNonMultiAI(body, enemBody, dmgTaken, animName, monsId, effects){
-        // const myPlayerDet = players.find(pl => pl._id === this.det._id)
-        // if(myPlayerDet){
-        //     log(myPlayerDet._casting)
-        //     if(myPlayerDet._casting){
-        //         log("I am still casting")
-        //         myPlayerDet._casting = false
-        //         const bPos = body.position
-        //         this.createTextMesh(makeRandNum(), "cancelled", "red", bPos, 80, this._scene, true, body)
-        //         log(players)
-        //     }
-        // }
+        this.stopPress()
+        closeGameUI()
+
+        this.animStopAll(this.myChar, ["walk", "running", "0Idle", "hit"], true)
         if(this.myChar._casting){
             clearTimeout(this._skillReleaseTimeOut)
-            this.createTextMesh(makeRandNum(), "cancelled", "red", this.myChar.bx.position, 90, this._scene, true, this.myChar.bx)
+            this.createTextMesh(makeRandNum(), "cancelled","red",{x: 0, y: 0, z: 0}, 90, this._scene, true, this.myChar.bx)
             this.myChar._casting = false
         }
 
         let effectTimeOut
-        let returnBtnSec = 200
+        let returnBtnSec = 300
         let myDef = this.det.stats.def*2;
         const {x,z} = enemBody.position
         body.lookAt(new Vector3(x,body.position.y,z), 0,0,0)
@@ -4664,8 +4929,7 @@ class App{
         let toDeduct = myDef >= dmgTaken ? .5 : dmgTaken - myDef
         // log('my def ' + myDef + " - dmgtaken " + dmgTaken)
         // log(`to deduct in my life ${toDeduct}`)
-        this.stopPress()
-        closeGameUI()
+
         clearTimeout(effectTimeOut)
         effectTimeOut = setTimeout(() => {
             if(this.det.hp <= 0) return log("dead after mons effect stop here")
@@ -4675,7 +4939,7 @@ class App{
         this.det.hp -= toDeduct
         if(effects && effects.chance > Math.random()*10){
             const theMons = Monsterz.find(mons => mons.monsId === monsId)
-            if(theMons.effectS !== undefined){
+            if(theMons.effectS !== undefined){ // only for sounds
                 log(theMons.monsName + " has an effect Sound")
                 theMons.effectS.setPlaybackRate(.9+Math.random()*.2)
                 theMons.effectS.play()
@@ -4688,21 +4952,42 @@ class App{
                 this.allCanPress()
             }, effects.dura)
             if(this.det.hp > 0){
-
-                const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
-                if(!statusAlreadyThere) this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
-                
                 this.setNegativeStatUI()
                 let colorOfCap = "limegreen"
+                let theParticle
+                let textMeshName
                 switch(effects.effectType){
                     case "poisoned":
+                        const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
+                        if(!statusAlreadyThere) this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
+                
+                        textMeshName = effects.effectType
                         colorOfCap = "limegreen"
-                        const theParticle = this.createBloodParticle("poisonTex", 100, this.myChar.bx.position, "sphere", true, 5, true, false)
+                        theParticle = this.createBloodParticle("poisonTex", 100, this.myChar.bx.position, "sphere", true, 5, true, false)
                         theParticle.color = new BABYLON.Color3(0.05, 0.18, 0.02)
                     break;
+                    case "absorb":
+                        switch (effects.absorbType) {
+                            case "weapon":
+                                if(this.det.weapon.name !== "none"){
+                                    textMeshName = `absorb +${this.det.weapon.plusDmg}`
+                                    log(`monster before hp ${theMons.hp}+${this.det.weapon.plusDmg} max && ${theMons.maxHp}`)
+                                    theMons.hp+=this.det.weapon.plusDmg
+                                    theMons.maxHp+=this.det.weapon.plusDmg
+                                    log(`monster AFTER hp ${theMons.hp} max && ${theMons.maxHp}`)
+                                }else{
+                                    textMeshName = `absorb +${effects.defaultAbs}`
+                                    theMons.hp+=effects.defaultAbs
+                                    theMons.maxHp+=effects.defaultAbs
+                                }
+                            break;
+                        }
+                        colorOfCap = "red"
+                        this.createBloodParticle("blood", 100, this.myChar.bx.position, "cone", true, 5, true, false)
+                    break;
                 }
-                this.createTextMesh(makeRandNum(), effects.effectType, colorOfCap, this.myChar.bx.position, 90,this._scene, true)
-                log(`duration to continue ${effects.dura}`)
+                this.createTextMesh(makeRandNum(),textMeshName, colorOfCap, this.myChar.bx.position, 90,this._scene, true)
+
             }
         }
         this.updateLifeManaSpGUI()
@@ -4742,7 +5027,7 @@ class App{
             this.myChar.mode = "weapon"
         }
         if(this.myChar._crafting){
-            log("our crafting disturbed !")
+            this._statPopUp("crafting cancelled", 100, "red")
             this.cancelCraft()
         }
         clearTimeout(this.timeOutToSave)
@@ -4778,6 +5063,7 @@ class App{
         setTimeout(() => player.mode = "fist", 1300)
         this.keepSword(player.rootSword, player.rootBone)
         if(player._id === this.det._id){
+            this.flyingWeaponz = this.flyingWeaponz.filter(mesz => mesz.meshId !== player._id)
             this.stopPress();
             botMoving = false;
             moveNums = { straight: 0, leftRight: 0 }
@@ -4860,6 +5146,25 @@ class App{
         }
         return totalDmg
     }
+    recalMagicDmg(){
+        let totalDmg = 0;
+        let myMagDmg = (this.det.stats.magic * this.magX) + this.plusmagic
+        totalDmg+=myMagDmg
+        switch(this.myChar.mode){
+            case "weapon":
+                if(!this.det.weapon) return log("no weapon")
+                let weapMagDmg = this.det.weapon.plusMag    
+                const minDurability = this.det.weapon.durability/3
+                if(this.det.weapon.cState <= minDurability && weapMagDmg) weapMagDmg = weapMagDmg/2
+                totalDmg += parseInt(weapMagDmg ? weapMagDmg : 0)
+                log("weapon plus Magic " + weapMagDmg)
+            break;
+        }
+        if(this.det.survival.sleep <= 20){
+            totalDmg = totalDmg/2
+        }
+        return totalDmg
+    }
     recalPhyDefense(dmgTaken){
         let myDef = this.det.stats.def*1.5;
 
@@ -4899,7 +5204,10 @@ class App{
          
                     this.focusOn = monster.body
 
-                    if(this.myChar.mode === "fist") this.myChar.punchedS.play()
+                    if(this.myChar.mode === "fist"){
+                        this.myChar.punchedS.setPlaybackRate(.8 + Math.random()*.4)
+                        this.myChar.punchedS.play()
+                    }
                     // if(themons.targHero !== undefined && !themons.isAttacking){
                     //     let theAttacks = 1.5
                     //     if(themons.monsName === "viper") theAttacks = 2.7
@@ -4939,7 +5247,7 @@ class App{
                         }else log("this monster has no core")
 
                         if(theItem){ // if there is an item for this monster
-                            if(Math.random() * 10 > 9) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
+                            if(Math.random() * 10 > 8.5) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
                         }
                         
                         // EDIBLE MONSTERS
@@ -5154,10 +5462,12 @@ class App{
         this.Seedz = []
         this.lootz = []
         this.Crytalz = []
+        this.allHitBox = []
 
         // MONSTERS THROWING
         this.likeRock
         this.likeSting
+        this.hitBox = undefined
 
         // CRAFT RELATED
         this.canDropHere = true
@@ -5439,9 +5749,32 @@ class App{
         return data
     }
     async _loadCharacterSounds(scene){
+        const upgradeS = new BABYLON.Sound("upgradeS", "sounds/upgradeS.mp3", scene,
+        null, {spatialSound: false, volume: 1})
+
+        const enteredS = new BABYLON.Sound("enteredS", "sounds/enteredS.mp3", scene,
+        null, {spatialSound: false, volume: 1})
+
+        const enteringHoleS = new BABYLON.Sound("enteringHoleS", "sounds/enteringHoleS.mp3", scene,
+        null, {spatialSound: false, volume: 1})
+
+        const boxHitS = new BABYLON.Sound("boxHitS", "sounds/boxHitS.mp3", scene,
+        null, {spatialSound: false, maxDistance: 60, volume: 1})
+
+        const leapS = new BABYLON.Sound("leapS", "sounds/leapS.mp3", scene,
+        null, {spatialSound: true, maxDistance: 60, volume: 1})
+
+        const brokenWoods = new BABYLON.Sound("brokenWoods", "sounds/brokenWoods.mp3", scene,
+        null, {spatialSound: true, maxDistance: 60, volume: 1})
 
         const hitByFireS = new BABYLON.Sound("firehit", "sounds/firehit.mp3", scene,
         null, {spatialSound: true, maxDistance: 60, volume: 1})
+
+        const houndBite = new BABYLON.Sound("houndBite", "sounds/houndBite.mp3", scene,
+        null, {spatialSound: true, maxDistance: 60, volume: .8})
+
+        const houndChaseS = new BABYLON.Sound("houndChaseS", "sounds/houndChaseS.mp3", scene,
+        null, {volume: 1, spatialSound: true, maxDistance: 100, autoplay: false, loop: false})
 
         const superPunched = new BABYLON.Sound("superPunched", "sounds/superPunched.mp3", scene,
         null, {spatialSound: true, maxDistance: 60, volume: 1})
@@ -5566,6 +5899,14 @@ class App{
         spearStruckS.setPlaybackRate(1.1)
 
         this._allSounds = {
+            upgradeS,
+            enteredS,
+            enteringHoleS,
+            leapS,
+            brokenWoods,
+            boxHitS,
+            houndBite,
+            houndChaseS,
             superPunched,
             hitByFireS,
             fireBall,
@@ -5672,25 +6013,37 @@ class App{
 
             this.checkAll()
             plOnline.innerHTML = `players online: ${data.uzers.length}`
-            // if(theLootz.length){
-            //     theLootz.forEach(loot => {
-            //         const isMade = this.lootz.some(buto => buto.meshId === loot.meshId)
-            //         if(!isMade){
-            //             if(loot.itemType === "sword"){
-            //                 allsword.forEach(swor => {
-            //                     if(swor.name.split(".")[1] === loot.name){
-            //                         this.placeSword(loot, swor, .23, scene)
-            //                     }
-            //                 })
-            //             }
-            //         }
-            //     })
-            // }
+
         })
         
         this.socket.on("deliver-reload", idFromTcp => {
             // means opening same account at the same time in different browsers
             if(this.det._id === idFromTcp) return window.location.reload()
+        })
+    }
+    calibrateLoot(rarity){
+        let coin = 0
+        switch(rarity){
+            case 1:
+                coin += Math.random()*150
+            break;
+            case 2:
+                coin += Math.random()*500
+            break;
+            default:
+                coin += Math.random()*30
+            break
+        }
+        this.det.coins += coin
+        this.obtain(`coins `, Math.floor(coin))
+        const lootsToGet = []
+        log('loot rarity ' + rarity)
+        records.forEach(rec => {
+            if(rec.rarity === rarity && Math.random() > .98) lootsToGet.push(rec)
+        })
+        log('loots to get ', lootsToGet)
+        lootsToGet.forEach( loot => {
+            this.popItemInfo({...loot, meshId: makeRandNum(), qnty: 1, price: loot.secondPrice}, loot.dn)
         })
     }
     checkIfHaveWeapon(){
@@ -5723,6 +6076,7 @@ class App{
         this.checkBonFirez()
         this.checkTreasurez()
         this.checkFlowers()
+        this.checkLootz()
     }
     weJoinTheServer(dirT){
         this.socket.emit("join", {...this.det,
@@ -6108,6 +6462,7 @@ class App{
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
         goblinRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "goblinGreen.glb", scene)
         minotaurRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "minotaur.glb", scene)
+        wolfRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "wolf.glb", scene)
         snakeRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "snake.glb", scene)
         golemRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "golem.glb", scene)
         monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
@@ -6205,6 +6560,7 @@ class App{
         // PATH TO DUNGEON
         const path = this.createPath(8,  {x: 0, z:-10.7}, scene)
         this.toRegAction(path, this.myChar.bx, async () => {
+            this._allSounds.enteringHoleS.play()
             this.prevPlace = 'swampforest'
             this.stopPress(true)
             displayElems([apartInfos], "none")
@@ -6469,9 +6825,11 @@ class App{
         scene.actionManager = new ActionManager(scene)
         scene.clearColor = new Color3(0,0,0)
         shadowGen = new ShadowGenerator(1024, light);
-        this.disablePointerPicks(scene)
+        this.disablePointerPicks(scene);
 
-        await this._loadCharacterSounds(scene)
+        await this._loadCharacterSounds(scene);
+
+        this.createMainHitBox(scene, "rockTexWall.jpg", 2, 10)
           
         this.runLifeManaStaminaRegen()
 
@@ -6538,6 +6896,9 @@ class App{
         const SharpROCK = await this.importMesh(scene, "./models/", "sharpRock.glb")
         sharpRock = SharpROCK.meshes[1]
 
+        const dGround = MeshBuilder.CreateGround("ground", { width: 60, height: 200}, scene)
+        dGround.isVisible = false
+        dGround.position.y-=.3
         await this.helmetCreation(scene);
         await this.shieldCreation(scene);
         await this.createMagicCircle(scene);
@@ -6632,7 +6993,8 @@ class App{
         let ghostRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "ghost.glb", scene)
         let slimeBlueRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "slimeBlue.glb", scene)
         let spiderBossRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "spiderBoss.glb", scene)
-        
+        wolfRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "wolf.glb", scene)
+
         this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,false,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar;
    
@@ -6649,23 +7011,27 @@ class App{
             })
         })
 
-        // treasures
-        switch(floorNumber){
-            case 1:
-                const haveHydra = this.det.items.some(item => item.name === "hydra");
-                if(!haveHydra){
-                    this.createTreasure(treasure, {openingBy: undefined, isOpening: false, x: -10 + Math.random()* 15,z: 90, meshId: makeRandNum(), name: 'hydra', itemType: 'armor', plusDef: 30, plusDmg: 0, 
-                    magRes: 0, plusMag: 0, price: 10000, cState: 6000, durability: 6000})
-                }
-            break;
-            case 2:
-                const haveKarba = this.det.items.some(item => item.name === "karba");
-                if(!haveKarba){
-                    this.createTreasure(treasure, {openingBy: undefined, isOpening: false, x: -10 + Math.random()* 15,z: 90, meshId: makeRandNum(), name: 'karba', itemType: 'armor', plusDef: 100, plusDmg: 0, 
-                    magRes: 0, plusMag: 0, price: 10000, cState: 6000, durability: 6000})
-                }
-            break;
+        for(var brickLength = 0;brickLength <= 30; brickLength+=1){ // right side of heartland
+            this.createHitBx(scene, makeRandNum(), {x: -30 + Math.random()*55 , y: 1, z: -90 + Math.random()*150 }, 10+Math.random()*50, false, false, Math.random()>.9 ? 1 : 0);
         }
+
+        // treasures
+        // switch(floorNumber){
+        //     case 1:
+        //         const haveHydra = this.det.items.some(item => item.name === "hydra");
+        //         if(!haveHydra){
+        //             this.createTreasure(treasure, {openingBy: undefined, isOpening: false, x: -10 + Math.random()* 15,z: 90, meshId: makeRandNum(), name: 'hydra', itemType: 'armor', plusDef: 30, plusDmg: 0, 
+        //             magRes: 0, plusMag: 0, price: 10000, cState: 6000, durability: 6000})
+        //         }
+        //     break;
+        //     case 2:
+        //         const haveKarba = this.det.items.some(item => item.name === "karba");
+        //         if(!haveKarba){
+        //             this.createTreasure(treasure, {openingBy: undefined, isOpening: false, x: -10 + Math.random()* 15,z: 90, meshId: makeRandNum(), name: 'karba', itemType: 'armor', plusDef: 100, plusDmg: 0, 
+        //             magRes: 0, plusMag: 0, price: 10000, cState: 6000, durability: 6000})
+        //         }
+        //     break;
+        // }
         // MONSTERS
         let slimeHp = 70 * floorNumber
         let ghostHp = 150 * floorNumber
@@ -6694,6 +7060,11 @@ class App{
             floorNumber >= 4 && this.createMonster(spiderBossRoot, shadowGen, false, makeRandNum(), "eater", undefined, { x: 1 + Math.random()*3, z: rightMons + Math.random()*1}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
             { effectType: "poisoned", chance: 6, dura: 1000, plusDmg: 50 * floorNumber, dmgPm: 30 })
             rightMons+= 25
+            // wolf
+            const houndInfo = {
+                effects: { effectType: "absorb", absorbType: "weapon", defaultAbs: 20, chance: 9, dura: 100, plusDmg: 10, dmgPm: 0 }
+            }
+            if(floorNumber > 1) this.createMonster(wolfRoot, shadowGen, false, makeRandNum(), "hellhound", "normal", {x: -30 + Math.random()*60, z: -100 + Math.random()*200}, 6, 300 * floorNumber, 300 * floorNumber, floorNumber, 1200, 12 * floorNumber, scene, false, 40 * floorNumber, "normal", houndInfo.effects)
         }
 
         this.createMonsterToChase(Monsterz, 'ghost', {x: 0, z: -30}, {width: 30}, 0, scene)
@@ -6718,6 +7089,7 @@ class App{
                 parameter: this.myChar.bx
             }, async e => {
                 if(this.currentPlace.includes('dungeon')){
+                    this._allSounds.enteringHoleS.play()
                     clearInterval(monsSpawnInterval)
                     if(parseInt(floorNumber) === 1){
                         this.stopPress(true)
@@ -6733,7 +7105,7 @@ class App{
                         Monsterz.forEach(mons => mons.body.position.y = 100)
                         await this._swampForest()
                         return log('going to swampforest')
-                    }                    
+                    }     
                     let floor = parseInt(floorNumber) - 1
                     log(`this is start path going to floor ${floor}`)
                     await this._dungeon('Normal', floor, false)
@@ -6750,6 +7122,7 @@ class App{
                 trigger: ActionManager.OnIntersectionEnterTrigger,
                 parameter: this.myChar.bx
             }, async e => { 
+                this._allSounds.enteringHoleS.play()
                 clearInterval(monsSpawnInterval)               
                 let floor = parseInt(floorNumber)
                 floor +=1
@@ -6783,6 +7156,7 @@ class App{
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
+        this._allSounds.enteredS.play()
         removeHomePage()
         loadedMesh = toLoad
         hideLScreen()
@@ -6855,11 +7229,13 @@ class App{
         const gl = new BABYLON.GlowLayer("glow", scene);
         gl.intensity = 2
 
+        this.createMainHitBox(scene, "woodenBx.jpg", .7)
+
         const explodingSmoke = this.createExplodingSmoke()
         this.creationOfFakeShadow(scene)
         // sound
-        const heartLandS = new BABYLON.Sound("sliceHit", "sounds/heartlandS.mp3", scene,
-        null, {volume: .03, autoplay: true, loop: true})
+        new BABYLON.Sound("heartlandS", "sounds/heartlandS.mp3", scene,
+        null, {volume: .1, autoplay: true, loop: true})
 
         scene.actionManager = new ActionManager(scene)
 
@@ -6911,6 +7287,17 @@ class App{
         
         await this.createBonFire(true, scene);
 
+        for(var bxLength = 5;bxLength <= 52; bxLength+=5){ // right side of heartland
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: 25+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.9 ? 1 : 0);
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: -44+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.85 ? 1 : 0);
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: -25+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.9 ? 1 : 0);
+        }
+        for(var bxLength = -6;bxLength >= -52; bxLength-=5){ // left side of heartland
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: 34+Math.random()*3}, 10+Math.random()*50, false, false, Math.random()>.9 ? 1 : 0);
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: -44+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.85 ? 1 : 0);
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: -25+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.95 ? 1 : 0);
+            if(Math.random()>.5) this.createHitBx(scene, makeRandNum(), {x: bxLength, y: .35, z: -4+Math.random()*1}, 10+Math.random()*50, false, false, Math.random()>.95 ? 1 : 0);
+        }
         // createTorch
         const leftTorch = await this.importMesh(scene, "./models/", "bigtorch.glb", true)
         leftTorch.position = new Vector3(7,0,-75)
@@ -7750,6 +8137,9 @@ class App{
                     case "monoloth":
                         monsterRoot = monoloth
                     break;
+                    case "hellhound":
+                        monsterRoot = wolfRoot
+                    break;
                 }
                 this.createMonster(monsterRoot, shadowGen, true, mon.monsId, mon.monsName, mon.modelType, mon.pos, mon.spd, mon.hp, mon.maxHp,mon.monsLvl, mon.atkInterval, mon.dmg, scene, mon.targHero, mon.expGain, mon.monsBreed, mon.effects)
             }
@@ -7810,6 +8200,31 @@ class App{
             })
         }
     }
+    checkLootz(){
+        log("checking theLootz")
+        if(isLoading) return log("still loading ...")
+        if(!allsword) return log("allsword not yet ready")
+        if(theLootz.length){
+            theLootz.forEach(loot => {
+                log(loot)
+                if(loot.place !== this.currentPlace) return log(`this loot not here`)
+                const isMade = this.lootz.find(lt => lt.meshId === loot.meshId)
+                if(!isMade){
+                    log(`sword.${loot.meshId} not yet made so we will make`)
+                    if(loot.itemType === "sword"){
+                        allsword.forEach(swor => {
+                            if(swor.name.split(".")[1] === loot.name){
+                                log("it is drakfoid")
+                                this.placeSword(loot, swor,.23, this._scene)
+                            }
+                        })
+                    }
+                }else{
+                    log(`${loot.meshId} is already in the this.lootz`)
+                }
+            })
+        }
+    }
     emptyArray(){
         houzess = []
         players = []
@@ -7823,8 +8238,11 @@ class App{
         this.socket.on("add-recources", data => {
             theMonz = data.monz
             theFlowerz = data.flowerz
+            if(data.lootz) theLootz = data.lootz
+            
             this.checkFlowers()
             this.checkMonsterz()
+            this.checkLootz()
         })
         this.socket.on("receiveOre", data => {
             if(data.place !== this.currentPlace) return log("invalid place")
@@ -7853,7 +8271,7 @@ class App{
             log("a treasure is opening")
             log("treasurez",this.Treasures)
         })
-        // this.placeSword(`sample`, {x: -30, y: .9, z: -50}, swordz[1], .23, scene, {name: 'test'})
+        
         this.socket.on('dropsword', data => {
             if(data.place !== this.currentPlace) return log("not the same place")
             log(data)
@@ -7863,6 +8281,15 @@ class App{
                     this.placeSword(data, swor, .23, this._scene)
                 }
             })
+        })
+        this.socket.on("s-i", detal => {
+            theLootz = detal.lootz
+            this.checkLootz() // wag na mag lagay ng placeSword kase eto na yon mag dodoble
+            const thePlayer = players.find(pl => pl._id === detal.data._id)
+            if(!thePlayer) return log("not found")
+            const swordMESH = thePlayer.swordz.find(sword => sword.name.split(".")[1] === detal.data.swordData.name)
+            if(!swordMESH) return log("pl sword mesh not found")
+            this.struckTheSword(thePlayer, swordMESH)
         })
         // // SOCKETS CONNECTION
         this.socket.on("aUzerStopped", data => {
@@ -7949,17 +8376,18 @@ class App{
             players.forEach(player => {
                 if(player._id === data._id) {
                     log("A player will cast a skill")
-                    player.mode = "none";
-                    player._casting = true;
-                    this.playAnim(player.anims, data.skillName, skillRecord.animationLoop)
-                    
-                    setTimeout(() => {
-                        player.mode = skillRecord.requireMode;
-                        player._casting = false;
-                    }, skillRecord.returnModeDura)
+                    this.skillIntro(skillRecord, player)
                 }
             })
             
+        })
+        this.socket.on("w-d-s", data => {
+            const thePlayer = players.find(pl => pl._id === data._id)
+            if(!thePlayer) return log("pl not found")
+            thePlayer.mode = "none"
+            this.getSword(thePlayer.rootSword, thePlayer.rHand)
+            this.playAnim(thePlayer.anims, "willStruck")
+            thePlayer.rootSword.addRotation(Math.PI,0,0)
         })
         this.socket.on("user-cast", data => {
             const {skillName, place, elemColor, phyDmg, inFrontPos} = data
@@ -7969,7 +8397,7 @@ class App{
                     log("A player cast skill")
                     player.mode = "none";
                     player._casting = true;
-                    this.initiateSkill(skillName, player, phyDmg, elemColor, inFrontPos)
+                    this.initiateSkill(skillName, player, phyDmg, elemColor, inFrontPos, data.skillDmg)
                 }
             })
         })
@@ -8425,8 +8853,28 @@ class App{
             })
         })
         this.socket.on("swordIsPicked", data => {            
-            const theSword = this._scene.getMeshByName(`sword.${data.meshId}`)
-            if(theSword) theSword.dispose()
+            log(data)
+            if(data.place !== this.currentPlace) return log('place not the same')
+            this.lootz = this.lootz.filter(lot => lot.meshId !== data.meshId);
+            theLootz = theLootz.filter(lot => lot.meshId !== data.meshId);
+            
+            let disposingSword = []
+            this._scene.meshes.forEach(mes => {
+                if(mes.name.includes("sword")){
+                    if(mes.name.split(".")[1] === data.meshId)disposingSword.push(mes)
+                }
+            })
+            log(`disposing sword `, disposingSword)
+            disposingSword.forEach(dmesh => {
+                dmesh.isVisible = false
+                dmesh.dispose()
+                if(dmesh.actionManager){
+                    log("mesh sword have action manager")
+                    dmesh.actionManager.dispose()
+                    dmesh.actionManager = undefined
+                }
+            })
+            log(`updated lootz `, this.lootz)
         })
         this.socket.on("flowerIsPicked", data => {            
             const theFlower = this._scene.getMeshByName(`flower.${data.meshId}`)
@@ -8756,7 +9204,7 @@ class App{
             if(!this._canpress || !canPress || this.det.hp <=0) return log("you are dead or canPress false")
             const keyPressed = e.key.toLowerCase()
 
-            if(keyPressed === "p"){
+            if(keyPressed === "p"){                
                 // log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
                 // // this.obtain("hukla", "x2", false)
                 // // this.checkAll()
@@ -8784,14 +9232,16 @@ class App{
                         }
                     }, 1000)
                 }
-            } 
+            }  
             if(keyPressed === " "){
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
                 log("my details",this.det)
+                log(this.lootz)
                 // this.myChar.mode = "poisoned"
                 // this.det.maxHp += 200
                 // this.det.hp+=199
-            } 
+            }
+            if(keyPressed === "m") this.det.coins+=20000
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
                 const freeCam = new FreeCamera("asfka", new Vector3(myFosNow.x, 2, myFosNow.z))
@@ -8803,7 +9253,7 @@ class App{
                 this.myChar.playerHealthMesh.isVisible = false;
             }
             if(keyPressed === "m") log(Monsterz)
-            if(keyPressed === "q") this.myChar.bx.locallyTranslate(new Vector3(0,0,2))
+            // if(keyPressed === "q") this.myChar.bx.locallyTranslate(new Vector3(0,0,2))
             clearTimeout(this.savingTimeout)
             
             switch(keyPressed){
@@ -9050,6 +9500,114 @@ class App{
             swordv.position.y = 100
         })
 
+    }
+    createMainHitBox(scene, imgName, size, aHeight){
+        const hitBxMat = new StandardMaterial("hitBxMat")
+        const theTexture = new Texture(`./images/modeltex/${imgName}`)
+        hitBxMat.diffuseTexture = theTexture
+        const hitBx = MeshBuilder.CreateBox("hitBox", { size, height: aHeight ? aHeight : size }, scene)
+        hitBx.material = hitBxMat;
+        hitBxMat.specularColor = new Color3(0,0,0)
+        
+        hitBx.position.y = 100
+
+        this.hitBox = hitBx
+    }
+    createHitBx(scene, meshId, pos, hp, scaleSize, posY, lootRarity){
+        const bx = this.hitBox.createInstance("hitbox")
+        bx.position = new Vector3(pos.x,pos.y,pos.z)
+        let secBx
+        const bxHeight = this.getMeshHeight(bx)
+        let boxSound;
+        let explodeS
+        const smokePrtcle = this.createSmoke(scene, (partcle) => {
+            partcle.emitRate = 30
+            partcle.createSphereEmitter(1);
+            partcle.updateSpeed = .06
+            partcle.emitter = bx
+        });
+
+        smokePrtcle.targetStopDuration = 1.5
+        let delayPlay = 0
+        switch(this.currentPlace){
+            case "heartland":
+                secBx = this.hitBox.createInstance("hitbox")
+                secBx.position = new Vector3(pos.x,bxHeight+bxHeight/2,pos.z)
+                boxSound = this._allSounds.boxHitS.clone()
+                explodeS = this._allSounds.brokenWoods.clone()
+                secBx.addRotation(0,Math.random()*4, 0);
+                this.freeze(secBx)
+                this.putFakeShadow(bx, 2, -pos.y+.02)
+            break;
+            default:
+                delayPlay = .2
+                // dungeon is default
+                boxSound = this._allSounds.boxHitS.clone()
+                explodeS = this._allSounds.superPunched.clone()
+                this.putFakeShadow(bx, 6, -pos.y+.02)
+            break;
+        }
+        if(boxSound) boxSound.attachToMesh(bx)
+        if(explodeS) explodeS.attachToMesh(bx)
+
+        if(scaleSize){
+            const { x,y,z } = scaleSize
+            bx.scaling = new Vector3(x,y,z)
+            bx.position.y = posY
+        }
+        
+        bx.actionManager = new ActionManager(scene)
+        this.toRegAction(bx, this.myChar.weaponCol, () => {
+            const theHitBx = this.allHitBox.find(hbx => hbx.meshId === meshId)
+            if(!theHitBx) return log("hit bx not found")
+            
+            const dmg = this.recalMeeleDmg()
+    
+            theHitBx.hp -= dmg
+            log("I hit the bx")
+            if(this.myChar.mode === "weapon"){
+                if(boxSound){
+                    boxSound.setPlaybackRate(.9+Math.random()*.3)
+                    boxSound.play()
+                }
+            }else{
+                this.myChar.punchedS.play()
+            }
+            smokePrtcle.start()
+            
+            if(theHitBx.hp <= 0){
+                
+                this.calibrateLoot(lootRarity)
+                if (bx.actionManager) {
+                    bx.actionManager.dispose();
+                    bx.actionManager = null;
+                }
+                explodeS.play(delayPlay)
+                smokePrtcle.disposeOnStop = true
+                smokePrtcle.targetStopDuration = 2
+                smokePrtcle.start()
+                this.allHitBox = this.allHitBox.filter(hbx => hbx.meshId !== theHitBx.meshId)                
+                
+                
+                theHitBx.mesh.isVisible = false
+                if(secBx){
+                    secBx.isVisible = false
+                    this.disposeMeeleeMesh(secBx, 2500)
+                }
+                
+                this.disposeMeeleeMesh(theHitBx.mesh, 2500)
+                this.disposeSounds([boxSound,explodeS], 2500)
+            }
+        })
+        this.toRegAction(bx, this.myChar.bx, () => {
+            const theHitBx = this.allHitBox.find(hbx => hbx.meshId === meshId)
+            if(!theHitBx) return log("hit bx not found")
+            this.bump(this.myChar)
+        })
+        
+        this.allHitBox.push({meshId, mesh: bx, hp, maxHp: hp})
+        this.freeze(bx)
+        
     }
     createGolemRock(scene){
         const littleSmoke = smoke.clone("rockSmoke")
@@ -9391,7 +9949,7 @@ class App{
         feetSmoke.createCylinderEmitter(1.3, theHeight)
         return feetSmoke
     }
-    createSmoke(scene){
+    createSmoke(scene, otherInfo){
         const particleSystem = new BABYLON.ParticleSystem("particles", 8000, scene);
 
         //Texture of each particle
@@ -9438,6 +9996,8 @@ class App{
         const sphereEmitter = particleSystem.createSphereEmitter(0.1);
         particleSystem.stop()
 
+        if(otherInfo) otherInfo(particleSystem)
+
         return particleSystem
     }
     creationOfFakeShadow(scene){
@@ -9459,7 +10019,7 @@ class App{
         if(monsFos) myParticleSystem.emitter = new Vector3(monsFos.x,monsFos.y+Math.random()*.4,monsFos.z)
         if(emitterMesh) myParticleSystem.emitter = emitterMesh
         if(willStart) myParticleSystem.start()
-        myParticleSystem.disposeOnStop = willDisposeOnStop
+        if(willDisposeOnStop) myParticleSystem.disposeOnStop = true;
         myParticleSystem.targetStopDuration = targStop
         myParticleSystem.updateSpeed = 0.05;
         myParticleSystem.minSize = 0.2;
@@ -10016,6 +10576,7 @@ class App{
         if(sizeShadow) {
             newFakeShadow.scaling = new Vector3(sizeShadow,.1,sizeShadow)
         }
+        return newFakeShadow
     }
     async createMerchant(scene, merchPos, merchTarg){
         const Merchant = await this.importMesh(scene, "./models/", "merchant.glb");
@@ -10512,10 +11073,9 @@ class App{
     }
     placeSword(swordDet, sword, swordSize, scene){
         log(swordDet)
-        log(sword.getChildren())
         let isGlowing = false
         if(sword.name.includes("glow")) isGlowing = true
-        
+
         const mesh = sword.clone(`sword.${swordDet.meshId}`)
         mesh.parent = null
         mesh.isVisible = true
@@ -10527,20 +11087,23 @@ class App{
 
         mesh.scaling = new Vector3(swordSize,swordSize,swordSize)
         mesh.actionManager = new ActionManager(scene)
+        const newSwordToPick = {...swordDet, qnty: 1}
         if(isGlowing){
             const newMesh = MeshBuilder.CreateBox("forGlowingSword", {size: 1}, scene)
+            
             newMesh.actionManager = new ActionManager(scene)
             newMesh.parent = mesh
             newMesh.position.y+=1
-            newMesh.isVisible = false
+            
             newMesh.actionManager.registerAction(new ExecuteCodeAction(
                 {
                     trigger: ActionManager.OnIntersectionEnterTrigger,
                     parameter: this.myChar.detector
-                }, e => {            
+                }, e => {        
                     this.openPopUpAction("pickup")
                     this.targetRecource = mesh
-                    this.targDetail = swordDet
+                    this.targDetail = newSwordToPick
+                    log(this.targDetail)
                 }
             ))
             newMesh.actionManager.registerAction(new ExecuteCodeAction(
@@ -10553,6 +11116,8 @@ class App{
                     this.targDetail = undefined
                 }
             ))
+            mesh.getChildren().forEach(mes => mes.isVisible = true)
+            newMesh.isVisible = false
         }else{
             mesh.actionManager.registerAction(new ExecuteCodeAction(
                 {
@@ -10561,7 +11126,8 @@ class App{
                 }, e => {            
                     this.openPopUpAction("pickup")
                     this.targetRecource = mesh
-                    this.targDetail = swordDet
+                    this.targDetail = newSwordToPick
+                    log(this.targDetail)
                 }
             ))
             mesh.actionManager.registerAction(new ExecuteCodeAction(
@@ -10575,10 +11141,16 @@ class App{
                 }
             ))
         }
-
-        this.lootz.push({...swordDet, body: mesh})
-        mesh.freezeWorldMatrix()
-        mesh.material.freeze()
+        log(newSwordToPick)
+        this.lootz.push({...newSwordToPick, body: mesh})
+        log("All lootz ", this.lootz)
+    }
+    struckTheSword(player, swordMesh){
+        player.spearStruck.play()
+        swordMesh.isVisible = false
+        this.hideAllSword(swordMesh.getChildren())
+        player.rootSword.addRotation(-Math.PI,0,0)
+        this.keepSword(player.rootSword, player.rootBone)
     }
     createSeed(theMesh, data){
         const theObjModel = theMesh.clone(`${data.spawntype}.${data.meshId}`)
@@ -10687,7 +11259,7 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const { merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+            const { upgradeS,enteredS,enteringHoleS, merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
             
             changeModeS.attachToMesh(body)
             skillAcquiredS.attachToMesh(body)
@@ -10701,6 +11273,9 @@ class App{
             smallCongratsS.attachToMesh(body)
             merchantV.attachToMesh(body)
             normalV.attachToMesh(body);
+            upgradeS.attachToMesh(body);
+            enteredS.attachToMesh(body);
+            enteringHoleS.attachToMesh(body);
 
             farDetector = MeshBuilder.CreateGround(`farDetector.${det._id}`, {width: 25, height: 25}, scene)
             farDetector.position = new Vector3(0,0,0); 
@@ -10721,9 +11296,10 @@ class App{
         let rootBone
         const rootSword = MeshBuilder.CreateBox(`rootsword.${det._id}`, {size: .5}, scene)
         rootSword.isVisible = false;
-        const soundColl = MeshBuilder.CreateBox(`soundColl.${det._id}`, {height: 6, size: .3}, scene)
-        soundColl.parent = rootSword; soundColl.position = new Vector3(0,4.5,0)
-        soundColl.addRotation(0,0,0);
+        const soundColl = MeshBuilder.CreateBox(`soundColl.${det._id}`, {height: 4, size: .3}, scene)
+        soundColl.parent = rootSword; 
+        soundColl.position = new Vector3(0,3.5,0)
+ 
         soundColl.actionManager = new ActionManager(scene)
         soundColl.isVisible = false
 
@@ -10737,6 +11313,8 @@ class App{
         const diedS = this._allSounds.characDeathS.clone()
         const spearStruck = this._allSounds.spearStruckS.clone();
 
+        // create blood splat
+        const bloodSplat = this.createBloodParticle("blood", 50, false, "sphere", false, 1, false, body)
         runningS.attachToMesh(body)
         punchedS.attachToMesh(body)
         sliceHitS.attachToMesh(body)
@@ -10927,9 +11505,11 @@ class App{
             sliceHitS,
             woodCuttingS,
             spearStruck,
-            diedS
+            diedS,
+            bloodSplat,
+            inVulnerable: false
         }
-
+        
         this.playAnim(toPush.anims, "0Idle", true)
         if(det.mode === "weapon") this.getSword(rootSword, rHand)
         if(det.mode === "fist") this.keepSword(rootSword, rootBone)
@@ -11143,6 +11723,12 @@ class App{
                     weapMesh.locallyTranslate(new Vector3(0,0,-.3))
                 })
             }
+            if(mesh.name.includes("hitbox")) {
+                this.toRegAction(weapMesh, mesh, () => {
+                    log("is hit the box")
+                    this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
+                })
+            }
         })
         log(this._scene.getMeshByName("ground"))
         this.flyingWeaponz.push({mesh: weapMesh, meshId: weapId})
@@ -11202,9 +11788,12 @@ class App{
         body.rotation.y = Math.random() * 4
         body.visibility = .9
 
+        let weapCSize = { width: .5, height: .6, depth: 1}
+        let weapZ = .5
         let punchedS
         let effectS
         let farSound
+        let chasingS
         switch(monsName){
             case "golem":
                 punchedS = this._allSounds.rockSmashS.clone()
@@ -11219,6 +11808,16 @@ class App{
                 farSound = this._allSounds.beeS.clone();
                 punchedS = this._allSounds.punched.clone()
             break
+            case "hellhound":
+                chasingS = this._allSounds.houndChaseS.clone();
+                punchedS = this._allSounds.houndBite.clone()
+                weapCSize = { width: .5, height: 1, depth:2}
+                weapZ = 1.5
+            break;
+            case "minotaur":
+                weapZ = 1.1
+                punchedS = this._allSounds.punched.clone()
+            break;
             default:
                 punchedS = this._allSounds.punched.clone()
             break
@@ -11228,6 +11827,7 @@ class App{
         const spearStruck = this._allSounds.spearStruckS.clone();
 
         let monsSoundDied = undefined
+        let bloodSplat = this.createBloodParticle("blood",300, { x: 0, y: 0, z: 0}, "sphere", false, 1, false, body)
 
         punchedS.attachToMesh(body)
         sliceHitS.attachToMesh(body)
@@ -11247,9 +11847,9 @@ class App{
         atkDetection.position.z += .4
         atkDetection.isVisible = false
 
-        const weapon = MeshBuilder.CreateBox(`weapon.${monsId}`, {depth: .8, height: .6, width: .5}, scene)
+        const weapon = MeshBuilder.CreateBox(`weapon.${monsId}`, {depth: weapCSize.depth, height: weapCSize.height, width: weapCSize.width}, scene)
         weapon.parent = body
-        weapon.position.z += monsName === "minotaur" ? 1 : .5
+        weapon.position.z += weapZ
 
         let entries = monsRoot.instantiateModelsToScene();
         entries.animationGroups.forEach(ani => ani.name = ani.name.split(" ")[2])
@@ -11278,11 +11878,23 @@ class App{
                 rMeshSize = {size: 1, height: 1.5}
                 this.putFakeShadow(body, 7)
             break
+            case "hellhound":
+                this.putFakeShadow(body, 4)
+            break;
         }
         const meshes = entries.rootNodes
         entries.rootNodes[0].getChildren().forEach(mes => {
             mes.name = mes.name.split(" ")[2]
             // if(mes.name.includes("body") && castShadow) shadowGen.getShadowMap().renderList.push(mes)
+            if(monsName === "slime"){
+                log("yes a slime")
+                if(mes.name.includes("slime")){
+                    log("body name is slime")
+                    const slimeMat = new StandardMaterial("monsMat")
+                    slimeMat.diffuseColor = new Color3(0, 0.69, 0.81)
+                    mes.material = slimeMat
+                }
+            }
             if(mes.name.includes("armor")){
                 if(mes.name.includes(armorName)){
                     mes.isVisible = true
@@ -11348,6 +11960,7 @@ class App{
             case "golem":
                 namePosY = 3.1
                 healthPosY = 3
+                bloodSplat = undefined
             break;
         }
 
@@ -11398,11 +12011,15 @@ class App{
                 monsHealthPlane.isVisible = true
                 const theMons = Monsterz.find(mons => mons.monsId === monsId)
                 if(!theMons) return log("cannot find the monster")
-                
+                if(chasingS) {
+                    if(!chasingS.isPlaying) chasingS.play()
+                }
                 const isMyTargetHere = this._scene.getMeshByName(`box.${theMons.targHero}`)
                 if(!isMyTargetHere){
-                    log("target is no longer here time to change")
+
+                    log("target is no longer here time to attack other")
                     Monsterz = Monsterz.map(monsx => monsx.monsId === monsId ? {...monsx, targHero: this.det._id, isChasing: true, isAttacking: false} : monsx)
+ 
                     if(this.socketAvailable){
                         log("is online will chase")
                         clearTimeout(onCollideTimeOut)
@@ -11427,27 +12044,31 @@ class App{
             }, e => {
  
             const theMonster = Monsterz.find(mn => mn.monsId === monsId)
-            
+            let toThrow = false
             if(theMonster){
                 log("yeah found the monster")
                 switch (theMonster.monsName) {
                     case "golem":
+                        toThrow = true
                         this.playAnim(animationGroups, "throw")
                     break;
                     case "monoloth":
+                        toThrow = true
                         this.playAnim(animationGroups, "attack1")
                     break;
                 }
-                if(this.socketAvailable){
-                    this.socket.emit("monster-willthrow", {
-                        monsId,
-                        playerId: this.myChar._id,
-                        dmg: 10,
-                        place: this.currentPlace
-                    })
-                  
-                }else{
-                    this.initMonsterThrow(monsId, this.myChar, 10)
+                if(toThrow){
+                    if(this.socketAvailable){
+                        this.socket.emit("monster-willthrow", {
+                            monsId,
+                            playerId: this.myChar._id,
+                            dmg: 10,
+                            place: this.currentPlace
+                        })
+                      
+                    }else{
+                        this.initMonsterThrow(monsId, this.myChar, 10)
+                    }
                 }
             }else{
                 log("not found")
@@ -11531,17 +12152,19 @@ class App{
                 const theIdOfPlayer = this.myChar.bx.name.split(".")[1]
                 if(theMons.targHero === theIdOfPlayer){
                     clearInterval(intervalWillAttack)
-                    if(this.socketAvailable){
-                        this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
-                    }else{
-                        theMons.isAttacking = false
-                        theMons.targHero = this.det._id
-                        theMons.isChasing = true
-                    }
+                    setTimeout(() => {
+                        if(this.det.hp <= 0) return log("this player is dead")
+                        if(this.socketAvailable){
+                            this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
+                        }else{
+                            theMons.isAttacking = false
+                            theMons.targHero = this.det._id
+                            theMons.isChasing = true
+                        }
+                    }, 300)
                 }else{
                     log("not my target")
                 }
-                
             }
         ))
         weapon.actionManager.registerAction(new ExecuteCodeAction(
@@ -11552,12 +12175,20 @@ class App{
                 const theMons = Monsterz.find(mons => mons.monsId === monsId)
                 if(!theMons) return log("cannot find the monster")
                 if(this.det.hp <= 0) return log("this player is dead")
+                if(this.myChar.inVulnerable) return log("player Invulnerable")
                 const theIdOfPlayer = this.myChar.bx.name.split(".")[1]
                 punchedS.setPlaybackRate(1+Math.random()*.2)
                 punchedS.play()
+                this.stopMoving()
+                // the socket is only for animating your character from other pc and it will return so you wont get affected
                 this.socketAvailable && this.socket.emit("playerIsHit", {_id: theIdOfPlayer, monsId, animName: 'hitcenter',dmg})
                 log(`I am hit by ${monsName}`)
                 this.hitByNonMultiAI(this.myChar.bx, body, dmg, 'hitcenter', monsId, effects ? effects : false)
+                switch (monsName) {
+                    case "hellhound":
+                        this.myChar.bloodSplat.start()
+                    break;
+                }
             }
         ))
         // for sounds
@@ -11588,6 +12219,7 @@ class App{
             weapon.dispose()
         }
         const enemy = {
+            bloodSplat,
             nameMesh,
             rootMesh,
             monsSoundHit,
@@ -11614,7 +12246,8 @@ class App{
             monsSoundDied,
             monsBreed,
             effectS,
-            farSound
+            farSound,
+            chasingS
         }
         let intervalLookAround
         intervalLookAround = setInterval(() => {

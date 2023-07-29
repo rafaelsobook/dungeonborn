@@ -51,6 +51,183 @@ body {
   width: 100%;
 }
 
+.all-myskills-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  z-index: 5;
+  left: 70%;
+  width: 43%;
+  height: 70%;
+  border: 2px solid #616161;
+  border-radius: 3px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#161616), color-stop(#2c2c2c), color-stop(#141414), color-stop(#2f2f2f), to(#3e4146));
+  background: linear-gradient(#161616, #2c2c2c, #141414, #2f2f2f, #3e4146);
+  padding: 20px;
+  overflow: hidden;
+  display: none;
+}
+
+.all-myskills-container .rotating-star {
+  position: absolute;
+  top: -6%;
+  left: -6%;
+  -webkit-transform: scale(1.3);
+          transform: scale(1.3);
+  z-index: -1;
+  opacity: 0.4;
+}
+
+.all-myskills-container .skill-ttle {
+  font-family: "Caudex", serif;
+  color: #949494;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+}
+
+.all-myskills-container .skill-categ {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 5px;
+}
+
+.all-myskills-container .skill-categ .skillcateg-btn {
+  border: 1px solid #c7c7c7;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(29, 26, 26, 0.9)), color-stop(#2c2b2b), color-stop(rgba(46, 12, 12, 0.7)), to(#2e0202));
+  background: linear-gradient(rgba(29, 26, 26, 0.9), #2c2b2b, rgba(46, 12, 12, 0.7), #2e0202);
+  color: #f5f5f5;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  padding: 2px 15px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.all-myskills-container .skill-categ .skillcateg-btn:active {
+  opacity: 0.9;
+  -webkit-transform: scale(0.95);
+          transform: scale(0.95);
+}
+
+.all-myskills-container .myskill-list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  width: 100%;
+  overflow-y: scroll;
+  height: 75%;
+  gap: 15px;
+}
+
+.all-myskills-container .myskill-list .no-skills {
+  font-family: "Bellefair", serif;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #f5f5f5;
+  margin-top: 20px;
+}
+
+.all-myskills-container .myskill-list .skill-bx {
+  width: 100%;
+  padding: 5px 7px;
+  border-radius: 3px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border: 1px solid #949494;
+  background: -webkit-gradient(linear, left top, left bottom, from(#9e9e9e), color-stop(#9b9b9b), to(#777777));
+  background: linear-gradient(#9e9e9e, #9b9b9b, #777777);
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-left {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  color: #292828;
+  gap: 10px;
+  font-family: "Caudex", serif;
+  font-size: 0.9rem;
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-left .skill-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 3px;
+  border: 1px solid rgba(139, 139, 139, 0.719);
+  background: -webkit-gradient(linear, left top, left bottom, from(#444444), color-stop(#9b9b9b), to(#4d4d4d));
+  background: linear-gradient(#444444, #9b9b9b, #4d4d4d);
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-tier {
+  float: right;
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-skillup {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: url("../images/UI/btnBackG.jpg") no-repeat;
+  color: #adadad;
+  margin-right: 10px;
+  border: 1px solid silver;
+  cursor: pointer;
+  font-size: 2rem;
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-skillup:active {
+  opacity: 0.9;
+  -webkit-transform: scale(0.9);
+          transform: scale(0.9);
+}
+
+.all-myskills-container .myskill-list .skill-bx .sb-nbtn {
+  background: -webkit-gradient(linear, left top, left bottom, from(#444444), color-stop(#0f0f0f), to(#1a1a1a));
+  background: linear-gradient(#444444, #0f0f0f, #1a1a1a);
+  font-size: 0.9rem;
+  font-family: "Bellefair", serif;
+  color: #f5f5f5;
+  border: 1px solid #d1d1d1;
+  padding: 3px 12px;
+  cursor: pointer;
+}
+
+.all-myskills-container .skillcont-close {
+  width: 100%;
+  background: none;
+  text-align: center;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #f5f5f5;
+}
+
 nav {
   position: fixed;
   top: 1%;

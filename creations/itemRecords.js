@@ -5,7 +5,9 @@ const records = [
         itemType: 'loot',
         origPrice: 40,
         secondPrice: 20,
-        desc: "You can determine a goblin's strength by its tooth"
+        desc: "You can determine a goblin's strength by its tooth",
+        rarity: 0,
+        notLootIn: ["heartland"]
     },
     {
         dn: 'Fabric',
@@ -13,7 +15,9 @@ const records = [
         itemType: 'loot',
         origPrice: 30,
         secondPrice: 20,
-        desc: "this can also be used for crafting medicines and weapon"
+        desc: "this can also be used for crafting medicines and weapon",
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Leaves',
@@ -21,7 +25,9 @@ const records = [
         itemType: "loot",
         desc: "A bunch of big and small leaves from the tree",
         origPrice: 5,
-        secondPrice: 0
+        secondPrice: 0,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Stone',
@@ -29,15 +35,9 @@ const records = [
         itemType: "loot",
         desc: "essential for making crafts",
         origPrice: 5,
-        secondPrice: 2
-    },
-    {
-        dn: 'Mango Seed',
-        name: "mango seed",
-        itemType: "seed",
-        desc: "A refreshing fruit, also loved by forest mongoise",
-        origPrice: 5,
-        secondPrice: 2
+        secondPrice: 2,
+        rarity: 0,
+        notLootIn: []
     },
     {
         dn: 'Berries',
@@ -45,7 +45,9 @@ const records = [
         itemType: "food",
         desc: "this fruit can replenish your stamina",
         origPrice: 5,
-        secondPrice: 2
+        secondPrice: 2,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'small potion',
@@ -53,7 +55,9 @@ const records = [
         itemType: "food",
         desc: "A small potion that can generate your life for an amount",
         origPrice: 100,
-        secondPrice: 100
+        secondPrice: 100,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'medium potion',
@@ -61,7 +65,9 @@ const records = [
         itemType: "food",
         desc: "A Medium potion that can generate your life for an amount",
         origPrice: 300,
-        secondPrice: 300
+        secondPrice: 300,
+        rarity: 20,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'big potion',
@@ -69,7 +75,9 @@ const records = [
         itemType: "food",
         desc: "A Big potion that can generate your life for an amount",
         origPrice: 500,
-        secondPrice: 500
+        secondPrice: 500,
+        rarity: 3,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Atropine',
@@ -77,7 +85,9 @@ const records = [
         itemType: "food",
         desc: "This antidote is best used for poisons, Only good herbs expert can craft such antidote",
         origPrice: 500,
-        secondPrice: 500
+        secondPrice: 500,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Minotaur meat',
@@ -85,7 +95,9 @@ const records = [
         itemType: "food",
         desc: "taste like an ordinary meat, best when cooked",
         origPrice: 100,
-        secondPrice:40
+        secondPrice:40,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Minotaur meat',
@@ -93,7 +105,9 @@ const records = [
         itemType: "food",
         desc: "A meat that is good for traveling also great taste",
         origPrice: 100,
-        secondPrice:40
+        secondPrice:40,
+        rarity: 10,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Red Beryl',
@@ -101,7 +115,9 @@ const records = [
         itemType: "loot",
         desc: "This crytal is rare to find they commonly use this for crafting powerful sword and equipments",
         origPrice: 15500,
-        secondPrice: 12000
+        secondPrice: 12000,
+        rarity: 3,
+        notLootIn: ["heartland"]
     },
     {
         dn: 'Azurite',
@@ -109,7 +125,9 @@ const records = [
         itemType: "loot",
         desc: "It takes its color intensity from the copper element and it's crystals tend to be monoclinic",
         origPrice: 1000,
-        secondPrice: 500
+        secondPrice: 500,
+        rarity: 2,
+        notLootIn: ["heartland"]
     },
     { 
         dn: 'Masfina Blade',
@@ -121,7 +139,9 @@ const records = [
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 8},
         plusDmg: 80,
         cState: 1400,
-        durability: 1400
+        durability: 1400,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Staff Of Mare',
@@ -134,7 +154,9 @@ const records = [
         plusDmg: 10,
         plusMag: 30,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Oak Blade',
@@ -147,20 +169,24 @@ const records = [
         plusDmg: 35,
         plusMag: 30,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Grimthor Blade',
         name: 'grimthor', 
         itemType: 'sword',
-        desc: "One of the most influential of the early swords that arose during the Bronze Age",
+        desc: "Enrage Sword, grimthor can kill any small monsters",
         origPrice: 3400,
         secondPrice: 2000,
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 6},
         plusDmg: 10,
         plusMag: 30,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Falkata Steel',
@@ -173,7 +199,9 @@ const records = [
         plusDmg: 10,
         plusMag: 30,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Red Prince',
@@ -183,9 +211,11 @@ const records = [
         origPrice: 3400,
         secondPrice: 2000,
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 6},
-        plusDmg: 70,
+        plusDmg: 40,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Lumin Sword',
@@ -198,6 +228,8 @@ const records = [
         cState: 3000,
         durability:3000,
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 7},
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Blade Fury',
@@ -210,6 +242,8 @@ const records = [
         cState: 4000,
         durability:4000,
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 3},
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Hunting Sword',
@@ -221,7 +255,9 @@ const records = [
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
         plusDmg: 13,
         cState: 2000,
-        durability: 2000
+        durability: 2000,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Wooden Stick',
@@ -229,11 +265,13 @@ const records = [
         itemType: 'sword',
         desc: "useful weapon for self defense",
         origPrice: 400,
-        secondPrice: 200,
+        secondPrice: 80,
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
         plusDmg: 10,
         cState: 1000,
-        durability: 1000
+        durability: 1000,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Grim Blue',
@@ -245,7 +283,9 @@ const records = [
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 7},
         plusDmg: 35,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Drakfoid',
@@ -257,7 +297,9 @@ const records = [
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 4},
         plusDmg: 45,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 3,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Majesty',
@@ -269,7 +311,9 @@ const records = [
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 4},
         plusDmg: 145,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 4,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Ruzty Sword',
@@ -281,7 +325,9 @@ const records = [
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 8},
         plusDmg: 40,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Dagger',
@@ -294,7 +340,9 @@ const records = [
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
         plusDmg: 15,
         cState: 1000,
-        durability: 1000
+        durability: 1000,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     { 
         dn: 'Dragon Spear',
@@ -307,7 +355,9 @@ const records = [
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 7},
         plusDmg: 40,
         cState: 5000,
-        durability: 5000
+        durability: 5000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Dger Spear',
@@ -319,7 +369,9 @@ const records = [
         cState: 4000,
         durability:4000,
         desc: "Light and easy to throw spear, It camouflages in the dark",
-        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 8}
+        craftMaterial: { name: "mincore", qnty: 3, forgeChance: 8},
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Sarpion",
@@ -332,7 +384,8 @@ const records = [
         durability:4000,
         desc: "A heavy pointed sword, No mercy on your enemy",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 9},
-        
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Village Spear",
@@ -344,7 +397,9 @@ const records = [
         cState: 500,
         durability:500,
         desc: "A Pointed Spear useful for throwing, good for hunting",
-        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0}
+        craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'big rod',
@@ -357,7 +412,9 @@ const records = [
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
         plusDmg: 12,
         cState: 500,
-        durability: 500
+        durability: 500,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Pickaxe',
@@ -370,7 +427,9 @@ const records = [
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
         plusDmg: 5,
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Hydra Armor',
@@ -383,7 +442,9 @@ const records = [
         desc: "a noble's armor the armor is light but strong as destruction",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Chief Plate',
@@ -396,7 +457,9 @@ const records = [
         desc: "a replica of Chief Hanzon armor, the plate is made by bronze",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
         cState: 2400,
-        durability: 2400
+        durability: 2400,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Clad Armor',
@@ -409,7 +472,9 @@ const records = [
         desc: "This armor is simple and light. Best for swinging swords",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 10},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Karpa Scale',
@@ -422,7 +487,9 @@ const records = [
         desc: "This armor is huge and heavy but the no one has seen died wearing this armor",
         craftMaterial: { name: "vipcore", qnty: 3, forgeChance: 7},
         cState: 6000,
-        durability: 6000
+        durability: 6000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Karba Armor',
@@ -435,7 +502,9 @@ const records = [
         desc: "this armor is famous to it's known leather, A farmer would say they are invinsible when wearing this armor",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 7},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "First Born Helmet",
@@ -448,7 +517,9 @@ const records = [
         desc: "Use this helmet if you're out for adventuring.",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "karori",
@@ -461,7 +532,9 @@ const records = [
         desc: "Even steel cannot penetrate the hardness of this steel",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Silver Shade",
@@ -474,7 +547,9 @@ const records = [
         desc: "A small shaded silver helmet, comfortable to wear and light but hard",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Silvered Nine",
@@ -487,7 +562,9 @@ const records = [
         desc: "A well forged gear, useful for protection and light weight armor",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Copper Scale",
@@ -500,7 +577,9 @@ const records = [
         desc: "Gear that can blocked small attacks, can protect you from harm",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 9},
         cState: 4000,
-        durability: 4000
+        durability: 4000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Safe Shield",
@@ -513,7 +592,9 @@ const records = [
         desc: "A well forged gear, can break easily but can protect you",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 10},
         cState: 1500,
-        durability: 1500
+        durability: 1500,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Ancilian Shield",
@@ -526,7 +607,9 @@ const records = [
         desc: "A Heart Shaped Shield, Light and can block normal attacks",
         craftMaterial: { name: "mincore", qnty: 3, forgeChance: 9},
         cState: 2000,
-        durability: 2000
+        durability: 2000,
+        rarity: 1,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Zviadi Iron",
@@ -539,7 +622,9 @@ const records = [
         desc: "A special shield, Can Block some magic and good in blocking normal attacks",
         craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 9},
         cState: 3000,
-        durability: 3000
+        durability: 3000,
+        rarity: 2,
+        notLootIn: ["dungeon"]
     },
     {
         dn: "Goblin Core",
@@ -550,7 +635,9 @@ const records = [
         magRes: 0, plusMag: 0,
         origPrice: 100,
         secondPrice: 100,
-        desc: "This core has a chaotic green color and can be good quality sometimes."
+        desc: "This core has a chaotic green color and can be good quality sometimes.",
+        rarity: 0,
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: "Minotaur Core",
@@ -561,7 +648,9 @@ const records = [
         magRes: 0, plusMag: 0,
         origPrice: 300,
         secondPrice: 200,
-        desc: "This is one of the favorite core of craftsmen to make their weapons, quality is good"
+        desc: "This is one of the favorite core of craftsmen to make their weapons, quality is good",
+        rarity: 1,
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: "Viper Core",
@@ -572,7 +661,9 @@ const records = [
         magRes: 0, plusMag: 0,
         origPrice: 1000,
         secondPrice: 500,
-        desc: "The Viper's core can sometimes dangerous for its toxins lives inside its core. better be careful handling it"
+        desc: "The Viper's core can sometimes dangerous for its toxins lives inside its core. better be careful handling it",
+        rarity: 2,
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: "Flow Stamina",
@@ -580,6 +671,8 @@ const records = [
         itemType: 'flower',
         origPrice: 30,
         secondPrice: 20,
+        rarity: 0,
+        notLootIn: ["dungeon"],
         desc: "Widely use for creating stamina potions to replenish stamina of the user"
     },
     {
@@ -588,6 +681,8 @@ const records = [
         itemType: 'herbs',
         origPrice: 30,
         secondPrice: 20,
+        rarity: 0,
+        notLootIn: ["dungeon"],
         desc: "Useful for creating potions, can also be used to make medicines"
     },
     {
@@ -596,7 +691,9 @@ const records = [
         itemType: "tool",
         desc: "used for making bon fire and can make stick out of it",
         origPrice: 2,
-        secondPrice: 1
+        secondPrice: 1,
+        rarity: 0,
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Iron',
@@ -604,7 +701,9 @@ const records = [
         itemType: "tool",
         desc: "essential for making swords and hard tools",
         origPrice: 5,
-        secondPrice: 2
+        secondPrice: 2,
+        rarity: 0,
+        notLootIn: ["heartland"]
     },
 ]
 
