@@ -12,19 +12,24 @@
     <title>Dungeon Born</title>
 
     <link rel="stylesheet" href="./styles/styles.css">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-98WL1YSR9C"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
 
-    gtag('config', 'G-98WL1YSR9C');
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4288HK00XH"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-4288HK00XH');
     </script>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
     <p class="new-craft-notif"></p>
     <p class="map-name remove-map"></p> 
+
+    <div class="enemy-speech-cont">
+        <p class="enem-speech">"Die Humans"</p>
+    </div>
 
     <div class="skills-container">
     </div>
@@ -341,14 +346,15 @@
             <div class="mystatus">
                 <p class="mystat-label hplabel">Health: 22/120</p>
                 <p class="mystat-label mp">Mana: 402/100</p>
-                <p id="statExp" class="mystat-label sp">Stamina: 0%</p>
-                <p id="statExp" class="mystat-label exp">Exp: 0%</p>
-                <p id="statExp" class="mystat-label str"></p>
-                <p id="statExp" class="mystat-label weaponDmg"></p>
-                <p id="statExp" class="mystat-label deftotal"></p>
-                <p id="statExp" class="mystat-label magicDmg"></p>
-                <p id="statExp" class="mystat-label speed"></p>
-                <p id="statExp" class="mystat-label apts"></p>
+                <p class="mystat-label sp">Stamina: 0%</p>
+                <p class="mystat-label exp">Exp: 0%</p>
+                <p class="mystat-label str"></p>
+                <p class="mystat-label weaponDmg"></p>
+                <p class="mystat-label deftotal"></p>
+                <p class="mystat-label magicDmg"></p>
+                <p class="mystat-label speed"></p>
+                <p class="mystat-label apts"></p>
+                <p class="mystat-label race"></p>
             </div>
         </div>
         <button class="stat-close">close</button>

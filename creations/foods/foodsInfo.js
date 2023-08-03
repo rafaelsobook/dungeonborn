@@ -14,6 +14,20 @@ const foodsInfo = [
         plus: 30
     },
     {
+        dn: "Rabbit meat",
+        name: "rabbitMeatRaw",
+        plusHealth: .1, // life x percent (myLife x .5 = toAdd in my health)
+        raw: true,
+        plus: 18
+    },
+    {
+        dn: "Rabbit meat",
+        name: "rabbitMeatCooked",
+        plusHealth: .3, // life x percent (myLife x .5 = toAdd in my health)
+        raw: false,
+        plus: 34
+    },
+    {
         dn: "minotaur meat",
         name: "minMeatRaw",
         plusHealth: .1, // life x percent (myLife x .5 = toAdd in my health)

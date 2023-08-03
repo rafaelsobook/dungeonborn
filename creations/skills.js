@@ -43,7 +43,7 @@ const skills = [
         pointsToClaim: 3,
         pointsForUpgrade: 1,
         element: "normal",
-        requireMode: "fist",
+        requireMode: "any",
         skillType: "attack", // buff // attack // passive // support
         animationLoop: false,
         displayName: "Leap",
@@ -62,7 +62,7 @@ const skills = [
         pointsToClaim: 3,
         pointsForUpgrade: 1,
         element: "normal",
-        requireMode: "fist",
+        requireMode: "any",
         skillType: "Dash Back", // buff // attack // passive // support
         animationLoop: false,
         displayName: "Leap",
