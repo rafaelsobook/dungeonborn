@@ -85,6 +85,78 @@ body {
 #renderCanvas {
   @include fitToScreen(1);
 }
+// NEWS STYLE
+.news-container {
+  @include centerFix(4);
+  width: 80%;
+  height: 75%;
+  border: 1px solid #4e412d;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(45deg, #1c1e5b, #5d7fb1, transparent);
+  .news-cap {
+    color: #f5f5f5;
+    font-family: $copyrightFont;
+    border: 2px solid #4e412d;
+    background: linear-gradient(#6053ad, #4b4377, #372f66, #3b3753);
+    padding: 5px;
+    text-align: center;
+    width: 100%;
+    height: 10%;
+  }
+  .news-list {
+    height: 77%;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    overflow-y: scroll;
+    .news-bx {
+      @include flexCenter();
+      margin-bottom: 20px;
+      width: 100%;
+      flex-direction: column;
+      gap: 10px;
+      .news-ttle {
+        text-align: center;
+        width: 100%;
+        color: #e5e049;
+        letter-spacing: 1px;
+        font-family: $tipsFont;
+      }
+      .date-posted {
+        font-size: 70%;
+        color: #bfbfbf;
+        font-family: $numFont;
+        padding-top: 5px;
+        width: 60%;
+        border-top: 1px solid #b7acac8f;
+        text-align: center;
+      }
+      .news-desc {
+        text-align: center;
+        width: 70%;
+        color: #d4d4d4;
+        font-family: $gamefont;
+      }
+    }
+  }
+  .news-btn {
+    height: 6%;
+    cursor: pointer;
+    filter: brightness(0.5);
+    transition: 0.2s ease-in-out;
+  }
+  .news-btn:hover {
+    filter: brightness(1);
+    transition: 0.2s ease-in-out;
+  }
+}
 .all-myskills-container {
   @include centerFix(5);
   left: 70%;
@@ -4018,6 +4090,7 @@ nav {
 }
 .game-font {
   font-family: $gamefont;
+  pointer-events: none;
 }
 
 // ADVENTURER DETAILS ON BOARD

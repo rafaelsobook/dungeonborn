@@ -51,6 +51,125 @@ body {
   width: 100%;
 }
 
+.news-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  z-index: 4;
+  width: 80%;
+  height: 75%;
+  border: 1px solid #4e412d;
+  padding: 15px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background: linear-gradient(45deg, #1c1e5b, #5d7fb1, transparent);
+}
+
+.news-container .news-cap {
+  color: #f5f5f5;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  border: 2px solid #4e412d;
+  background: -webkit-gradient(linear, left top, left bottom, from(#6053ad), color-stop(#4b4377), color-stop(#372f66), to(#3b3753));
+  background: linear-gradient(#6053ad, #4b4377, #372f66, #3b3753);
+  padding: 5px;
+  text-align: center;
+  width: 100%;
+  height: 10%;
+}
+
+.news-container .news-list {
+  height: 77%;
+  list-style-type: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  width: 100%;
+  overflow-y: scroll;
+}
+
+.news-container .news-list .news-bx {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 10px;
+}
+
+.news-container .news-list .news-bx .news-ttle {
+  text-align: center;
+  width: 100%;
+  color: #e5e049;
+  letter-spacing: 1px;
+  font-family: "Bellefair", serif;
+}
+
+.news-container .news-list .news-bx .date-posted {
+  font-size: 70%;
+  color: #bfbfbf;
+  font-family: "Graduate", cursive;
+  padding-top: 5px;
+  width: 60%;
+  border-top: 1px solid #b7acac8f;
+  text-align: center;
+}
+
+.news-container .news-list .news-bx .news-desc {
+  text-align: center;
+  width: 70%;
+  color: #d4d4d4;
+  font-family: "Bellefair", serif;
+}
+
+.news-container .news-btn {
+  height: 6%;
+  cursor: pointer;
+  -webkit-filter: brightness(0.5);
+          filter: brightness(0.5);
+  -webkit-transition: 0.2s ease-in-out;
+  transition: 0.2s ease-in-out;
+}
+
+.news-container .news-btn:hover {
+  -webkit-filter: brightness(1);
+          filter: brightness(1);
+  -webkit-transition: 0.2s ease-in-out;
+  transition: 0.2s ease-in-out;
+}
+
 .all-myskills-container {
   position: fixed;
   top: 50%;
@@ -5639,6 +5758,7 @@ nav {
 
 .game-font {
   font-family: "Bellefair", serif;
+  pointer-events: none;
 }
 
 .alladventurer-detail-cont {

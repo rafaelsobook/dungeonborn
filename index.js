@@ -331,7 +331,10 @@ const craftCost = document.querySelector('.cmc-cost')
 // ABOUT PAGE
 const aboutCont = document.querySelector(".about-container")
 const abtBackBtn = document.querySelector(".back-btn")
-
+// NEWS
+const newsContainer = document.querySelector(".news-container")
+const newsBtn = document.querySelector(".news-btn")
+newsBtn.addEventListener("click", () => newsContainer.style.display = "none")
 
 // fps
 let divFps = document.querySelector(".fps");
@@ -4718,20 +4721,41 @@ class App{
                 mons.isAttacking = false
                 mons.targHero = undefined                    
             })
-        }         
+        }   
         
         //if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
         this.gameOver()
         this.playerDeath(this.myChar)
     }
     playerDeath(player){
+        player._moving = false
+        player._attacking = false
+        player._minning = false
+        this.animStopAll(player, ["walk", "running", "slash", "hit"], true)
         player.mode = "none"
         player.diedS.play()
         this.playAnim(player.anims, 'death', true)
         // player.meshes[0].parent = null
         const {x,y,z} = player.bx.position
-        // player.meshes[0].position = new Vector3(x,0,z)
+        // player.meshes[0]. position = new Vector3(x,0,z)
         
+        if(player._id === this.det._id){
+            if(this.det.weapon.name === "none") return
+            const theSwordMyHand = this.myChar.swordz.find(sword => sword.name.split(".")[1] === this.det.weapon.name)
+            const swordPOS = this.myChar.soundColl.getAbsolutePosition()
+            const swordData = {...this.det.weapon,
+             x:swordPOS.x,z:swordPOS.z, qnty: 1,
+            place: this.currentPlace}
+                
+            if(this.socketAvailable){
+                this.socket.emit("sword-isdroped", {
+                _id: this.det._id,
+                swordData})
+            }else{                                    
+                this.struckTheSword(this.myChar,theSwordMyHand)
+                this.placeSword(swordData, theSwordMyHand, .25, this._scene)
+            }  
+        }
     }
     stopFarming(thePlayer){
         thePlayer._minning = false
@@ -5056,7 +5080,7 @@ class App{
     }
     setNegativeStatUI(){
         negativeStatCont.innerHTML = ''
-        if(!this.det.status.length) return
+        // if(!this.det.status.length) return
         this.det.status.forEach(negstat => {
             const newDiv = createElement("div", `neg-stat ${negstat.effectType}`)
             const negStatImg = createElement("img", "ns-img")
@@ -5169,57 +5193,56 @@ class App{
         }, returnBtnSec)
         this.det.hp -= toDeduct
         if(effects && effects.chance > Math.random()*10){
+            let willActivateEffect = true
             const theMons = Monsterz.find(mons => mons.monsId === monsId)
             if(theMons.effectS !== undefined){ // only for sounds
                 log(theMons.monsName + " has an effect Sound")
                 theMons.effectS.setPlaybackRate(.9+Math.random()*.2)
                 theMons.effectS.play()
             }   
-            clearTimeout(effectTimeOut)
-            this.det.hp -= effects.plusDmg
-            effectTimeOut = setTimeout(() => {
-                if(this.det.hp <= 0) return log("dead after mons effect stop here")
-                openGameUI()
-                this.allCanPress()
-            }, effects.dura)
-            if(this.det.hp > 0){
-                this.setNegativeStatUI()
-                let colorOfCap = "limegreen"
-                let theParticle
-                let textMeshName
-                switch(effects.effectType){
-                    case "poisoned":
-                        const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
-                        if(!statusAlreadyThere) this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
-                
-                        textMeshName = effects.effectType
-                        colorOfCap = "limegreen"
-                        theParticle = this.createBloodParticle("poisonTex", 100, this.myChar.bx.position, "sphere", true, 5, true, false)
-                        theParticle.color = new BABYLON.Color3(0.05, 0.18, 0.02)
-                    break;
-                    case "absorb":
-                        switch (effects.absorbType) {
-                            case "weapon":
-                                if(this.det.weapon.name !== "none"){
-                                    textMeshName = `absorb +${this.det.weapon.plusDmg}`
-                                    log(`monster before hp ${theMons.hp}+${this.det.weapon.plusDmg} max && ${theMons.maxHp}`)
-                                    theMons.hp+=this.det.weapon.plusDmg
-                                    theMons.maxHp+=this.det.weapon.plusDmg
-                                    log(`monster AFTER hp ${theMons.hp} max && ${theMons.maxHp}`)
-                                }else{
-                                    textMeshName = `absorb +${effects.defaultAbs}`
-                                    theMons.hp+=effects.defaultAbs
-                                    theMons.maxHp+=effects.defaultAbs
-                                }
-                            break;
-                        }
-                        colorOfCap = "red"
-                        this.createBloodParticle("blood", 100, this.myChar.bx.position, "cone", true, 5, true, false)
-                    break;
-                }
-                this.createTextMesh(makeRandNum(),textMeshName, colorOfCap, this.myChar.bx.position, 90,this._scene, true)
+            const statusAlreadyThere = this.det.status.some(status => status.effectType === effects.effectType)
+            if(statusAlreadyThere && effects.effectType === "poisoned") willActivateEffect = false
+            if(willActivateEffect){
+                this.det.hp -= effects.plusDmg
+                if(this.det.hp > 0){
+                    
+                    let colorOfCap = "limegreen"
+                    let theParticle
+                    let textMeshName
+                    switch(effects.effectType){
+                        case "poisoned":
+                            
+                            if(!statusAlreadyThere) this.det.status.push({effectType: effects.effectType, dmgPm: effects.dmgPm});
 
+                            textMeshName = effects.effectType
+                            colorOfCap = "limegreen"
+                            theParticle = this.createBloodParticle("poisonTex", 100, this.myChar.bx.position, "sphere", true, 5, true, false)
+                            theParticle.color = new BABYLON.Color3(0.05, 0.18, 0.02)
+                        break;
+                        case "absorb":
+                            switch (effects.absorbType) {
+                                case "weapon":
+                                    if(this.det.weapon.name !== "none"){
+                                        textMeshName = `absorb +${this.det.weapon.plusDmg}`
+                                        log(`monster before hp ${theMons.hp}+${this.det.weapon.plusDmg} max && ${theMons.maxHp}`)
+                                        theMons.hp+=this.det.weapon.plusDmg
+                                        theMons.maxHp+=this.det.weapon.plusDmg
+                                        log(`monster AFTER hp ${theMons.hp} max && ${theMons.maxHp}`)
+                                    }else{
+                                        textMeshName = `absorb +${effects.defaultAbs}`
+                                        theMons.hp+=effects.defaultAbs
+                                        theMons.maxHp+=effects.defaultAbs
+                                    }
+                                break;
+                            }
+                            colorOfCap = "red"
+                            this.createBloodParticle("blood", 100, this.myChar.bx.position, "cone", true, 5, true, false)
+                        break;
+                    }
+                    this.createTextMesh(makeRandNum(),textMeshName, colorOfCap, this.myChar.bx.position, 90,this._scene, true)
+                    this.setNegativeStatUI()
             }
+}
         }
         this.updateLifeManaSpGUI()
         this.updateLifeMesh(this.myChar, {hp: this.det.hp,maxHp:this.det.maxHp})
@@ -9030,9 +9053,7 @@ class App{
             if(!thePlayer){
                 log("dead character not found maybe because this is us so no record in players")
             }else{
-                this.animStopAll(thePlayer)
-                thePlayer.mode = "none"
-                this.playAnim(thePlayer.anims, "death", true)
+                this.playerDeath(thePlayer)
                 thePlayer.playerHealthMesh.dispose()
                 thePlayer.nameMesh.dispose()
                 players = players.filter(pla => pla._id !== data._id)          
@@ -13249,12 +13270,19 @@ const myGameLogo = document.querySelector(".db-logo")
 navChoices.forEach(navBtn => {
     navBtn.addEventListener("click", async e => {
         const classN = e.target.className.split(" ")[1]
-        if(classN === undefined) return
-        loginPage.style.display = "flex"
+        if(classN === undefined) {
+            log(e.target.className)
+            return log("is undefined")
+        }
+        
         log(classN)
         
         switch(classN){
+            case "news":
+                newsContainer.style.display = "flex";
+            break
             case "gotoreg":
+            loginPage.style.display = "flex"
             homeInputs.forEach(inp => inp.value = '')
             loginBtn.style.display = "none"
             registerBtn.style.display = "block"
@@ -13263,6 +13291,7 @@ navChoices.forEach(navBtn => {
             myGameLogo.classList.add("db-placeup")
             break;
             case "gotologin":
+            loginPage.style.display = "flex"
             homeInputs.forEach(inp => inp.value = '')
             registerBtn.style.display = "none"
             loginBtn.style.display = "block"
@@ -13274,7 +13303,6 @@ navChoices.forEach(navBtn => {
                 aboutCont.style.display="flex"
             break;
         }
-
     }) 
 })
 // login page
