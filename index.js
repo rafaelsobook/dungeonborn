@@ -547,6 +547,7 @@ class App{
         const tryCam = new FreeCamera("asdfw", new Vector3(0,0,0), this._scene)
 
         this.userId = userdet.details._id
+        this.userDetails = userdet.details
         this.token = userdet.token
         this.socket = null
 
@@ -2895,6 +2896,8 @@ class App{
     }
     setSettingsUI(categ){
         const settViews = document.querySelectorAll(".set-view");
+        const accUsername = document.querySelector(".sett-username");
+        accUsername.innerHTML = `username: ${this.userDetails.username}`
         settViews.forEach(elem => {
             elem.style.display ="none"
             if(elem.className.includes(categ)) elem.style.display ="flex"
