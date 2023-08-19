@@ -18,7 +18,7 @@ import bonusItems from './creations/bonuses/bonusItems.js';
 import bonusInfos from "./creations/bonuses/bonusInfo.js"
 import allElements from './creations/elements.js';
 import skills from "./creations/skills.js"
-import allDemonz from './creations/demonsInfo';
+import allDemonz from './creations/demonsInfo.js';
 const log = console.log
 
 
