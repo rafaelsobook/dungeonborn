@@ -4497,6 +4497,7 @@ class App{
                     this._allSounds.consumeS.play()
                     if(this.det.survival.hunger > 100) this.det.survival.hunger = 100
                     this.updateSurvival_UI()
+                    profile.style.display = "none"
                     await this.deductItem(theItemDetail.meshId, 1) 
                     itemInfoCont.style.display = "none";
                     this.closePopUpAction()
