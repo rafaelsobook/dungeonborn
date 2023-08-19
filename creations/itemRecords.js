@@ -1,5 +1,32 @@
 const records = [
     {
+        dn: 'Forbidden Scroll',
+        name: 'forbiddenScroll', 
+        itemType: 'raceChanger',// enhancer // blessing giver
+        choices: [
+            {
+                dn: "Elf",
+                imgName: "elfrace",
+                plusTo: { hp: 100, sp: 800, mp: 1000, spd: 3.5, sword: 10, def: 10, magic: 3, core: 10}
+            },
+            {
+                dn: "Divine",
+                imgName: "divinerace",
+                plusTo: { hp: 1000, sp: 600, mp: 600, spd: 2, sword: 10, def: 10, magic: 3, core: 10}
+            },
+            {
+                dn: "Demon",
+                imgName: "demonrace",
+                plusTo: { hp: 1000, sp: 40, mp: 2500, spd: 1, sword: 10, def: 10, magic: 50 , core: 10}
+            },
+        ],
+        origPrice: 50000,
+        secondPrice: 36000,
+        desc: "A scroll that can change a normal human race",
+        rarity: 10,
+        notLootIn: ["heartland", "dungeon"]
+    },
+    {
         dn: 'Goblin Tooth',
         name: 'goblinTooth', 
         itemType: 'loot',
@@ -7,7 +34,7 @@ const records = [
         secondPrice: 20,
         desc: "You can determine a goblin's strength by its tooth",
         rarity: 0,
-        notLootIn: ["heartland"]
+        notLootIn: ["dungeon"]
     },
     {
         dn: 'Fabric',
@@ -57,7 +84,7 @@ const records = [
         origPrice: 100,
         secondPrice: 100,
         rarity: 10,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'medium potion',
@@ -67,7 +94,7 @@ const records = [
         origPrice: 300,
         secondPrice: 300,
         rarity: 20,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'big potion',
@@ -77,7 +104,7 @@ const records = [
         origPrice: 500,
         secondPrice: 500,
         rarity: 3,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'Atropine',
@@ -87,7 +114,37 @@ const records = [
         origPrice: 500,
         secondPrice: 500,
         rarity: 10,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        name: "beerliquor",
+        dn: "Tavern Beer",
+        origPrice: 150,
+        secondPrice: 60,
+        itemType: "food",
+        desc: "delicate taste",
+        rarity: 10,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        name: "whiskeyliquor",
+        dn: "Whiskey bronze",
+        origPrice: 150,
+        secondPrice: 60,
+        itemType: "food",
+        desc: "delicate taste",
+        rarity: 10,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        name: "tanduayliquor",
+        dn: "Tanduay Rum",
+        origPrice: 100,
+        secondPrice: 60,
+        itemType: "food",
+        desc: "delicate taste",
+        rarity: 10,
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'Minotaur meat',
@@ -97,17 +154,37 @@ const records = [
         origPrice: 100,
         secondPrice:40,
         rarity: 10,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'Minotaur meat',
         name: "minMeatCooked",
         itemType: "food",
         desc: "A meat that is good for traveling also great taste",
+        origPrice: 120,
+        secondPrice:40,
+        rarity: 10,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        dn: 'Rabbit meat',
+        name: "rabbitMeatRaw",
+        itemType: "food",
+        desc: "taste like an ordinary meat, best when cooked",
         origPrice: 100,
         secondPrice:40,
         rarity: 10,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        dn: 'Rabbit meat',
+        name: "rabbitMeatCooked",
+        itemType: "food",
+        desc: "Nourishing meat that will fill your stomach, can be cooked as stew",
+        origPrice: 90,
+        secondPrice:40,
+        rarity: 10,
+        notLootIn: ["dungeon", "heartland"]
     },
     {
         dn: 'Red Beryl',
@@ -308,10 +385,10 @@ const records = [
         desc: "A Blazing Sword, Known for It's mixture of gold red and black, Many demons life has been sealed in this sword",
         origPrice: 7000,
         secondPrice: 4000,
-        craftMaterial: { name: "vipcore", qnty: 2, forgeChance: 4},
+        craftMaterial: { name: "bluemincore", qnty: 2, forgeChance: 4},
         plusDmg: 145,
-        cState: 5000,
-        durability: 5000,
+        cState: 6000,
+        durability: 6000,
         rarity: 4,
         notLootIn: ["dungeon"]
     },
@@ -663,6 +740,19 @@ const records = [
         secondPrice: 500,
         desc: "The Viper's core can sometimes dangerous for its toxins lives inside its core. better be careful handling it",
         rarity: 2,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        dn: "bluemin Core",
+        name: 'bluemincore', 
+        for: "bluedemon",
+        itemType: 'core', 
+        plusDef: 0, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 3000,
+        secondPrice: 1500,
+        desc: "A core that can be found in demons, normally from blue horn demons",
+        rarity: 3,
         notLootIn: ["dungeon", "heartland"]
     },
     {

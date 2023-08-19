@@ -212,7 +212,33 @@ const toSell = [
         itemType: 'food',
         price: 300,
         desc: "This antidote is best used for poisons, Only good herbal expert can craft such antidote"
-    }  
+    },
+    {
+        dn: 'Forbidden Scroll',
+        name: 'forbiddenScroll', 
+        itemType: 'raceChanger',// enhancer // blessing giver
+        choices: [
+            {
+                dn: "Elf",
+                imgName: "elfrace",
+                plusTo: { hp: 100, sp: 800, mp: 1000, spd: 3.5, sword: 10, def: 10, magic: 3, core: 10}
+            },
+            {
+                dn: "Divine",
+                imgName: "divinerace",
+                plusTo: { hp: 1000, sp: 600, mp: 600, spd: 2, sword: 10, def: 10, magic: 3, core: 10}
+            },
+            {
+                dn: "Demon",
+                imgName: "demonrace",
+                plusTo: { hp: 1000, sp: 40, mp: 2500, spd: 1, sword: 10, def: 10, magic: 50 , core: 10}
+            },
+        ],
+        price: 36000,
+        desc: "A scroll that can change a normal human race",
+        rarity: 10,
+        notLootIn: ["heartland", "dungeon"]
+    },
 ]
 
 export default toSell

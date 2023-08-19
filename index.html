@@ -25,17 +25,103 @@
 <body>
     <canvas id="renderCanvas"></canvas>
     <p class="new-craft-notif"></p>
-    <p class="map-name remove-map"></p> 
+    <p class="map-name remove-map"></p>
+
+    <!-- settings container -->
+    <div class="settings-container my-stat-hidding">
+        <div class="setting-ttle-bx">
+            <p class="game-cap">DungeonBorn</p>
+            <p class="game-cap">v.1 beta</p>
+        </div>
+        <div class="settings-main">
+            <div class="setting-nav">
+                <div class="set-bx foraccount sett-active">
+                    <img src="./images/settings/user.png" alt="" class="set-img">
+                    <p class="set-choice">account</p>
+                </div>
+                <div class="set-bx forcontrols">
+                    <img src="./images/settings/setting.png" alt="" class="set-img">
+                    <p class="set-choice">controls</p>
+                </div>
+                <div class="set-bx forhelp">
+                    <img src="./images/settings/tutorials.png" alt="" class="set-img">
+                    <p class="set-choice">help</p>
+                </div>
+                <div class="set-bx fordonate">
+                    <img src="./images/settings/donate.png" alt="" class="set-img">
+                    <p class="set-choice">donate</p>
+                </div>
+            </div>
+            <div class="settings-list">
+                <div class="set-view foraccount">
+                    <p class="set-cap-big">Accounts</p>
+                    <p class="sett username">username: rafaelso2997</p>
+                    
+                    <div class="sett-btns">
+                        <button class="sett-btn blackBtn">change passowrd</button>
+                        <button id="signOut" class="sett-btn blackBtn">Sign out</button>
+                    </div>
+                </div>
+                <div class="set-view forcontrols">
+                    <p class="set-cap-big">Game Controls</p>
+                    <p class="sett">key W: forward movement</p>
+                    <p class="sett">key A: left movement</p>
+                    <p class="sett">key S: backward movement</p>
+                    <p class="sett">key D: right movement</p>
+                    
+                    <p class="set-cap-big">Player Modes</p>
+                    <div class="set-img-def">
+                        <img src="./images/settings/modeSign.png" alt="" class="sett-img-sign">
+                        <p class="sett-desc">3 types of modes, Weapon mode, fist mode and standby mode</p>
+                        <p class="sett-desc">weapon mode is where you are equiped with weapon, fist mode is normally use for fist fight and casting effective skills</p>
+                    </div>
+                </div>
+                <div class="set-view forhelp">
+                    <p class="set-cap-big">Tutorials</p>
+                    <div class="links-bx">
+                        <p class="sett">Hunting & Crafting Link:</p>
+                        <input class="blackBtn" type="button" value="DungeonBorn Hunt & Craft" onclick="window.open('https://youtu.be/xQVn_4MzFlg')" />
+                    </div>
+                </div>
+                <div class="set-view fordonate">
+                    <p class="set-cap-big">Donate</p>
+                    <p class="sett">Help the game grow by donating to the game</p>
+                    <p class="sett">We have ideas to implement like new items <br />
+                    news shops, skills, maps, slave market and summoning underlings</p>
+                    <br />
+                    <p class="sett">Even the smallest amount motivates us to do more</p>
+                    <input style="margin-top: 15px;" class="blackBtn" type="button" value="Donate Here" onclick="window.open('https://www.paypal.com/donate/?business=Y6MYLJGE4JWQ8&no_recurring=1&item_name=I+like+to+buy+more+recourses+for+the+game+so+I+can+add+new+features+and+items.&currency_code=CAD')" />
+                    <!-- <div id="paypal"></div> -->
+                </div>
+            </div>
+        </div>
+        <button class="stat-close set-close">close</button>
+    </div>
+
+    <div class="scroll-choices-cont">
+        <img src="./images/blessings/sL.png" alt="" class="scrl scrl-left">
+        <ul class="scrl-list">
+
+        </ul>
+        <img src="./images/blessings/sL.png" alt="" class="scrl scrl-right">
+    </div>
 
     <div class="news-container">
         <h3 class="news-cap">Updates</h3>
         <ul class="news-list">
             <li class="news-bx">
-                <h3 class="news-ttle">Game Official Release</h3>
-                
+                <h3 class="news-ttle">Different Race Update</h3>                
+                <p class="news-desc">
+                    You can change your race into three categories, by default everyone starts with human race. The available race are elf, demon and divine race.
+                    Each has its own strengths, You can change your race by acquiring a certain scroll.
+                </p>
+                <p class="date-posted">date posted: Aug 17, 2023</p>
+            </li>
+            <li class="news-bx">
+                <h3 class="news-ttle">Game Official Release</h3>                
                 <p class="news-desc">
                     The Game is on 80% completion, Estimated Date of completion would be on the month
-                    of November, expect of more quest and dungeons to conquer, different Bosses and the awakening of the Demon Lords inside of every dungeons.
+                    of November, expect more quest and dungeons to conquer, different Bosses and the awakening of the Demon Lords inside of every dungeon.
                 </p>
                 <p class="date-posted">date posted: Aug 3, 2023</p>
             </li>
@@ -488,6 +574,10 @@
         <button class="rui-btn mystats">
             <img src="./images/UI/profileBook.png" class="rui-img" />
             <p class="rui-caps">stats</p>
+        </button>
+        <button class="rui-btn settingsIcon">
+            <img src="./images/UI/menusett.png" class="rui-img" />
+            <p class="rui-caps"></p>
         </button>
         <!-- <div class="action-controller-cont">
             <button class="rui-btn stand">
