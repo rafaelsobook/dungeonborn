@@ -4450,9 +4450,10 @@ class App{
                                     const myCpos = this.myChar.bx.position
                                     this.det.x = myCpos.x
                                     this.det.z = myCpos.z
+                                    this.myChar.spd += spd
                                     this.transformInto(this._scene,this.myChar._id,raceName, this.myChar.rootMesh, this.myChar.rHead, this.myChar.meshes, true)
                                     await this.updateMyDetailsOL(this.det, true)
-
+                                    this.setHTMLUI(this.det)
                                     this.showTransaction(`Race Changed To ${card.dn}`, 2000)
                                     openGameUI()
                                 })
@@ -7457,19 +7458,10 @@ class App{
         const dungeonGate = await this.importMesh(scene, "./models/", "dungeonGate.glb");
         dungeonGate.meshes[0].position = new Vector3(0,0,-13);this.blocks.push(dungeonGate.meshes[1])
 
-        // SWORDS
-        const Sword = await this.importMesh(scene, "./models/", "swords.glb")
-        allsword = Sword.meshes[0].getChildren()
-        allsword.forEach(swordv => swordv.parent = null)
-
-        await this.creationSlash(scene)
-        await this.createMainWings(scene)
-        await this.createMagicCircle(scene)
+        await this.createNecessary(scene)
         await this.createWoodPlank();
         this.createDangerSign(scene, {x: -3, y:.6, z: 75}, {x: 0,z:0});
         await this.forestCreations(scene)
-        await this.helmetCreation(scene);
-        await this.shieldCreation(scene);
 
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
         
@@ -7518,8 +7510,6 @@ class App{
         Seed.meshes[1].parent = null
         Seed.meshes[1].position = new Vector3(0,0,0)
         seedMesh = Seed.meshes[1]
-
-        await this.buildTreazure(scene);
 
         const Block = await this.importMesh(scene, "./models/", "block.glb")
         Block.meshes[1].parent = null
