@@ -69,6 +69,100 @@ body {
   width: 100%;
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.lords-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  z-index: 4;
+  padding: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  height: 50%;
+  width: 60%;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#2e2e2e), color-stop(#202020), color-stop(#2e2e2e), to(#646464));
+  background: linear-gradient(to Bottom, #2e2e2e, #202020, #2e2e2e, #646464);
+  -webkit-transition: 1s ease-in-out;
+  transition: 1s ease-in-out;
+}
+
+.lords-container .cont-title {
+  font-family: "Jim Nightshade", cursive;
+  color: #cacaca;
+  height: 10%;
+}
+
+.lords-container .lords-list {
+  list-style-type: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 85%;
+  gap: 15px;
+}
+
+.lords-container .lords-list .lord-bx {
+  width: 100%;
+  height: 16%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 5px;
+  color: #dadada;
+  font-family: "Bellefair", serif;
+}
+
+.lords-container .lords-list .lord-bx .lrdbx {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 15px;
+}
+
+.lords-container .lords-list .lord-bx .lrdbx .lord-mark {
+  width: 45px;
+}
+
 .settings-container {
   position: fixed;
   top: 50%;
@@ -2214,8 +2308,15 @@ nav {
 
 .settingsIcon {
   position: fixed;
-  top: 2%;
+  top: 1.5%;
   left: 49%;
+  z-index: 3;
+}
+
+.lordz {
+  position: fixed;
+  top: 1.5%;
+  left: 69%;
   z-index: 3;
 }
 
@@ -4839,12 +4940,8 @@ nav {
   cursor: pointer;
   color: #dbdbdb;
   font-weight: 800;
-  background: -webkit-gradient(linear, left top, left bottom, from(#1a1e41), color-stop(#252947), color-stop(#161930), to(#030311));
-  background: linear-gradient(to Bottom, #1a1e41, #252947, #161930, #030311);
   font-family: "Almendra Display", cursive;
-  border: 1px solid #dbdbdb;
-  -webkit-box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.6);
-          box-shadow: 0px 0px 30px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid #7c7c7c;
   border-radius: 4px;
 }
 
@@ -5923,6 +6020,7 @@ nav {
 }
 
 .db-logo {
+  cursor: pointer;
   position: fixed;
   left: 50%;
   top: 40%;

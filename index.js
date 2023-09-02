@@ -336,7 +336,10 @@ const craftCost = document.querySelector('.cmc-cost')
 const settingsCont = document.querySelector(".settings-container")
 const settingsNav = document.querySelector(".setting-nav")
 const signOutBtn = document.getElementById("signOut")
-
+// LORDZ LIST 
+const lordzCont = document.querySelector(".lords-container")
+const lordzList = document.querySelector(".lords-list")
+const lordListCloseBtn = document.querySelector(".lord-list-close")
 // ABOUT PAGE
 const aboutCont = document.querySelector(".about-container")
 const abtBackBtn = document.querySelector(".back-btn")
@@ -486,7 +489,6 @@ function closeGameUI(notInclude){
     switch(notInclude){
         case "items":
             if(!profile.style.display) profile.style.display = "none"
-
         break
     }
 }
@@ -1027,6 +1029,54 @@ class App{
         const absPos = inviMesh.getAbsolutePosition()
         return absPos
     }
+    async showAllLordz(){
+        lordzList.innerHTML = ''
+        lordzCont.classList.remove("my-stat-hidding");
+        const bx = createElement("li", "lord-bx")
+        const loadingCap = createElement("p", "lord-name", "Loading ...")
+        bx.append(loadingCap)
+        lordzList.append(bx)
+        const playerRecords = await this.useFetch(`${APIURL}/characters`, "GET", this.token)
+        log(playerRecords);
+        const lordzArray = []
+        playerRecords.forEach(plyrs => {
+            const haveLordTitle = plyrs.titles.some(ttlName => ttlName === "lord");
+            if(!haveLordTitle) return             
+            const lordDetail = {
+                lvl: plyrs.lvl,
+                name: plyrs.name,
+                race: plyrs.race
+            }
+            lordzArray.push(lordDetail)            
+        })
+        if(!lordzArray.length){
+            return loadingCap.innerHTML = "No Player have reached Lordz Level..."
+        }
+        lordzList.innerHTML = ''
+        lordzArray.forEach((plyr) => {
+            const lrdbx = createElement("li", "lord-bx")
+            const lrdLbx = createElement("div", "lrdbx")
+            const lrdRbx = createElement("div", "lrdbx")
+
+            const lrdLvl = createElement("p", "lord-level", `level ${plyr.lvl}`)
+            const lrdName = createElement("p", "lord-name", `${plyr.name}`)
+            lrdLbx.append(lrdLvl)
+            lrdLbx.append(lrdName)
+
+            const lrdRace = createElement("p", "lord-race", `race: ${plyr.race}`)
+            const lrdImg = createElement("img", "lord-mark")
+            lrdImg.src = `./images/blessings/${plyr.race}mark.png`
+
+            lrdRbx.append(lrdRace)
+            lrdRbx.append(lrdImg)
+
+            lrdbx.append(lrdLbx)
+            lrdbx.append(lrdRbx)
+
+            lordzList.append(lrdbx);
+        })  
+
+    }
     async showAdventurerRecord(){
         topAdventurersCont.classList.remove("my-stat-hidding")
         const allAdventurers = await this.useFetch(`${APIURL}/characters`, "GET", this.token)
@@ -1070,9 +1120,7 @@ class App{
             infoVx.append(pCleared)
             toplist.append(bx)
             listOfAdvs++
-        })
-    
-        log(onlyAdventurers)
+        }) 
     }
     async updateMyDetailsOL(toSave, updateLocal){
         try {
@@ -2884,10 +2932,10 @@ class App{
         rightUpperUI.style.display = "flex"
         rightUpperUI.childNodes.forEach(nod => {
             if(nod.className){
-                nod.style.display = "none"
+                nod.style.display = "block"
                 categArrays.forEach(categ => {
                     if(nod.className.includes(categ)){
-                        nod.style.display = "block"
+                        nod.style.display = "none"
                     }
                 })
                 if(allOpen)nod.style.display = "block"
@@ -3031,9 +3079,14 @@ class App{
                         settingsCont.classList.remove("my-stat-hidding")
                         this.setSettingsUI("foraccount")
                     break;
+                    case "lordz":
+                        lordzCont.classList.remove("my-stat-hidding")
+                        this.showAllLordz()
+                    break;
                 }
             })
         })
+        lordListCloseBtn
         rightLowerUI.addEventListener("click", e => {
             const btnName = e.target.className
             if(!btnName.includes("mode-btn")) return log("not a mode btn")
@@ -3329,7 +3382,7 @@ class App{
                 this.targDetail = prevPos
                 this.stopPress()
                 closeGameUI()
-                this.setRightUIs(["openstatus", "mystats", "myskills", "settingsIcon"])
+                this.setRightUIs(["crafts"])
                 return
             }
             if(this.targetRecource === "cancel-sit"){
@@ -4872,9 +4925,9 @@ class App{
             btn.addEventListener("click", e => {
                 myStatContainer.classList.add("my-stat-hidding")
                 settingsCont.classList.add("my-stat-hidding")
+                lordzCont.classList.add("my-stat-hidding")
             })
         })
-
         settingsNav.addEventListener("click", e => {
             const settName = e.target.className
             if(!settName.includes("set-bx")) return
@@ -7461,7 +7514,7 @@ class App{
         await this.createNecessary(scene)
         await this.createWoodPlank();
         this.createDangerSign(scene, {x: -3, y:.6, z: 75}, {x: 0,z:0});
-        await this.forestCreations(scene)
+        await this.forestCreations(scene, "elvTree")
 
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
         
@@ -7542,6 +7595,7 @@ class App{
         this.initPressControllers(scene)
 
         this.weJoinTheServer({x:0,z:0})
+
         
         if(this.prevPlace?.includes('dungeon')){ // dapat mauuna ang createCharacter mo dito kase nag aupdate din ng loc yun
             log("the prev place is dungeon")
@@ -8334,7 +8388,7 @@ class App{
         const Dig = await this.importMesh(scene, "./models/", "dig.glb")
         digMesh = Dig.meshes[1];
 
-        const Tree = await this.importMesh(scene,"./models/", "tree.glb");
+        const Tree = await this.importMesh(scene,"./models/", "elvTree.glb");
         wholeTree = Tree.meshes[1]
 
         this.runLifeManaStaminaRegen()
@@ -8488,22 +8542,9 @@ class App{
         const GUILD = await this.createImportantHouse("guildHouseHL.glb", {x: 0, y:0, z: 61}, { x: 0, y: .5, z: 57.5}, false, scene);
 
         await this.createTavern(scene);
-        const clubPath = this.createPath(1.5, {x: 38.52, y: 0, z: 14.6}, scene)
-        this.toRegAction(this.myChar.bx, clubPath, async () => {
-            this.stopPress(true)
-            this.prevPlace = 'heartland'
-            this.setUp(true)
-            displayElems([apartInfos], "none")
-            displayElems([aprtLoadingBx, apartCont], "flex")
-            aprtLoadLabel.innerHTML = "Going Inside..."
-            this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
-    
-            await this.updatePlace('hl_club')
-            showLoadingScreen(false, 'wizard')
-            this.resetMeshes()
-            isLoading = true
-            await this._hl_club()
-        })
+
+        
+
         this.createTextMesh(makeRandNum(), "Tavern", "white", {x: 38.475, y: 4, z: 13.6 }, 100, scene, false)
         this.createTextMesh(makeRandNum(), "Guild", "white", {x: 0, y: 3, z: 56.2 }, 100, scene, false)
         this.toRegAction(this.myChar.bx, GUILD.entrance, () => {
@@ -8776,24 +8817,23 @@ class App{
 
         npcInfos.forEach(npz => this.createNpc(theCharacterRoot, npz, true, btf))
 
-        const theDesk = await this.importMesh(scene, "./models/", "guildDesk.glb")
-        theDesk.meshes.forEach(mesh => {
-            mesh.receiveShadows = true
-        });
-        theDesk.meshes[0].position.z = 8; theDesk.meshes[1].rotation = new Vector3(0,Math.PI,0)
-        this.toRegAction(this.myChar.bx, theDesk.meshes[1], () => {
+        const theDesk = await this.importMesh(scene, "./models/", "guildDesk.glb", true)
+        theDesk.position = new Vector3(0,0,8);
+        theDesk.addRotation(0,Math.PI,0)
+        this.putFakeShadow(theDesk,6,.02)
+        this.toRegAction(this.myChar.bx, theDesk, () => {
             this.stopPress(true)
             this.bump(this.myChar);
             setTimeout(() => this.allCanPress() ,2000)
         })
-        this.toRegAction(this.myChar.detector, theDesk.meshes[1], () => {
+        this.toRegAction(this.myChar.detector, theDesk, () => {
             this.openPopUpAction("speak");
             this.targetRecource = 'guild'
             log(this.targetRecource)
             if(this.det.rank === "none") return this.targDetail = { title: "registration" }
             this.targDetail = { title: "checkquest" }
         });
-        this.toRegActionExit(this.myChar.detector, theDesk.meshes[1], () => {
+        this.toRegActionExit(this.myChar.detector, theDesk, () => {
             this.closePopUpAction()
             guildCont.style.display = "none"
             this.targetRecource = undefined
@@ -8956,7 +8996,7 @@ class App{
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
-        this.setRightUIs(["openstatus", "mystats", "myskills", "settingsIcon"], false)
+        this.setRightUIs(["crafts"], false)
         removeHomePage()
         loadedMesh = maxLoad
         openGameUI(this.det)
@@ -10430,7 +10470,7 @@ class App{
                 // this.det.maxHp += 200
                 // this.det.hp+=199
             }
-            if(keyPressed === "m") this.det.coins+=20000
+
             if(keyPressed === "/"){
                 const myFosNow = this.myChar.bx.position
                 const freeCam = new FreeCamera("asfka", new Vector3(myFosNow.x, 2, myFosNow.z))
@@ -10438,11 +10478,17 @@ class App{
                 freeCam.attachControl(canvas, true);
                 closeGameUI()
                 lifeManaStamCont.style.display = "none"
+                worldChatCont.style.display = "none"
                 this.myChar.nameMesh.isVisible = false;
                 this.myChar.playerHealthMesh.isVisible = false;
+                players.forEach(pl => {
+                    pl.nameMesh.isVisible = false
+                })
             }
             if(keyPressed === "m") {
+                this.det.coins+=20000
                 this.myChar.nameMesh.isVisible = false;
+                
                 log(Monsterz)}
             if(keyPressed === "q") this.myChar.bx.locallyTranslate(new Vector3(0,0,2))
             clearTimeout(this.savingTimeout)
@@ -11240,6 +11286,7 @@ class App{
         fakeShadowMat.useAlphaFromDiffuseTexture = true;
         fakeShadow.position.y = 100
     }
+
     createBloodParticle(imgTex,capac, monsFos, particleType, willStart, targStop, willDisposeOnStop, emitterMesh){
         const myParticleSystem = new BABYLON.ParticleSystem(`bloodParticle.${makeRandNum()}`, capac)
         
@@ -11773,7 +11820,7 @@ class App{
         const gl = new BABYLON.GlowLayer("glow", scene);
         gl.intensity = intenz
     }
-    async forestCreations(scene){
+    async forestCreations(scene, treeName){
         await this.createBonFire(true, scene);
 
         const BedLeave = await this.importMesh(scene, "./models/", "bedleave.glb")
@@ -11792,8 +11839,7 @@ class App{
         herbleaves.parent = null
         herbleaves.position = new Vector3(1,0,-24)
 
-        const Tree = await this.importMesh(scene,"./models/", "tree.glb")
-        wholeTree = Tree.meshes[1]
+        await this.createMainTree(scene, treeName)
     }
     async outGateC(scene, pos){
         const Gate = await this.importMesh(scene, "./models/", "outgate.glb")
@@ -11880,6 +11926,10 @@ class App{
             theModel = Model
         }
         return theModel
+    }
+    async createMainTree(scene, treeName){
+        const Tree = await this.importMesh(scene,"./models/", `${treeName ? treeName : "tree"}.glb`);
+        wholeTree = Tree.meshes[1]
     }
     // creartion from socket
     createTrap(playerId, magElement, posOfCircle, circDuration, dmg, timeOfRelease, numbersOfHits){
@@ -11992,18 +12042,42 @@ class App{
     }
     async createTavern(scene){
         const Tavern = await this.importMesh(scene, "./models/", "hl_club.glb")
-        Tavern.meshes[0].position = new Vector3(40,0,16.6)
-        Tavern.meshes[0].rotationQuaternion = null
-        const tvrnBlock = MeshBuilder.CreateBox('tvrnCol', { width: 8, depth: 5, height: 1}, scene);
-        tvrnBlock.position = new Vector3(40,0,17);
-        tvrnBlock.isVisible = false
-        this.blocks.push(tvrnBlock)
-        this.putFakeShadow(tvrnBlock, 10, .02)
-        Tavern.meshes.forEach(tvrn => {
-            if(tvrn.name.includes("root")) return
-            this.freeze(tvrn)
+        // Tavern.meshes[0].position = new Vector3(40,0,16.6)
+        // Tavern.meshes[0].rotationQuaternion = null
+        const tvrnH = Tavern.meshes[1];
+        tvrnH.parent = null;
+        tvrnH.rotationQuaternion = null
+        tvrnH.position = new Vector3(40,0,16.6)
+        tvrnH.addRotation(0,Math.PI,0)
+        // const tvrnBlock = MeshBuilder.CreateBox('tvrnCol', { width: 8, depth: 5, height: 1}, scene);
+        // tvrnBlock.position = new Vector3(40,0,17);
+        // tvrnBlock.isVisible = false
+        // this.blocks.push(tvrnBlock)
+        this.putFakeShadow(tvrnH, 20, .02)
+        // Tavern.meshes.forEach(tvrn => {
+        //     if(tvrn.name.includes("root")) return
+        //     this.freeze(tvrn)
+        // })
+        const clubPath = this.createPath(1.5, {x: 0, y: 0, z: 0}, scene)
+        clubPath.parent = tvrnH
+        clubPath.locallyTranslate(new Vector3(0,0,1.9))
+        this.toRegAction(this.myChar.bx, clubPath, async () => {
+            this.stopPress(true)
+            this.prevPlace = 'heartland'
+            this.setUp(true)
+            displayElems([apartInfos], "none")
+            displayElems([aprtLoadingBx, apartCont], "flex")
+            aprtLoadLabel.innerHTML = "Going Inside..."
+            this.socket.emit("dispose", {_id:this.det._id, place: this.currentPlace})
+    
+            await this.updatePlace('hl_club')
+            showLoadingScreen(false, 'wizard')
+            this.resetMeshes()
+            isLoading = true
+            await this._hl_club()
         })
-        
+        this.blocks.push(tvrnH)
+        tvrnH.boundingBox = true;
         return Tavern
     }
     createOre(mesh, data){
@@ -12054,13 +12128,12 @@ class App{
         this.Ores.push({...data, body: newOre})
     }
     createTree(theMesh, data, scene){
-        
+        let treeSize = .6;
         const newTree = theMesh.clone(`trees.${data.meshId}`)
-        const ramScale = 1 + Math.random() * .3;
-        const newPlane = MeshBuilder.CreateBox(`trees.${data.meshId}.wood`, {height:5, width: ramScale-.6, depth: ramScale-.6}, scene)
-        newPlane.isVisible = false
-        newTree.scaling = new Vector3(ramScale,ramScale,ramScale)
 
+        const newPlane = MeshBuilder.CreateBox(`trees.${data.meshId}.wood`, {size: .6}, scene)
+        newPlane.isVisible = false;
+        
         const posArr = data.pos.split(",")
 
         newPlane.position = new Vector3(parseInt(posArr[0]),0,parseInt(posArr[1]))
@@ -12126,8 +12199,12 @@ class App{
         ))
 
         newTree.freezeWorldMatrix();
+        newPlane.freezeWorldMatrix();
         newTree.material.freeze()
         this.Trees.push({...data, body: newPlane})
+        if(fakeShadow){
+            this.putFakeShadow(newPlane, 4,.02);
+        }
     }
     createTreasure(theMesh, data){
         const newTreasure = theMesh.clone(`treasure.${data.meshId}`)
@@ -12830,6 +12907,7 @@ class App{
                if(sword.name.split(".")[1] === det.displayW.name){
                     const swordClone = sword.clone("cloneswrod")
                     swordClone.parent = rootSword
+                    swordClone.position = new Vector3(0,0,0);
                     if(sword.name.includes("glow")){
                         log(`merong glow sa sword ni ${det.name}`)
                         const {x,y,z} = rootSword.getAbsolutePosition()
@@ -13202,9 +13280,6 @@ class App{
         let isLookingInterval
         let intervalWillAttack
         let onCollideTimeOut
-
-        let intervalLR
-
         const scaleR = .3 * Math.random()
         const randomSec = 3000 + (5000 * Math.random())
         
@@ -13312,7 +13387,7 @@ class App{
                 shadowSize = 5
             break;
         }
-        this.putFakeShadow(body, shadowSize)
+        this.putFakeShadow(body, shadowSize, -1+.02)
 
         const meshes = entries.rootNodes
         if(!entries.rootNodes[0].getChildren()) return log(`error making ${monsName} `)
@@ -14356,9 +14431,10 @@ navChoices.forEach(navBtn => {
             return log("is undefined")
         }
         
-        log(classN)
-        
         switch(classN){
+            case "overview":
+                window.open("https://dungeonoverview.vercel.app/")
+            break;
             case "news":
                 newsContainer.style.display = "flex";
             break

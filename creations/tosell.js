@@ -115,9 +115,9 @@ const toSell = [
         itemType: 'sword',
         desc: "Essential for minning and can also be used as a weapon",
         price: 2000,
-        plusDmg: 10,
-        cState: 10000,
-        durability:10000,
+        plusDmg: 6,
+        cState: 4000,
+        durability:4000,
     },
     {
         name: 'hydra',

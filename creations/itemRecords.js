@@ -502,7 +502,7 @@ const records = [
         secondPrice: 1000,
         desc: "Essential for minning and can also be used as a weapon",
         craftMaterial: { name: "gobcore", qnty: 3, forgeChance: 0},
-        plusDmg: 5,
+        plusDmg: 6,
         cState: 4000,
         durability: 4000,
         rarity: 1,
