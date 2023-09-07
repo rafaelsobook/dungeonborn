@@ -13,7 +13,7 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
-        message: "I'm One, The Creator of this world ..."
+        message: "I'm One, Creator of this world ..."
     },
     {
         name: '',
@@ -45,7 +45,7 @@ const oneIntroSpeech = [
     },
     {
         name: "",
-        message: "Ehem .. Okay Enough ... What do you want me to do ?"
+        message: "Ehem .. Enough ... What do you want me to do ?"
     },
     {
         name: "One",
@@ -85,7 +85,7 @@ const oneIntroSpeech = [
     },
     {
         name: "One",
-        message: "More of them and it could mean an end to this world, So Please ..."
+        message: "More of them and it could mean an end to this world ..."
     },
     {
         name: '',

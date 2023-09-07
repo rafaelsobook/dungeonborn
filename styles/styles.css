@@ -3,7 +3,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Almendra+Display&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Graduate&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bellefair&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Bellefair&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bellefair&family=Jim+Nightshade&display=swap");
 * {
   margin: 0;
@@ -1969,7 +1968,7 @@ nav {
   text-align: center;
   width: 80%;
   background: none;
-  font-family: "Almendra Display", cursive;
+  font-family: "Jim Nightshade", cursive;
   border: none;
   outline: none;
   padding: 3px;
@@ -1979,23 +1978,31 @@ nav {
 }
 
 .setup-container .choices .naming-container .set-up-name-inp::-webkit-input-placeholder {
-  color: white;
+  color: #e4e4e4;
+  letter-spacing: 1px;
+  font-family: "Bellefair", serif;
 }
 
 .setup-container .choices .naming-container .set-up-name-inp:-ms-input-placeholder {
-  color: white;
+  color: #e4e4e4;
+  letter-spacing: 1px;
+  font-family: "Bellefair", serif;
 }
 
 .setup-container .choices .naming-container .set-up-name-inp::-ms-input-placeholder {
-  color: white;
+  color: #e4e4e4;
+  letter-spacing: 1px;
+  font-family: "Bellefair", serif;
 }
 
 .setup-container .choices .naming-container .set-up-name-inp::placeholder {
-  color: white;
+  color: #e4e4e4;
+  letter-spacing: 1px;
+  font-family: "Bellefair", serif;
 }
 
 .setup-container .choices .naming-container #createAndStart {
-  font-size: 1rem;
+  font-size: 130%;
   padding: 2px;
   cursor: pointer;
   border-radius: 2px;
@@ -2009,25 +2016,39 @@ nav {
   text-align: center;
 }
 
+.setup-container .choices .naming-container .cnstart:hover {
+  -webkit-filter: invert(1);
+          filter: invert(1);
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+
 .setup-container .choices .done-setup {
   position: fixed;
   bottom: 10%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-  background: -webkit-gradient(linear, right top, left top, from(transparent), color-stop(rgba(0, 0, 0, 0.4)), color-stop(rgba(0, 0, 0, 0.6)), color-stop(rgba(0, 0, 0, 0.6)), color-stop(rgba(0, 0, 0, 0.4)), to(transparent));
-  background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4), transparent);
-  color: #58c6e7;
-  font-size: 1.1rem;
-  padding: 7px 0px;
-  width: 20%;
-  margin-bottom: 10px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#2e2e2e), color-stop(#202020), color-stop(#2e2e2e), to(#646464));
+  background: linear-gradient(to Bottom, #2e2e2e, #202020, #2e2e2e, #646464);
+  color: #adadad;
+  border: 1px solid #1d1c1c;
+  border-radius: 3px;
   cursor: pointer;
-  padding: 3px;
+  font-size: 150%;
+  padding: 7px 0px;
+  width: 15%;
+  padding: 4px;
   border: none;
   outline: none;
-  font-family: "Bellefair", serif;
+  font-family: "Jim Nightshade", cursive;
   color: #f5f5f5;
+}
+
+.setup-container .choices .done-setup:hover {
+  opacity: 0.9;
+  -webkit-filter: invert(1);
+          filter: invert(1);
 }
 
 .setup-container .choices .done-setup:active {

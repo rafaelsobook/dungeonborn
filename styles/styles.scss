@@ -68,6 +68,19 @@ $jim: "Jim Nightshade", cursive;
   justify-content: center;
   align-items: center;
 }
+@mixin blackBtn {
+  background: linear-gradient(
+    to Bottom,
+    rgb(46, 46, 46),
+    rgb(32, 32, 32),
+    rgb(46, 46, 46),
+    rgb(100, 100, 100)
+  );
+  color: $littlewhite;
+  border: 1px solid $naturalBlack;
+  border-radius: 3px;
+  cursor: pointer;
+}
 .blackBtn {
   outline: none;
   background: linear-gradient(
@@ -1372,7 +1385,7 @@ nav {
         text-align: center;
         width: 80%;
         background: none;
-        font-family: $scrollfont;
+        font-family: $jim;
         border: none;
         outline: none;
         padding: 3px;
@@ -1381,10 +1394,12 @@ nav {
         color: #f5f5f5;
       }
       .set-up-name-inp::placeholder {
-        color: white;
+        color: rgb(228, 228, 228);
+        letter-spacing: 1px;
+        font-family: $gamefont;
       }
       #createAndStart {
-        font-size: 1rem;
+        font-size: 130%;
         padding: 2px;
         cursor: pointer;
         border-radius: 2px;
@@ -1404,32 +1419,29 @@ nav {
         width: 45%;
         text-align: center;
       }
+      .cnstart:hover {
+        filter: invert(1);
+        transition: 0.3s;
+      }
     }
     .done-setup {
       position: fixed;
       bottom: 10%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: linear-gradient(
-        to left,
-        transparent,
-        rgba(0, 0, 0, 0.4),
-        rgba(0, 0, 0, 0.6),
-        rgba(0, 0, 0, 0.6),
-        rgba(0, 0, 0, 0.4),
-        transparent
-      );
-      color: $fontBlue;
-      font-size: 1.1rem;
+      @include blackBtn();
+      font-size: 150%;
       padding: 7px 0px;
-      width: 20%;
-      margin-bottom: 10px;
-      cursor: pointer;
-      padding: 3px;
+      width: 15%;
+      padding: 4px;
       border: none;
       outline: none;
-      font-family: $tipsFont;
+      font-family: $jim;
       color: #f5f5f5;
+    }
+    .done-setup:hover {
+      opacity: 0.9;
+      filter: invert(1);
     }
     .done-setup:active {
       opacity: 0.9;

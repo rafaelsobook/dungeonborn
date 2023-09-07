@@ -1771,7 +1771,7 @@ class App{
                 await this.updateMyDetailsOL(this.det)
                 await this.addToInventory(toSave)
                 this._allSounds.itemEquipedS.play() 
-                this.showTransaction(`${item.name} added to Inventory !`, 1600)
+                this.showTransaction(`${theItemRec.dn} added to Inventory !`, 1600)
                 shopCateg.innerHTML = `My coins: ${this.det.coins}`
                 pricebtn.innerHTML = item.price
                 pricebtn.style.pointerEvents = "visible"
@@ -3319,29 +3319,22 @@ class App{
                                     await this.updateMyDetailsOL({...this.det,mainObj: { name: det.name, dn:det.dn} }, true);
 
                                     setTimeout(() => {
-                                        const secMess = "There's a person waiting for you outside, He's expecting you"
-                                        const thirdMess = "He will be guiding you in this world you're standing ..."
-                                        const fourthMess = "Farewell ..."
+                                        const secMess = "Proceed to your first challenge ..."
                                         this.openBlessings(starterBlessings, [
                                             {
                                                 name: "One",
                                                 message: secMess
-                                            },
-                                            {
-                                                name: "One",
-                                                message: thirdMess
-                                            },
-                                            {
-                                                name: "one",
-                                                message: fourthMess
                                             }
                                         ], () => {
-                                            this.allCanPress()
-                                            openGameUI()
-                                            this.myChar.mode = "stand"
-                                            this.myChar.nameMesh.isVisible = true
-                                            this.myChar.playerHealthMesh.isVisible = true
-                                            setTimeout(() => tutorialCont.style.display = "flex", 1000)
+                                            this._allSounds.suspense2.play();
+                                            const charPos = this.myChar.bx.position;
+                                            this.createNewCircle(rgbColors[4].rgb, {x: 0, y: 0,z:0}, {x: charPos.x, y: .05, z: charPos.z}, this.det._id, 600)
+                                            setTimeout( async() => {
+                                                
+                                                await this.updatePlace("testplace")
+                                                this._allSounds.enteredS.play()
+                                                await this._testPlace(true);
+                                            }, 3000)
                                         })
                                     }, 1500)
                                 })
@@ -3684,8 +3677,10 @@ class App{
                                     {name: "Nick", message: "Right now I'm defending this village from the demon lords army"},
                                     {name: "Nick", message: "I know you want to help, but he sent you here because you have potential"},
                                     {name: "Nick", message: "Let's not waste that, You will accompany me when you're ready"},
-                                    {name: "Nick", message: "I will find you again once you reached certain level"},
-                                    {name: "Nick", message: "I know you're strong, Goodluck ..."},
+                                    {name: "Nick", message: "I will find you again once you reached level 5 ..."},
+                                    {name: "Nick", message: "Outside this village there are monsters you can hunt"},
+                                    {name: "Nick", message: "Dungeons you can explore, but be careful ..."},
+                                    {name: "Nick", message: "Make sure you know how to defeat you enemy !"},
                                 ]
                                 const friendLastSpeech = () => {
                                     this.stopPress()
@@ -3853,15 +3848,15 @@ class App{
                 if(this.socketAvailable){
                     this.socket.emit("pickSword", {_id: this.det._id, meshId: this.targDetail.meshId, place: this.currentPlace })
                 }else{
-                    this.lootz = this.lootz.filter(lot => lot.meshId !== data.meshId)
-                    theLootz = theLootz.filter(lot => lot.meshId !== data.meshId);
-                    this._scene.meshes.forEach(mes => {
-                        if(mes.name.includes("sword")) log(mes.name)
-                    })
+                    this.lootz = this.lootz.filter(lot => lot.meshId !== this.targDetail.meshId)
+                    theLootz = theLootz.filter(lot => lot.meshId !== this.targDetail.meshId);
+      
                     let disposingSword = []
                     this._scene.meshes.forEach(mes => {
+                        if(mes.name === undefined) return
+                        log(typeof mes.name)
                         if(mes.name.includes("sword")){
-                            if(mes.name.split(".")[1] === data.meshId)disposingSword.push(mes)
+                            if(mes.name.split(".")[1] === this.targDetail.meshId) disposingSword.push(mes)
                         }
                     })
                     log(`disposing sword `, disposingSword)
@@ -4538,22 +4533,26 @@ class App{
             }            
             itemInfoName.innerHTML = itemInfo.dn
             itemDesc.innerHTML = itemInfo.desc
-            if(itemInfo.name.includes("liquor")){
-                
+            if(itemInfo.name.includes("liquor")){                
                 const aBtn = createElement("button", "plantseed item-infobtn", "drink",async () => {
                     if(!this.currentPlace.includes("club")) return this.showTransaction("drink inside tavern", 2500)
-                    if(this.myChar.mode !== "sitting")return this.showTransaction("Sit and drink", 2500)
+                    if(this.myChar.mode !== "sitting"){
+                        profile.style.display = "none"
+                        itemInfoCont.style.display = "none";
+                        return this.showTransaction("Sit and drink", 2500)
+                    }
                     this.myChar.mode = "none"
                     this.stopAnim(this.myChar.anims, "drinkliquor")
                     this.playAnim(this.myChar.anims, "drinkliquor")
                     this.myChar.liquorMug.isVisible = true
                     this.det.survival.hunger += 12
                     this._allSounds.consumeS.play()
-                    if(this.det.survival.hunger > 100) this.det.survival.hunger = 100
+                    if(this.det.survival.hunger >= 100) this.det.survival.hunger = 100
                     this.updateSurvival_UI()
                     profile.style.display = "none"
-                    await this.deductItem(theItemDetail.meshId, 1) 
                     itemInfoCont.style.display = "none";
+                    await this.deductItem(theItemDetail.meshId, 1) 
+                    
                     this.closePopUpAction()
                     setTimeout(() => {
                         if(Math.random() > .5){
@@ -4566,6 +4565,7 @@ class App{
                         this.myChar.liquorMug.isVisible = false
                         this.myChar.mode = "sitting"
                         this.openPopUpAction("cancel")
+                        this.createParticle("drunkBubble", 40, {x:0,y:5,z:0}, .01, {min:.5,max:1}, .06,.15,0, "cone", true, this.myChar.bx, false, false,)
                     }, 1500)
                 })
                 itemInfoBtns.append(aBtn)
@@ -4591,8 +4591,7 @@ class App{
                 default:
                     plusInfo.innerHTML = ``
                 break;
-            }
-            
+            }            
             if(itemInfo.itemType === "seed"){
                 const aBtn = createElement("button", "plantseed item-infobtn", "Plant", () => {
                     const {x,z} = this.myChar.bx.position
@@ -5175,16 +5174,6 @@ class App{
             return this.noInternet()
         }
     }
-    initScripts(){        
-        
-    }
-    // LOADING SCREENS
-    loadingScreenNormal(){
-
-    }
-    loadingScreenTips(){
-
-    }
     getSword(rootSword, hand){
         rootSword.parent = hand
         rootSword.rotation = new Vector3(0,-Math.PI/2 + .3,-Math.PI/2)
@@ -5614,6 +5603,7 @@ class App{
         if(!theMonster) return log("this monster that attack is not found")
 
         const theMonsterTargMesh = this._scene.getMeshByName(`box.${targIdOfHero}`)
+        theMonster.isChasing = false
         if(!theMonsterTargMesh){
             theMonster.targHero = undefined
             theMonster.isChasing = false
@@ -6070,6 +6060,7 @@ class App{
         return myDef
     }
     regEnemyToAttack(){
+        log(Monsterz)
         Monsterz.forEach(monster => {
             const alreadyHave = this.enemyRegistered.some(enemId => enemId === monster.monsId)
             if(alreadyHave) return log("this monster is already registered !")
@@ -6653,6 +6644,22 @@ class App{
     }
     _loadCharacterSounds(scene){
 
+        const encounterS = new BABYLON.Sound("encounterS", "sounds/scarySounds/encounterS.mp3", scene,
+        null, {spatialSound: false, maxDistance: 40, volume: 1})
+
+        const scaryone = new BABYLON.Sound("scaryone", "sounds/scarySounds/scaryone.mp3", scene,
+        null, {spatialSound: false, maxDistance: 40, volume: 1})
+
+        const scarythree = new BABYLON.Sound("scarythree", "sounds/scarySounds/scarythree.mp3", scene,
+        null, {spatialSound: false, maxDistance: 40, volume: 1})
+
+        const scarytwo = new BABYLON.Sound("scarytwo", "sounds/scarySounds/scarytwo.mp3", scene,
+        null, {spatialSound: false, maxDistance: 40, volume: 1})
+
+        const windambient = new BABYLON.Sound("windambient", "sounds/scarySounds/windambient.mp3", scene,
+        null, {spatialSound: false, maxDistance: 40, volume: 1})
+
+
         const minoDeathS = new BABYLON.Sound("minoDeathS", "sounds/minoDeathS.mp3", scene,
         null, {spatialSound: true, maxDistance: 40, volume: .9})
 
@@ -6837,6 +6844,11 @@ class App{
         rephantasmS.setPlaybackRate(1.2) 
 
         this._allSounds = {
+            encounterS,
+            scaryone,
+            scarythree,
+            scarytwo,
+            windambient,
             openingScrollS,
             suspense1,
             suspense2,
@@ -7160,6 +7172,9 @@ class App{
 
             log("going to " + this.det.currentPlace)
             switch(this.det.currentPlace){
+                case "testplace":
+                    await this._testPlace(true)
+                break;
                 case "swampforest":
                     await this._swampForest()
                 break;
@@ -7450,6 +7465,244 @@ class App{
         cam.beta = 1.15
         cam.radius = 3        
     }
+    async _testPlace(inTutorialMode){    
+        let spawnMonsterInterval;        
+        let checkLifeInterval
+        let spawnMonsters = 0;
+
+        displayElems([apartCont, aprtLoadingBx], "none")
+        displayElems([apartInfos], "flex")
+
+        showLoadingScreen(false, 'wizard')
+        this.stopPress(true)
+        this.setUp(false)
+        const result = await this.getCharacDetailsOnline()
+        this.setDetails(result)
+        this.setHTMLUI(this.det)
+
+        const scene = new Scene(this._engine)
+        light = new DirectionalLight("dungLight", new Vector3(0, -1, -0.3), scene);
+        hemLight = new HemisphericLight("light", new Vector3(0,10,1), scene)
+        hemLight.intensity = 0.5
+        scene.actionManager = new ActionManager(scene)
+        scene.clearColor = new Color3(0,0,0)
+
+        const Ground = this.createGround(scene, "./images/modeltex/hiddenlandTex4.jpg",200)
+        Ground.diffuseTex.uScale = 28
+        Ground.diffuseTex.vScale = 28
+
+        this.disablePointerPicks(scene)
+
+        this._loadCharacterSounds(scene)
+        this._allSounds.windambient.play(true);
+
+        this.runLifeManaStaminaRegen()
+        const cam = this.arcCam(scene)
+        this.createBoxToFollow(scene)
+
+        await this.createNecessary(scene);
+        await this.forestCreations(scene)
+
+        // monsters root model
+        let slimeBlueRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "slimeBlue.glb", scene)
+        monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
+
+        let theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene,true, allsword, allhelmets, allshields, light, 1.7)
+        myCharDet = this.myChar
+        this.myChar.bx.position = new Vector3(-1,this.yPos,-2)
+
+        await scene.whenReadyAsync()
+        this._scene.dispose()
+        this._scene = scene
+
+        this.createGolemRock(scene)
+        this.createBeeSting(scene)
+
+        const testPlaceTreasure =  {
+            isOpening: false,itemType:"treasure",magRes: 10, meshId: `bonus${makeRandNum()}`, 
+            name: "chiefplate", openingBy: undefined, place: "testplace", plusDef: 5,
+            durability: 2000, cState: 2000, plusDmg: 0, price: 500, qnty: 1, x: -30 + Math.random()*60, z: -50 + Math.random()*100
+        }
+        const testPlaceSword =  {
+            itemType:"sword",magRes: 0, meshId: makeRandNum(), 
+            name: "huntingsword", place: "testplace", plusDef: 0,
+            durability: 3000, cState: 3000, plusDmg: 7, plusMag: 1, price: 360,
+            x: 1, z: 1
+        }
+        const hSword = allsword.find(swrd => swrd.name.includes("hunting"));
+        log(hSword)
+        this.createTreasure(treasure, testPlaceTreasure);
+        this.placeSword(testPlaceSword, hSword, .25,  this._scene)
+        let slimeHp = 70
+        let slimeAtkInterval = 2400;
+        let slimeDmg = 10
+        let slimeExpGain = 15
+
+        if(inTutorialMode){
+            this._allSounds.scaryone.play()
+            spawnMonsterInterval = setInterval(() => {
+                if(Monsterz.length >= 3) return log("return monster is still 3")
+                let toSpawnRoot = slimeBlueRoot
+                let monsterName = "slime"
+                slimeDmg+=8;
+                slimeExpGain += 10
+                slimeHp *= 1.5
+                let effect = undefined;
+                if(spawnMonsters >= 6){
+                    toSpawnRoot = monoloth
+                    monsterName = "monoloth"
+                    slimeAtkInterval = 2000;
+                    // effect = { effectType: "poisoned", chance: 6, dura: 1000, plusDmg: 30, dmgPm: 15 }
+                }
+                this.createMonster(toSpawnRoot, makeRandNum(), monsterName, undefined, { x: -30 + Math.random()*60, z: -30 + Math.random()*60}, 2.5, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, this.det._id, slimeExpGain, "normal", effect)
+                Monsterz.forEach(mon => mon.isChasing = true)
+                spawnMonsters++
+                if(Math.random() > .5){
+                    this._allSounds.windambient.play(true);
+                }else{
+                    this._allSounds.scarythree.play()
+                    const diffSword = {
+                        itemType:"sword",magRes: 0, meshId: makeRandNum(), 
+                        name: "redprince", place: "heartland", plusDef: 0,
+                        durability: 3000, cState: 3000, price: 3000,
+                        x: -53, z: 21,                        
+                        plusDmg: 40,        
+                        plusMag: 30,
+                    }
+                    const redPsword = allsword.find(swrd => swrd.name.includes("redprince"));
+
+                    this.placeSword({...diffSword, x: -50 + Math.random()*100, z: -50 + Math.random()*100, meshId: makeRandNum()}, redPsword, .25, this._scene)
+                }
+                
+            }, 12000)
+            checkLifeInterval = setInterval(() => {            
+                const minLimit = this.det.maxHp * .2
+                const isDying = this.det.hp <= minLimit
+                if(isDying){
+                    this._allSounds.suspense2.play();
+                    clearInterval(spawnMonsterInterval)
+                    clearInterval(checkLifeInterval)
+                    this.stopMoving()
+                    
+                    closeGameUI();
+                    this.myChar.anims.forEach(anim => anim.stop())
+                    this.myChar.mode = "poisoned"
+                    this.stopPress()
+                    let finalSpeech = [
+                        {
+                            name: "Two",
+                            message: spawnMonsters > 6 ? "Impressive, You are what he says" : "Done already ? Hmm ... seems you need to do more of that"
+                        },
+                        {
+                            name: "Two",
+                            message: "Return to the village and meet a certain someone, He will tell you what to do"
+                        },
+                    ]
+                    this.continuesSpeech(finalSpeech,0,2500, () => {
+                        this.prevLoc = {x: 9.4, z:12.35}
+                        const charPos = this.myChar.bx.position
+                        this.createNewCircle(rgbColors[4].rgb, {x: 0, y: 0,z:0}, {x: charPos.x, y: .05, z: charPos.z}, this.det._id, 600)
+                        setTimeout(async () => {
+                            await this._goToRoom(`apartment.0`)
+                        }, 3000)
+                    })
+                    return Monsterz.forEach(mon => {
+                        // mon.standBy();
+                        // clearInterval(mon.intervalWillAttack);
+                        this.disposeActionM(mon.atkDetection)
+                        this.disposeActionM(mon.enemyDetection)
+                        this.disposeActionM(mon.weapon)
+                        mon.weapon.position.y = 100
+                        mon.targHero = undefined;
+                        mon.isChasing = false
+                        mon.isAttacking = false
+                        // mon.anims.forEach(anim => anim.stop());
+                        mon.isSleeping = true;
+                        // 
+                    });    
+                }
+            }, 1000)
+        }
+        const rock = await this.importMesh(scene, "./models/", "rockMine.glb", true);
+
+        this.createManyInstance(rock, 60, {xmin: -80,xmax:80}, {zmin: -80,zmax:80}, true);
+        let allTree = 0
+
+        while(allTree <= 90){
+            const tre = { 
+                meshId: makeRandNum(),
+                spawntype: "trees", 
+                place: "testplace", 
+                pos: `${-61 + Math.random() * 120},${-61 + Math.random() * 120}`,
+                hits: 130
+            }
+            this.createTree(wholeTree, tre, scene)
+            allTree++
+        }
+        this.createBlock(100,180,{x: 0, z: -100}, 0, scene);
+        this.createBlock(100,65,{x: 36, z: 77}, 0, scene);
+        this.createBlock(100,55,{x: -50, z: 77}, 0, scene);
+        this.createBlock(100,190,{x: -81, z: 0}, Math.PI/2, scene);
+        this.createBlock(100,190,{x: 81, z: 0}, Math.PI/2, scene);
+
+        // CLIFFS 
+
+        const Cliff = await this.importMesh(scene, "./models/", "cliffs.glb")
+        Cliff.meshes[1].parent = null
+        Cliff.meshes[1].position = new Vector3(-110.9,0,20)
+        Cliff.meshes[0] = null;
+
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:-60.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:0.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:96.10,y:0,z:55}, 0, scene)
+
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:-60.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:0.79}, 0, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-96.10,y:0,z:55}, 0, scene)
+
+        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:92}, -Math.PI/2, scene)
+        const leftClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:10,y:0,z:92}, -Math.PI/2, scene)
+        const rightClifClone = this.createClone(Cliff.meshes[1], 'cliff', {x:-30,y:0,z:92}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-7,y:0,z:-97}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:67,y:0,z:-110}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:35,y:0,z:-110}, -Math.PI/2, scene)
+        this.createClone(Cliff.meshes[1], 'cliff', {x:-50,y:0,z:-110}, -Math.PI/2, scene)
+        this.playAnim(this.myChar.anims, "fromsleeping")
+        removeHomePage()
+        hideLScreen()
+        this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5);
+        cam.beta = 1
+        this.initPressControllers(scene)
+        
+        if(inTutorialMode){
+            setTimeout(() => {
+                tutorialCont.style.display = "flex"
+                this.allCanPress()
+                openGameUI(this.det)
+                this.myChar.mode = "stand"
+                this.myChar.nameMesh.isVisible = true
+                this.myChar.playerHealthMesh.isVisible = true
+            }, 2500)
+        }else{
+            this.allCanPress()
+            openGameUI(this.det)
+            this.myChar.mode = "stand"
+            this.myChar.nameMesh.isVisible = true
+            this.myChar.playerHealthMesh.isVisible = true
+        }       
+
+        const toRender = () => {
+            this.actionAndMovement(this.btf, this.cam)
+            this.renderMonsters()
+        }
+        scene.registerBeforeRender(toRender);
+        
+        await this.createInstances("grass2",1200, -80, 140, scene);
+
+        window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
+        this.registerBlocks(this.myChar, .09);
+    }
     async _swampForest(){
        
         worldChatCont.style.display = "flex"
@@ -7478,7 +7731,7 @@ class App{
         scene.clearColor = Color3.FromInts(127, 165, 13);
 
         this._loadCharacterSounds(scene)
-
+        this._allSounds.windambient.play(true);
         const cam = this.arcCam(scene)
 
         this.createBlock(100,180,{x: 0, z: -83}, 0, scene);
@@ -7527,7 +7780,7 @@ class App{
 
         // box to follow
         const btf = this.createBoxToFollow(scene)
-        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar; 
         
         if(this.prevPlace === 'heartland') this.myChar.bx.position = new Vector3(0,this.yPos,-70)
@@ -7580,12 +7833,9 @@ class App{
         await scene.whenReadyAsync()
         this._scene.dispose()
         this._scene = scene
-        
+        this.arrangeCam(-1.4, 1.15)
         this.createGolemRock(scene)
         this.createBeeSting(scene)
-
-        this.arrangeCam(-1.4, 1.15)
-
         removeHomePage()
         loadedMesh = maxLoad
         openGameUI(this.det)
@@ -7595,7 +7845,6 @@ class App{
         this.initPressControllers(scene)
 
         this.weJoinTheServer({x:0,z:0})
-
         
         if(this.prevPlace?.includes('dungeon')){ // dapat mauuna ang createCharacter mo dito kase nag aupdate din ng loc yun
             log("the prev place is dungeon")
@@ -7658,6 +7907,7 @@ class App{
             this.resetMeshes()
             await this._hiddenLand()
         })
+
         hideLScreen();
         this.saveMyCurrentLoc();
 
@@ -7701,7 +7951,7 @@ class App{
         shadowGen = new ShadowGenerator(1024, light);
 
         this._loadCharacterSounds(scene)
-
+        this._allSounds.windambient.play(true);
         const cam = this.arcCam(scene)
 
         this.createBlock(100,180,{x: 0, z: -100}, 0, scene);
@@ -7744,7 +7994,7 @@ class App{
         // Golem.meshes[0].position.z = -31
         // box to follow
         const btf = this.createBoxToFollow(scene)
-        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar; 
         
         if(this.prevPlace === 'swampforest') this.myChar.bx.position = new Vector3(0,this.yPos,-80)
@@ -7844,7 +8094,7 @@ class App{
         this.checkAll();
     }
     async _dungeon(dungeonType, floorNum, haveBoss){
-        
+
         worldChatCont.style.display = "none"
         let monsSpawnInterval
         const floorNumber = parseInt(floorNum)
@@ -7871,9 +8121,10 @@ class App{
 
         this._loadCharacterSounds(scene);
         this._loadDungeonSounds()
-
+        this._allSounds.windambient.play(true);
         this.createMainHitBox(scene, "rockTexWall.jpg", 2, 10)
           
+
         this.runLifeManaStaminaRegen()
 
         const cam = this.arcCam(scene)
@@ -8019,7 +8270,7 @@ class App{
         let spiderBossRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "spiderBoss.glb", scene)
         wolfRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "wolf.glb", scene)
 
-        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,false,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar;
    
         const demonArray = allDemonz(floorNumber);
@@ -8056,39 +8307,39 @@ class App{
         
         let leftMons = -80
         while(leftMons <= 90){            
-            floorNumber >= 2 && this.createMonster(ghostRoot, shadowGen, true, makeRandNum(), 'ghost', undefined, { x: -20 + Math.random()*3, z: leftMons}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
-            floorNumber < 4 && this.createMonster(slimeBlueRoot, shadowGen, false, makeRandNum(), 'slime', undefined, { x: -15, z: leftMons}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
+            floorNumber >= 2 && this.createMonster(ghostRoot, makeRandNum(), 'ghost', undefined, { x: -20 + Math.random()*3, z: leftMons}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
+            floorNumber < 4 && this.createMonster(slimeBlueRoot, makeRandNum(), 'slime', undefined, { x: -15, z: leftMons}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
             leftMons+= 25
         }
         let rightMons = -70
         while(rightMons <= 110){
-            floorNumber >= 3 && this.createMonster(ghostRoot, shadowGen, true, makeRandNum(), 'ghost', undefined, { x: 20 + Math.random()*3, z: rightMons + Math.random()*3}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
-            this.createMonster(slimeBlueRoot, shadowGen, false, makeRandNum(), 'slime', undefined, { x: 10, z: rightMons + Math.random()*3}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
+            floorNumber >= 3 && this.createMonster(ghostRoot, makeRandNum(), 'ghost', undefined, { x: 20 + Math.random()*3, z: rightMons + Math.random()*3}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
+            this.createMonster(slimeBlueRoot, makeRandNum(), 'slime', undefined, { x: 10, z: rightMons + Math.random()*3}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
             // eater
-            floorNumber >= 4 && this.createMonster(spiderBossRoot, shadowGen, false, makeRandNum(), "eater", undefined, { x: 1 + Math.random()*3, z: rightMons + Math.random()*1}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
+            floorNumber >= 4 && this.createMonster(spiderBossRoot, makeRandNum(), "eater", undefined, { x: 1 + Math.random()*3, z: rightMons + Math.random()*1}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
             { effectType: "poisoned", chance: 6, dura: 1000, plusDmg: 50 * floorNumber, dmgPm: 30 })
             rightMons+= 25
             // wolf
             const houndInfo = {
                 effects: { effectType: "absorb", absorbType: "weapon", defaultAbs: 20, chance: 9, dura: 100, plusDmg: 10, dmgPm: 0 }
             }
-            if(floorNumber > 4 && Math.random() > .5) this.createMonster(wolfRoot, shadowGen, false, makeRandNum(), "hellhound", "normal", {x: -30 + Math.random()*60, z: -100 + Math.random()*200}, 6, 300 * floorNumber, 300 * floorNumber, floorNumber, 1500, 12 * floorNumber, scene, false, 20 * floorNumber, "normal", houndInfo.effects)
+            if(floorNumber > 4 && Math.random() > .5) this.createMonster(wolfRoot, makeRandNum(), "hellhound", "normal", {x: -30 + Math.random()*60, z: -100 + Math.random()*200}, 6, 300 * floorNumber, 300 * floorNumber, floorNumber, 1500, 12 * floorNumber, scene, false, 20 * floorNumber, "normal", houndInfo.effects)
         }
         // HITBOX
         for(var brickLength = 0;brickLength <= 30; brickLength+=1){ // right side of heartland
             this.createHitBx(scene, makeRandNum(), {x: -35 + Math.random()*2 , y: 1, z: -90 + Math.random()*150 }, 50+Math.random()*1, false, false, Math.random()>.9 ? 1 : 0, boxPos => {
                 if(Math.random() > .8) {
-                    if(floorNumber > 0 && floorNum < 2) this.createMonster(slimeBlueRoot, shadowGen, false, makeRandNum(), 'slime', undefined, { x: boxPos.x, z: boxPos.z}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
-                    if(floorNumber > 2 && floorNum < 4) this.createMonster(ghostRoot, shadowGen, true, makeRandNum(), 'ghost', undefined, { x: boxPos.x, z: boxPos.z}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
-                    if(floorNumber > 4) this.createMonster(spiderBossRoot, shadowGen, false, makeRandNum(), "eater", undefined, { x: boxPos.x, z: boxPos.z}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
+                    if(floorNumber > 0 && floorNum < 2) this.createMonster(slimeBlueRoot, makeRandNum(), 'slime', undefined, { x: boxPos.x, z: boxPos.z}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
+                    if(floorNumber > 2 && floorNum < 4) this.createMonster(ghostRoot, makeRandNum(), 'ghost', undefined, { x: boxPos.x, z: boxPos.z}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
+                    if(floorNumber > 4) this.createMonster(spiderBossRoot, makeRandNum(), "eater", undefined, { x: boxPos.x, z: boxPos.z}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
                     { effectType: "poisoned", chance: 6, dura: 1000, plusDmg: 50 * floorNumber, dmgPm: 30 })
                 }
             });
             this.createHitBx(scene, makeRandNum(), {x: 33 + Math.random()*2 , y: 1, z: -90 + Math.random()*150 }, 50+Math.random()*1, false, false, Math.random()>.9 ? 1 : 0, boxPos => {
                 if(Math.random() > .8) {
-                    if(floorNumber > 0 && floorNum < 2) this.createMonster(slimeBlueRoot, shadowGen, false, makeRandNum(), 'slime', undefined, { x: boxPos.x, z: boxPos.z}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
-                    if(floorNumber > 2 && floorNum < 4) this.createMonster(ghostRoot, shadowGen, true, makeRandNum(), 'ghost', undefined, { x: boxPos.x, z: boxPos.z}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
-                    if(floorNumber > 4) this.createMonster(spiderBossRoot, shadowGen, false, makeRandNum(), "eater", undefined, { x: boxPos.x, z: boxPos.z}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
+                    if(floorNumber > 0 && floorNum < 2) this.createMonster(slimeBlueRoot, makeRandNum(), 'slime', undefined, { x: boxPos.x, z: boxPos.z}, 3, slimeHp, slimeHp, 2, slimeAtkInterval, slimeDmg, scene, undefined, slimeExpGain, "normal")
+                    if(floorNumber > 2 && floorNum < 4) this.createMonster(ghostRoot, makeRandNum(), 'ghost', undefined, { x: boxPos.x, z: boxPos.z}, 3, ghostHp, ghostHp, 2, otherAtkInterval, ghostDmg, scene, undefined, slimeExpGain, "normal")
+                    if(floorNumber > 4) this.createMonster(spiderBossRoot, makeRandNum(), "eater", undefined, { x: boxPos.x, z: boxPos.z}, 3, spiderHp, spiderHp, floorNumber, otherAtkInterval, ghostDmg, scene, undefined, 90*floorNumber, "normal",
                     { effectType: "poisoned", chance: 6, dura: 1000, plusDmg: 50 * floorNumber, dmgPm: 30 })
                 }
             });
@@ -8227,6 +8478,20 @@ class App{
         Spike.meshes.forEach(mesh => mesh.position.y+=100);
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
         this.registerBlocks(this.myChar, .09);
+
+        this._allSounds.scaryone.play()
+        this.musicInterval = setInterval(() => {
+            const theSoundNum = Math.random()
+            if(theSoundNum > 0 && theSoundNum < .3){
+                this._allSounds.scaryone.play()
+            }
+            if(theSoundNum > .3 && theSoundNum < .6){
+                this._allSounds.scarytwo.play()
+            }
+            else{
+                this._allSounds.scarythree.play()
+            }
+        }, 30000)
     }
     async _heartLand(){
         this.emptyArray();
@@ -8285,7 +8550,7 @@ class App{
         
         // box to follow && character
         const btf = this.createBoxToFollow(scene)
-        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, shadowGen, false,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar
 
         npcInfos.forEach(npz => {
@@ -8419,7 +8684,7 @@ class App{
         
         let myTargCurr = undefined
         if(this.det.storyQue.some(queName => queName === "firstFriend") && this.det.rank === "none"){
-            if(this.det.places.length <= 1){
+            if(this.det.places.length <= 2){
                 this.myChar.bx.position = new Vector3(9, this.yPos, 13.5)
                 myTargCurr = {x:10.4, z: 11.5}
                 this.playerLookAt(this.myChar.bx, myTargCurr)
@@ -8654,7 +8919,7 @@ class App{
         theDoor.meshes[0].rotationQuaternion = null
 
         let theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
-        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,true,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar
         this.myChar.bx.position = new Vector3(0,this.yPos,0)
         this.toRegAction(this.myChar.bx, myBed, () => {
@@ -8717,7 +8982,6 @@ class App{
 
         const toRender = () => {
             this.actionAndMovement(this.btf, this.cam)
-            this.renderMonsters()
         }
         scene.registerBeforeRender(toRender);
 
@@ -8805,7 +9069,7 @@ class App{
         await this.createNecessary(scene)
 
         let theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
-        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,true,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar;
         this.myChar.bx.position = new Vector3(0,this.yPos,0);
 
@@ -8919,7 +9183,7 @@ class App{
 
         theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
         const btf = this.createBoxToFollow(scene)
-        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene, mugMesh, false,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det, theCharacterRoot, scene,true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar; 
         myCharDet.bx.position = new Vector3(-1 + Math.random()*2,this.yPos,0)
         this._loadTavernSounds(scene, myCharDet.bx)
@@ -9066,7 +9330,7 @@ class App{
         await this.createNecessary(scene)
 
         let theCharacterRoot = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/", "gameCharac.glb", scene)
-        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, shadowGen,true,true, allsword, allhelmets, allshields, light, 1.7)
+        this.myChar = this.createCharacter(this.det,theCharacterRoot,scene, true, allsword, allhelmets, allshields, light, 1.7)
         myCharDet = this.myChar;
         this.myChar.bx.position = new Vector3(0,this.yPos,0);
 
@@ -9168,7 +9432,6 @@ class App{
 
         const toRender = () => {
             this.actionAndMovement(this.btf, this.cam)
-            this.renderMonsters()
         }
         scene.registerBeforeRender(toRender);
 
@@ -9210,6 +9473,7 @@ class App{
         })
         this.creationOfFakeShadow(scene);
         scene.defaultMaterial.backFaceCulling = false;
+
         await this.createMainWings(scene)
         await this.createMainPats(scene);
         await this.creationSlash(scene)
@@ -9226,7 +9490,7 @@ class App{
             if(exist) return log(`player ${player._id} player MESH already exist ! will not create`)
             this.createMessage({name: player.name, place: player.currentPlace, message: "has Joined !"})
             if(player.currentPlace !== this.currentPlace) return log("a user is in different place")
-            this.createCharacter(player, theCharacterRoot, this._scene, shadowGen, false, false, allsword, allhelmets, allshields, light, 1.7)
+            this.createCharacter(player, theCharacterRoot, this._scene, false, allsword, allhelmets, allshields, light, 1.7)
         })
     }
     checkOrez(){
@@ -9298,7 +9562,7 @@ class App{
                         monsterRoot = rabbit
                     break;
                 }
-                this.createMonster(monsterRoot, shadowGen, true, mon.monsId, mon.monsName, mon.modelType, mon.pos, mon.spd, mon.hp, mon.maxHp,mon.monsLvl, mon.atkInterval, mon.dmg, scene, mon.targHero, mon.expGain, mon.monsBreed, mon.effects)
+                this.createMonster(monsterRoot, mon.monsId, mon.monsName, mon.modelType, mon.pos, mon.spd, mon.hp, mon.maxHp,mon.monsLvl, mon.atkInterval, mon.dmg, scene, mon.targHero, mon.expGain, mon.monsBreed, mon.effects)
             }
         })
     }
@@ -10032,6 +10296,7 @@ class App{
             
             let disposingSword = []
             this._scene.meshes.forEach(mes => {
+                if(mes.name === undefined) return
                 if(mes.name.includes("sword")){
                     if(mes.name.split(".")[1] === data.meshId)disposingSword.push(mes)
                 }
@@ -10345,7 +10610,7 @@ class App{
             const keyPressed = e.key.toLowerCase()
             const me = players.find(pl => pl._id === this.det._id)
             if(!me) return log("not found myself")
-            
+
             const moveFunc = () => {
                 
                 if(!this.myChar._moving) clearInterval(this.hitRecourceInterval)
@@ -10358,6 +10623,7 @@ class App{
                          if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play(0)
                     break;
                     case "fist":
+                        log("fist")
                         this.setRunningSound()
                         this.myChar.moveActionName = 'running.fist'
                          if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
@@ -10379,7 +10645,6 @@ class App{
             switch(keyPressed){
                 case "w":
                     moveFunc()
-
                     moveNums.straight = 0
                     moveNums.straight = 1
                     this.btf.locallyTranslate(new Vector3(moveNums.leftRight * btfRadius,0,moveNums.straight * btfRadius))
@@ -10895,9 +11160,8 @@ class App{
     }
     createBeeSting(scene){
         
-        this.likeSting = BABYLON.MeshBuilder.CreateCylinder("cylinder", {diameterTop: 0}, scene);
-        this.likeSting.scaling = new Vector3(.1,.5,.1)
-        
+        this.likeSting = BABYLON.MeshBuilder.CreateCylinder("monoloth_stinger", {diameterTop: 0}, scene);
+        this.likeSting.scaling = new Vector3(.1,.5,.1)             
     }
     createHeartLandTile(scene){
         //groundTex
@@ -11931,6 +12195,23 @@ class App{
         const Tree = await this.importMesh(scene,"./models/", `${treeName ? treeName : "tree"}.glb`);
         wholeTree = Tree.meshes[1]
     }
+    createManyInstance(model, total, xMinAndMax, zMinAndMax, mainModelUp){
+        const {xmin,xmax} = xMinAndMax;
+        const {zmin,zmax} = zMinAndMax;
+        if(mainModelUp) model.position.y = 100;
+        for(var i = 0;i <= total;i ++){
+            const newModel = model.createInstance()
+            const newX = BABYLON.Scalar.RandomRange(xmin, xmax)
+            const newZ = BABYLON.Scalar.RandomRange(zmin, zmax)
+            newModel.rotationQuaternion = null
+            newModel.position = new Vector3(newX, 0,newZ);
+            newModel.scaling = new Vector3(.5 + Math.random()*.3,.5 + Math.random()*.3,.5 + Math.random()*.3)
+            this.toRegAction(this.myChar.bx, newModel, () => {
+                this.bump(this.myChar)
+            })
+            this.freeze(newModel)
+        }
+    }
     // creartion from socket
     createTrap(playerId, magElement, posOfCircle, circDuration, dmg, timeOfRelease, numbersOfHits){
         const theElementColor = rgbColors.find(kolor => kolor.name === magElement)
@@ -12439,7 +12720,7 @@ class App{
             }
         ))
     }
-    createCharacter(det, theCharacterRoot, scene, shadowGen, castShadow, isMine, allswords, allhelmets, allshields, light, detectorSize){
+    createCharacter(det, theCharacterRoot, scene, isMine, allswords, allhelmets, allshields, light, detectorSize){
         const body = MeshBuilder.CreateBox(`box.${det._id}`, {size: .2, height: 1.7}, scene)
         body.position = new Vector3(det.x,this.yPos,det.z); 
         body.checkCollisions = true
@@ -12496,8 +12777,19 @@ class App{
             weaponCol.parent = body
             weaponCol.actionManager = new ActionManager(scene)
             weaponCol.isVisible = false
-            const {hungryS,eatSolidS, enemyEncounter, upgradeS,enteredS,enteringHoleS, merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
-            
+            const {
+            encounterS,
+            scaryone,
+            scarythree,
+            scarytwo,
+            windambient,
+            hungryS,eatSolidS, enemyEncounter, upgradeS,enteredS,enteringHoleS, merchantV,normalV, smallCongratsS,brokenS, notifS,changeModeS,skillAcquiredS,consumeS,itemEquipedS, coinReceivedS, nextBtnS, congratsS} = this._allSounds
+        
+            encounterS.attachToMesh(body)
+            scaryone.attachToMesh(body)
+            scarythree.attachToMesh(body)
+            scarytwo.attachToMesh(body)
+            windambient.attachToMesh(body)
             hungryS.attachToMesh(body)
             enemyEncounter.attachToMesh(body)
             eatSolidS.attachToMesh(body)
@@ -12665,7 +12957,6 @@ class App{
             })
             return myswordz
         }
-
         const createHelm = (helmetName) => {
             allhelmets.forEach(helmt => {
                 if(helmt.name.split(".")[1] === helmetName){
@@ -12856,7 +13147,8 @@ class App{
                 mes.getChildren().forEach(mes => {
                     if(mes.name.includes("rbone")) rHead = mes.getChildren()[0].getChildren()[0].getChildren()[0]
                 })     
-            }
+             }
+            
         })
         allhelmets.forEach(helm => {
             if(det.helmet){
@@ -12884,6 +13176,7 @@ class App{
         rootSword.isVisible = false;
         
         meshes.forEach(mesh => {
+            if(mesh.name === "ear.elf") mesh.dispose()
             if(mesh.name.includes("body") && castShadow) shadowGen.addShadowCaster(mesh)
             if(mesh.name.includes('armor')){
                 if(mesh.name.includes(det.armor.name)){
@@ -13201,6 +13494,7 @@ class App{
                 })
             }
             this._scene.meshes.forEach(mesh => {
+                if(mesh.name === undefined) return
                 if(mesh.name.includes("wood")){
                     this.toRegAction(weapMesh, mesh, () => {
                         woodImpS = this._allSounds.woodCuttingS.clone()
@@ -13273,7 +13567,7 @@ class App{
         }
     }
     // CREATION OF MONSTERS
-    createMonster(monsRoot, shadowGen, castShadow, monsId, monsName, armorName, pos, spd, hp, maxHp, monsLvl, atkInterval, dmg, scene, targHero, expGain, monsBreed, effects){
+    createMonster(monsRoot, monsId, monsName, armorName, pos, spd, hp, maxHp, monsLvl, atkInterval, dmg, scene, targHero, expGain, monsBreed, effects){
         if(!monsRoot) return log("monsroot is not defined")
 
         let attackingInterval
@@ -13310,6 +13604,7 @@ class App{
             case "monoloth":
                 farSound = this._allSounds.beeS.clone();
                 punchedS = this._allSounds.punched.clone()
+                this.createBeeSting(scene)
             break
             case "hellhound":
                 chasingS = this._allSounds.houndChaseS.clone();
@@ -13455,7 +13750,6 @@ class App{
             case "minotaur":
                 namePosY = 1.8
                 healthPosY = 1.5
-                
             break;
             case "viper":
                 namePosY = 2
@@ -13522,6 +13816,11 @@ class App{
                     if(!chasingS.isPlaying) chasingS.play()
                 }
                 const isMyTargetHere = this._scene.getMeshByName(`box.${theMons.targHero}`)
+                
+                if(this.currentPlace.includes("dungeon")){
+                    !this._allSounds.encounterS.isPlaying && this._allSounds.encounterS.play() 
+                }
+                
                 if(!isMyTargetHere){
 
                     log("target is no longer here time to attack other")
@@ -13622,6 +13921,11 @@ class App{
                         if(!ourDet){
                             log(`${monsName} must be dead`)
                             clearInterval(intervalWillAttack)
+                            return
+                        }
+                        if(ourDet.isSleeping) return
+                        if(monsName.includes("slime")){
+                            weapon.position.y = 0
                         }
                         this.letsAttack(theIdOfPlayer, ourDet, monsId, dmg)
                     }, atkInterval)
@@ -13639,7 +13943,9 @@ class App{
                             if(!ourDet){
                                 log(`${monsName} must be dead`)
                                 clearInterval(intervalWillAttack)
+                                return
                             }
+                            if(ourDet.isSleeping) return
                             this.letsAttack(theIdOfPlayer, ourDet, monsId, dmg)
                         }, atkInterval)
                     }
@@ -13696,6 +14002,9 @@ class App{
                         this.myChar.bloodSplat.start()
                     break;
                 }
+                if(monsName.includes("slime")){
+                    weapon.position.y = 100
+                }
             }
         ))
         // for sounds
@@ -13744,6 +14053,7 @@ class App{
             isChasing: false,
             isAttacking: false,
             isHit: false,
+            isSleeping: false,
             targHero,
             intervalWillAttack,
             standBy,
@@ -14192,6 +14502,7 @@ function displayElems(arrayOfElem, display){
     arrayOfElem.forEach(elem => elem.style.display = display)
 }
 function showLoadingScreen(dura, imgName, totalLoad){
+    const loadScreenImg = document.querySelector(".lc-img")
     isLoading = true
     lScreen.style.display = "flex"
     lScreen.classList.remove("screenFadeOff");
@@ -14205,7 +14516,11 @@ function showLoadingScreen(dura, imgName, totalLoad){
     tipsInterval = setInterval(() => {
         const theTip = tips[Math.floor(Math.random() * tips.length)]
         tipsLabel.innerHTML = theTip.tip
-    }, 6000)
+        const itemRecName = records[Math.floor(Math.random()*records.length)].name
+        
+        loadScreenImg.src = `./images/loots/${itemRecName ? itemRecName : "redprince"}.png`
+        loadScreenImg.style.filter = "invert(1)"
+    }, 5000)
 
     if(dura){
         setTimeout( () => {
@@ -14217,8 +14532,7 @@ function showLoadingScreen(dura, imgName, totalLoad){
             clearInterval(loadInterval)
         }, dura)
     }
-    if(imgName){
-        const loadScreenImg = document.querySelector(".lc-img")
+    if(imgName){        
         loadScreenImg.src = `./images/settings/${imgName}.png`
     }
     if(totalLoad){  

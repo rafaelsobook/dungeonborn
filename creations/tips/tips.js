@@ -28,6 +28,9 @@ const starterTips = [
     },
     {
         tip: "don't fight monsters with hordes they can easily kill you"
+    },
+    {
+        tip: "You can camp anywhere, but be aware of near monsters"
     }
 ]
 export default starterTips
