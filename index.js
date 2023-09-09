@@ -2337,6 +2337,7 @@ class App{
                     rephantasmClone.material = rephMat
                 }
                 const {weapMesh,weapId, clonedWeapon} = this.createFlyingWeapon(pFos, magicDmgTotal, "throw", rephantasmClone, this.getMyPos(player.bx, .5), this.getMyPos(player.bx, 2), false, player._id, demonDet)
+                clonedWeapon.addRotation(Math.PI/2 + .05,0,0)
                 if(demonDet){
                     weapMesh.actionManager = new ActionManager(this._scene)
                     this.toRegAction(weapMesh, this.myChar.rootMesh, () => {
@@ -2809,6 +2810,9 @@ class App{
             if(canShow){
                 sbLeft.append(skillNE)
                 isMine && sbLeft.append(skillLvlE)
+                bx.addEventListener("click", () => {
+                    this.showSkillInfo(skl)
+                })
             }
             if(!canShow){
                 bx.style.background = "url('../images/skills/lockbg.jpg')"
@@ -2857,6 +2861,25 @@ class App{
             myskillLists.append(noListCap)
         }
     }
+    showSkillInfo(skill){
+        // so it wont have any btns
+        itemInfoBtns.innerHTML = ''
+        itemInfoCont.style.display = "block"
+        itemInfoName.innerHTML = skill.displayName
+        itemDesc.innerHTML = skill.desc
+        plusInfo.innerHTML = `${skill.tier}`
+
+        itemInfoImg.src = `./images/skills/${skill.name}.png`
+
+        const coolDownInfo = createElement("p", "item-infobtn", `cd: ${Math.floor(skill.skillCoolDown/1000)}s`)
+        const demandInfo = createElement("p", "item-infobtn", `demand ${skill.demand.name}: minumum ${skill.demand.minCost}`)
+        coolDownInfo.style.background = "none"
+        coolDownInfo.style.border = "none"
+        demandInfo.style.background = "none"
+        demandInfo.style.border = "none"
+        itemInfoBtns.append(coolDownInfo)
+        itemInfoBtns.append(demandInfo)
+    }
     showAllSkillz(){
         AllSkillInfoCont.style.display = "block"
         AllSkillInfoCont.classList.remove("transClose")
@@ -2892,10 +2915,16 @@ class App{
         })        
     }
     skillIntro(skillRecord, player){
+        
         player.mode = "none";
         player._casting = true;
+        player._moving = false
+        player._attacking = false
+        
+        player.anims.forEach(anim => anim.stop())
         this.playAnim(player.anims, skillRecord.name, skillRecord.animationLoop)
         setTimeout(() => {
+            this.stopAnim(player.anims, skillRecord.name)
             player.mode = skillRecord.requireMode;
             player._casting = false;
             if(skillRecord.requireMode === "any") player.mode = player.prevMode
@@ -2961,9 +2990,10 @@ class App{
             if(this.det.hp <= 0) return skillCont.style.display = "none"
             let willContinueSkill = false
             const demandCost = skillRecord.demand.minCost
+            let demandName = "MP"
             switch(skillRecord.demand.name){
                 case "hp":
-
+                    demandName = "HP"
                 break;
                 default:
                     if(this.det.mp >= demandCost){
@@ -2972,8 +3002,9 @@ class App{
                     }
                 break
             }
-            if(!willContinueSkill) return this.showTransaction(`skill demand not reached`,1500);
-            
+            if(!willContinueSkill) return this.showTransaction(`require more ${demandName}`,1500);
+            if(this.myChar.mode === "none") return this._statPopUp("skill not ready", 0, "red");
+            if(this.myChar._casting) return this._statPopUp("still casting other skill", 0, "red");
             const prevMode = this.myChar.mode
             this.myChar.prevMode = this.myChar.mode
             
@@ -3043,6 +3074,7 @@ class App{
             this.craftFunc()
         })
         rightUIBtns.forEach(btn => {
+            let topAdventurerOpen = false
             btn.addEventListener("click", e => {
                 const btnName = e.target.className.split(" ")[1]
                 let display
@@ -3083,6 +3115,18 @@ class App{
                         lordzCont.classList.remove("my-stat-hidding")
                         this.showAllLordz()
                     break;
+                    case "topadventurers":
+                        if(!topAdventurerOpen){
+                            this.blurButtons([e.target])
+                            this.showAdventurerRecord().then(() => {
+                                this.returnButtons([e.target])
+                                topAdventurerOpen = true
+                            })            
+                        }else{
+                            topAdventurerOpen = false
+                            topAdventurersCont.classList.add("my-stat-hidding")
+                        }
+                    break
                 }
             })
         })
@@ -3130,8 +3174,7 @@ class App{
                     this.playAnim(this.myChar.anims, "fromstand")
                     this.setMode("fist", 500)
                 }
-                if(this.myChar.mode === "weapon"){
-                    
+                if(this.myChar.mode === "weapon"){                    
                     this.playAnim(this.myChar.anims, "tostand")
                     setTimeout(() => this.playAnim(this.myChar.anims, "fromstand"), 300)
                     this.setMode("fist", 600)
@@ -4707,9 +4750,7 @@ class App{
                     this.setEquipedItems()
                     this.setInventory()
                     this.socketAvailable && this.socket.emit("equipingSword", {_id: this.det._id, swordDetail: theItemDetail, mode: this.myChar.mode})  
-                    log(this.det.weapon)
-                    log(this.det.items)
-                    
+                    this.changeAtkBtnImg()
                 })
                 itemInfoBtns.append(aBtn)
                 return
@@ -6331,6 +6372,7 @@ class App{
 
         this.setNegativeStatUI();
         this.setRightUIs([''], true)
+        this.checkIfHaveWeapon()
 
         moveNums = { straight: 0, leftRight: 0 }
         displayElems([craftIcon], "block")
@@ -7114,22 +7156,23 @@ class App{
     }
     checkIfHaveWeapon(){
         if(this.det.weapon.name !== "none") {
+            log("WE HAVE WEAPON")
             if(this.det.weapon.name.toLowerCase().includes("spear")){
                 log("mode is weapon so show the throw spear")
                 swordPicBtn.style.display = "block"
                 throwBtn.style.display = "block"
                 throwBtn.src = `./images/loots/${this.det.weapon.name}.png`
             }else{
-                swordPicBtn.style.display = "block"
+                swordPicBtn.src = `./images/loots/${this.det.weapon.name}.png`
                 throwBtn.style.display = "none"
-            }
-            swordPicBtn.src = `./images/loots/${this.det.weapon.name}.png`
+            }            
+            log(swordPicBtn.style.display)
             return swordPicBtn.style.display = "block"
+        }else{
+            swordPicBtn.style.display = "none"
+            throwBtn.style.display = "none"
+            log("no weapon")
         }
-        log("wea have no weapon this.det.weapon is none ")
-        swordPicBtn.style.display = "none"
-        throwBtn.style.display = "none"
-        
     }
     checkAll(){
         if(isLoading) return log("still loading")
@@ -7542,12 +7585,12 @@ class App{
         if(inTutorialMode){
             this._allSounds.scaryone.play()
             spawnMonsterInterval = setInterval(() => {
-                if(Monsterz.length >= 3) return log("return monster is still 3")
+                if(Monsterz.length >= 5) return log("return monster is still 3")
                 let toSpawnRoot = slimeBlueRoot
                 let monsterName = "slime"
                 slimeDmg+=8;
                 slimeExpGain += 10
-                slimeHp *= 1.5
+                slimeHp *= 1.2
                 let effect = undefined;
                 if(spawnMonsters >= 6){
                     toSpawnRoot = monoloth
@@ -7562,22 +7605,26 @@ class App{
                     this._allSounds.windambient.play(true);
                 }else{
                     this._allSounds.scarythree.play()
-                    const diffSword = {
-                        itemType:"sword",magRes: 0, meshId: makeRandNum(), 
-                        name: "redprince", place: "heartland", plusDef: 0,
-                        durability: 3000, cState: 3000, price: 3000,
-                        x: -53, z: 21,                        
-                        plusDmg: 40,        
-                        plusMag: 30,
+                    if(this.det.items.length < 2){
+                        const diffSword = {
+                            itemType:"sword",magRes: 0, meshId: makeRandNum(), 
+                            name: "redprince", place: "heartland", plusDef: 0,
+                            durability: 3000, cState: 3000, price: 3000,
+                            x: -53, z: 21,                        
+                            plusDmg: 40,        
+                            plusMag: 30,
+                        }
+                        const redPsword = allsword.find(swrd => swrd.name.includes("redprince"));
+    
+                        this.placeSword({...diffSword, x: -50 + Math.random()*100, z: -50 + Math.random()*100, meshId: makeRandNum()}, redPsword, .25, this._scene)
                     }
-                    const redPsword = allsword.find(swrd => swrd.name.includes("redprince"));
-
-                    this.placeSword({...diffSword, x: -50 + Math.random()*100, z: -50 + Math.random()*100, meshId: makeRandNum()}, redPsword, .25, this._scene)
                 }
                 
             }, 12000)
-            checkLifeInterval = setInterval(() => {            
-                const minLimit = this.det.maxHp * .2
+            checkLifeInterval = setInterval(() => { 
+                // means return to the house
+                if(spawnMonsters >= 16) isDying = true  
+                const minLimit = this.det.maxHp * .3
                 const isDying = this.det.hp <= minLimit
                 if(isDying){
                     this._allSounds.suspense2.play();
@@ -10411,6 +10458,7 @@ class App{
                     break;
                 }
                 this.playAnim(playerDet.anims, playerDet.moveActionName)
+                if(!playerDet.runningS.isPlaying) playerDet.runningS.play()
             }else if(
             !playerDet._moving 
             && !playerDet._attacking
@@ -10597,6 +10645,26 @@ class App{
 
         // }))
         let btfRadius = 5
+        let mousePressed = 0
+        let canMouseMove = false
+        scene.onPointerObservable.add((pointerInfo) => {
+            switch (pointerInfo.type) {
+              case BABYLON.PointerEventTypes.POINTERDOWN:
+                canMouseMove = true
+                mousePressed = 0
+                break;
+              case BABYLON.PointerEventTypes.POINTERUP:
+                canMouseMove = false
+                if(mousePressed >= 0 && mousePressed <= 6){
+                    attackBtn.click();
+                }
+                break;
+              case BABYLON.PointerEventTypes.POINTERMOVE:
+                if(canMouseMove)mousePressed++                
+                break;
+            }
+          });
+        
         const resetBtfLookAndPos = () => {
             const {x,z} = this.myChar.bx.position
             this.btf.position = new Vector3(x,this.yPos,z)
@@ -10620,18 +10688,15 @@ class App{
                     case "weapon":
                         
                         this.myChar.moveActionName = 'running.weapon'
-                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play(0)
+                         
                     break;
                     case "fist":
                         log("fist")
                         this.setRunningSound()
-                        this.myChar.moveActionName = 'running.fist'
-                         if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
+                        this.myChar.moveActionName = 'running.fist'                       
                     break;
-                    case "stand":
-                        
-                        // myCharDet.runningS.setPlaybackRate(1)
-                        if(!myCharDet.runningS.isPlaying) myCharDet.runningS.play()
+                    case "stand":                        
+                    
                     break
                 }
             }
@@ -10685,11 +10750,20 @@ class App{
                     log("clicking the alt")
                     this.disableMoving()
                 break
+                case "shift":
+                    const leapSkill = this.det.skills.find(skll => skll.name === "leap")
+                    if(!leapSkill) return this.showTransaction("No Leap Skill", 1000)
+                    skillCont.childNodes.forEach(chld => {
+                        if(!chld.className) return
+                        if(chld.className.split(" ")[1] === "leap"){
+                            chld.click();
+                        }
+                    }) 
+                break;
             }
             const btfPos = this.btf.position
             me.dirTarg = {x: btfPos.x,z: btfPos.z}
         })
-
         document.addEventListener("keyup", e => {
 
             if(!this._canpress || !canPress || this.det.hp <=0) return log("you are dead or canPress false")
@@ -13386,7 +13460,7 @@ class App{
         clonedWeapon.isVisible = true
         log('cloned weapon here ', clonedWeapon)
         
-        clonedWeapon.addRotation(Math.PI/2,0,0)
+        // clonedWeapon.addRotation(Math.PI/2,0,0)
         if(!isDemonThrowing){
             Monsterz.forEach(mons => {
                 if(mons.monsName.includes("ghost") || mons.monsName.includes("slime")){

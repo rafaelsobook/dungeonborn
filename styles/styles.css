@@ -2341,6 +2341,13 @@ nav {
   z-index: 3;
 }
 
+.topadventurers {
+  position: fixed;
+  top: 1.5%;
+  left: 78%;
+  z-index: 3;
+}
+
 .rui-img {
   pointer-events: none;
   height: 100%;
@@ -2392,7 +2399,7 @@ nav {
   background: none;
   -webkit-filter: invert(1);
           filter: invert(1);
-  opacity: 0;
+  opacity: 1;
 }
 
 .right-lower-ui .handpic-btn {
@@ -2772,6 +2779,9 @@ nav {
       -ms-flex-align: start;
           align-items: flex-start;
   opacity: 1;
+  background: url("../images/UI/btnBackG.jpg");
+  border: 2px solid #7e7e7e;
+  border-radius: 4px;
 }
 
 .profile .profile-ui .inventory .inv-categ {
@@ -2792,7 +2802,7 @@ nav {
 
 .profile .profile-ui .inventory .inv-list {
   width: 100%;
-  background: url("../images/UI/btnBackG.jpg");
+  background: none;
   height: 100%;
   border: 1px solid #979292;
   border-radius: 4px;
