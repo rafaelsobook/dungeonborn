@@ -1296,23 +1296,46 @@ class App{
 
         } , this.openingSpd);
     }
-    sendMessage(name, mess){
+    sendMessage(name, mess, msgType){
+        if(!this.socketAvailable) return log("socket not available")
         const toSend = {
             _id: this.det._id,
             name: name,
             message: mess,
-            place: this.currentPlace
+            place: this.currentPlace,
+            msgType: msgType ? msgType : "message" // message, info(yellow), alert(crimson)
         }
         this.socketAvailable && this.socket.emit('sendto-world',toSend)
     }
     createMessage(data){
         if(!this.socketAvailable) return log("multiplayer off")
+        chatList.innerHTML = ''
+        data.forEach(worldMsg => {
+            const plBx = createElement('div', 'pl-bx')
+            const plName = createElement('p', 'pl-name', `${worldMsg.name} (${worldMsg.place})`)
+            const plMess = createElement('p', 'pl-message', `${worldMsg.message}`)
+            
+            let msgColor = "#f5f5f5"
+            switch(worldMsg.msgType){
+                case "info":
+                    plBx.append(plMess)
+                    plMess.style.color = msgColor
+                break;
+                default:
+                    plBx.append(plName)
+                    plBx.append(plMess)
+                break
+            }
+            
+            chatList.append(plBx)
+        })
+    }
+    addMessageOnChat(msg, color){
         const plBx = createElement('div', 'pl-bx')
-        const plName = createElement('p', 'pl-name', `${data.name} (${data.place})`)
-        const plMess = createElement('p', 'pl-message', `${data.message}`)
-        plBx.append(plName)
+        const plMess = createElement('p', 'pl-message', msg)
         plBx.append(plMess)
         chatList.append(plBx)
+        plMess.style.color = color
     }
     openScroll(){
         this._allSounds.openingScrollS.attachToMesh(this.myChar.bx)
@@ -2337,7 +2360,7 @@ class App{
                     rephantasmClone.material = rephMat
                 }
                 const {weapMesh,weapId, clonedWeapon} = this.createFlyingWeapon(pFos, magicDmgTotal, "throw", rephantasmClone, this.getMyPos(player.bx, .5), this.getMyPos(player.bx, 2), false, player._id, demonDet)
-                clonedWeapon.addRotation(Math.PI/2 + .05,0,0)
+                // weapMesh.addRotation(Math.PI/2,0,0)
                 if(demonDet){
                     weapMesh.actionManager = new ActionManager(this._scene)
                     this.toRegAction(weapMesh, this.myChar.rootMesh, () => {
@@ -5340,7 +5363,7 @@ class App{
                 mons.isAttacking = false
                 mons.targHero = undefined                    
             })
-        }   
+        } 
         
         //if(this.currentPlace !== "farmone") setTimeout(() => window.location.reload(), 5000)
         this.gameOver()
@@ -5753,7 +5776,6 @@ class App{
                 })
             }
         }
-
         let effectTimeOut
         let returnBtnSec = 300
         let myDef = this.det.stats.def*2;
@@ -6686,6 +6708,13 @@ class App{
     }
     _loadCharacterSounds(scene){
 
+        const bigwings = new BABYLON.Sound("bigwings", "sounds/bigwings.mp3", scene,
+        null, {spatialSound: true, loop:true, maxDistance: 30, volume: 1})
+
+        // const monsterGrowl = new BABYLON.Sound("monsterGrowl", "sounds/monsterGrowl.mp3", scene,
+        // null, {spatialSound: true, maxDistance: 30, volume: 1})
+
+
         const encounterS = new BABYLON.Sound("encounterS", "sounds/scarySounds/encounterS.mp3", scene,
         null, {spatialSound: false, maxDistance: 40, volume: 1})
 
@@ -6886,6 +6915,7 @@ class App{
         rephantasmS.setPlaybackRate(1.2) 
 
         this._allSounds = {
+            bigwings,            
             encounterS,
             scaryone,
             scarythree,
@@ -7030,6 +7060,7 @@ class App{
     }
     userJoinedInitOnce(){
         log("socket available will userJoinedINIT !")
+        
         this.socket.on("userJoined", data => {
             if(!this.socketAvailable) return log("socket available is off")
             log("someone joined " + data.uzers.length)
@@ -7049,12 +7080,11 @@ class App{
             this.checkAll()
             plOnline.innerHTML = `players online: ${data.uzers.length}`
 
-        })
-        
+        })        
         this.socket.on("deliver-reload", idFromTcp => {
             // means opening same account at the same time in different browsers
             if(this.det._id === idFromTcp) return window.location.reload()
-        })
+        })        
     }
     calibrateLoot(rarity){
         let coin = 0
@@ -7127,6 +7157,7 @@ class App{
                 const trnsMone = this.createTransparentSign(scene, "./images/blessings/elfSign.png", rotatingMesh, { x: 0,y: 2, z: -2.8}, {x: -Math.PI/2,y:0,z:0})
                 const trnsMTwo = this.createTransparentSign(scene, "./images/blessings/elfSign.png", rotatingMesh, { x: 0,y: 2, z: 2.8}, {x: -Math.PI/2,y:0,z:0})
                 rotatingMesh.parent = rootMesh
+                rotatingMesh.position = new Vector3(0,2,0);
                 this.allRotating.push({mesh: rotatingMesh, spd: .05})
                 this.createParticle("flare", 50, {x: 0,y: -3,z:0}, .05, { min: 1, max: 2.5}, .03,.08, 0, "sphere", true, rotatingMesh, rgbColors[0].rgb)
             break;
@@ -8672,6 +8703,22 @@ class App{
 
         await this.outGateC(scene, {x: 0,y:0,z:-83});
 
+        const BatMonster = await this.importMesh(scene, "./models/mons/", "batmonster.glb")
+        BatMonster.meshes[0].position = new Vector3(2,0,4.3)
+        
+        
+        const cageBox = MeshBuilder.CreateBox("cage", { size: 3}, scene)
+        cageBox.position = new Vector3(2,1.6,4.3)
+        cageBox.showBoundingBox = true;
+        cageBox.visibility = .1
+        this.blocks.push(cageBox)
+        this.putFakeShadow(cageBox, 3.5, -1.4)
+        this._allSounds.bigwings.attachToMesh(cageBox)
+        this._allSounds.bigwings.setPlaybackRate(.8)
+        this._allSounds.bigwings.play()
+ 
+
+
         const {rockRoot} = await this.createRuneRock(scene, {x: 51, z: 1.14}, rgbColors[1].rgb)
         rockRoot.lookAt(new Vector3(0,0,1.14),0,0,0, BABYLON.Space.WORLD)
         rockRoot.rotationQuaternion = null
@@ -9535,7 +9582,7 @@ class App{
             if(player._id === this.det._id) return log("This id is yours... will return !")
             const exist = this._scene.getMeshByName(`box.${player._id}`)
             if(exist) return log(`player ${player._id} player MESH already exist ! will not create`)
-            this.createMessage({name: player.name, place: player.currentPlace, message: "has Joined !"})
+            // this.createMessage({name: player.name, place: player.currentPlace, message: "has Joined !"})
             if(player.currentPlace !== this.currentPlace) return log("a user is in different place")
             this.createCharacter(player, theCharacterRoot, this._scene, false, allsword, allhelmets, allshields, light, 1.7)
         })
@@ -9710,6 +9757,8 @@ class App{
         players = []
     }
     activateSockets(allsword, Seed, treasure){
+        this.sendMessage(this.det.name, `${this.det.name} has joined !`, "info")
+        
         // FROM ADMIN
         this.socket.on("time-changed", data => {
             worldTime = data.worldTime
@@ -10212,6 +10261,10 @@ class App{
             this.updateLifeMesh(thePlayer, data)
         })
         this.socket.on("aUserDied", data => {
+            const thePlayer = players.find(pla => pla._id === data._id)
+            if(thePlayer){
+                this.addMessageOnChat(`player ${thePlayer.name} died `, "red")
+            }
             if(data._id === this.det._id) return log("I died already return")      
             if(data.killer) { 
                 if(data.killer === this.det._id){
@@ -10219,7 +10272,7 @@ class App{
                     this.focusOn = null
                 }
             }            
-            const thePlayer = players.find(pla => pla._id === data._id)
+            
             log(`A User Died `)
 
             if(!thePlayer){
@@ -10378,13 +10431,16 @@ class App{
         // disconnections
         this.socket.on('removeChar', data => {
             this.removeAChar(data)
-
         })
         this.socket.on("aUserDisconnect", uzerid => {
+            const disconPlayer = players.find(pl => pl._id === uzerid)
             players = players.filter(pl => pl._id !== uzerid)
             const bodyOfUser = this._scene.getMeshByName(`box.${uzerid}`)
             if(!bodyOfUser) return log("player quit Mesh toDispose Not found")
             bodyOfUser.dispose()
+            if(disconPlayer){
+                this.addMessageOnChat(`${disconPlayer.name} disconnected !`, "crimson")
+            }else{log("no player found with that uzerid")}
             Monsterz.forEach(mons => {
                 if(mons.targHero === uzerid){
                     mons.targHero = undefined
@@ -13460,7 +13516,7 @@ class App{
         clonedWeapon.isVisible = true
         log('cloned weapon here ', clonedWeapon)
         
-        // clonedWeapon.addRotation(Math.PI/2,0,0)
+        clonedWeapon.addRotation(Math.PI/2,0,0)
         if(!isDemonThrowing){
             Monsterz.forEach(mons => {
                 if(mons.monsName.includes("ghost") || mons.monsName.includes("slime")){
@@ -13490,31 +13546,35 @@ class App{
                     this.flyingWeaponz = this.flyingWeaponz.filter(weaps => weaps.meshId !== weapId)
                     weapMesh.parent = mons.rootMesh
                     weapMesh.position = new Vector3(0,0,0)
-                    
+                    let theScale = .9
                     switch(mons.monsName){
                         case "goblin":
                             weapMesh.position = new Vector3(0,.5 + Math.random()*.3,0)
-                            weapMesh.scaling = new Vector3(5,5,5)
+                            theScale = 5
                         break;
                         case "viper":
                             weapMesh.position.y = 1 + Math.random()*.7
-                            weapMesh.scaling = new Vector3(1,1,1)
+                            
                         break
                         case "minotaur":
                             log("minotaur is hit !")
                             weapMesh.position.y = Math.random()*.7
-                            weapMesh.scaling = new Vector3(1,1,1)
                         break
                         case "eater":
                             log("eater is hit !")
                             weapMesh.position.y = Math.random()*.4
-                            weapMesh.scaling = new Vector3(.9,.9,.9)
+                        break
+                        case "monoloth":
+                            theScale = 2
+                        break;
+                        case "golem":
+                            theScale = 1.5
                         break
                         default:
                             weapMesh.position.y = Math.random()*.4
-                            weapMesh.scaling = new Vector3(.9,.9,.9)
                         break
                     }
+                    weapMesh.scaling = new Vector3(theScale,theScale,theScale)
                     weapMesh.lookAt(new Vector3(mypos.x, .5, mypos.z),0,0,0,BABYLON.Space.WORLD)
                     weapMesh.addRotation(Math.PI,0,0);
                 })
@@ -13886,6 +13946,14 @@ class App{
                 monsHealthPlane.isVisible = true
                 const theMons = Monsterz.find(mons => mons.monsId === monsId)
                 if(!theMons) return log("cannot find the monster")
+                if(Math.random() > .5){
+                    this._allSounds.suspense1.attachToMesh(this.myChar.bx)
+                    this._allSounds.suspense1.play()
+                } 
+                if(Math.random() > .8){
+                    this._allSounds.suspense2.attachToMesh(this.myChar.bx)
+                    this._allSounds.suspense2.play()
+                } 
                 if(chasingS) {
                     if(!chasingS.isPlaying) chasingS.play()
                 }
@@ -13914,7 +13982,8 @@ class App{
                     return
                 }
                 if(isMyTargetHere) return log("the target is here return")
-                if(this.det.hp <= 0) return log("this player is dead")                
+                if(this.det.hp <= 0) return log("this player is dead") 
+       
             }
         ))
         enemyDetection.actionManager.registerAction(new ExecuteCodeAction(

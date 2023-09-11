@@ -494,10 +494,10 @@ const npcInfos = [
             
         //     return {theSpeech: this.nextSpeech(crftNames), additionalDet: toLearn}
         // },
-        dirTarg: {x: -50, z: -20},
+        dirTarg: {x: 2, z: 4.3},
         speechForBonfire: [{name: 'jericho', message: "Are you a traveler, I've never seen you here ..."},{name: 'jericho', message: "For your safety, I will teach you a craft ..."}, {name: 'jericho', message: "For now I'll teach you how to make a bonfire, a useful craft for survival"},{name: 'jericho', message: "If you are out in the wild you can simply craft it so evil spirits will not attempt to touch you"}],
         wellDoneSpeech: function (crftNames) { return [{name: "jericho", message: "You are good out there ..."}, {name: "jericho", message: `Let me teach you a new craft ...`},{name: "jericho", message: `learn how to craft ${crftNames.length > 1 ? crftNames.join(" and ") : crftNames[0]}`}] },
-        speech: [{name: 'markus', message: "I'm just wondering around here, looking for a place to train my magic"}, {name: 'markus', message: "I must defeat those demons if ever they stumble here again ..."}],
+        speech: [{name: 'markus', message: "This beast is causing havoc outside, fortunately I'm strong enough to capture it"}, {name: 'markus', message: "I'm just waiting for the guild to collect this monster"}, {name: 'markus', message: "If you see one outside, call for help immediately !"}],
         errSpeech: [{name: "jericho", message: "hmmm ... I don't know what crafts are in my mind right now"}],
         taskSpeech: function(player){
             return [
