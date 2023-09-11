@@ -8785,10 +8785,10 @@ class App{
                 this.arrangeCam(-1.4, -1.15);
                 this.det.x = 9
                 this.det.z = 13.5
+                this.openPopUpAction("speak");
                 const nikNpc = simpleNpc.find(npz => npz.name === "Nick");
                 if(nikNpc){
-                    closeGameUI()
-                    
+                    closeGameUI()                    
                     const npcInfo = npcInfos.find(npz => npz.name === "Nick")
                     this.targetRecource = nikNpc.bx
                     this.targDetail = npcInfo.condition(this.det);
@@ -8796,7 +8796,7 @@ class App{
                     this.closePopUpAction()
                     closeGameUI()
                 }else{
-                    alert("niko not found")
+                    log("niko not found")
                 }
 
             }
