@@ -2239,7 +2239,7 @@ class App{
             if(isMine){
                 const mySkill = this.det.skills.find(skl =>skl.name === skill.name)
                 if(!mySkill) return log("not found skill")
-                if(mySkill.pointsForUpgrade > this.det.points) return this.showTransaction(`required ${mySkill.pointsForUpgrade}point${mySkill.pointsForUpgrade === 1 ? "" : "s"} for upgrade`)
+                if(mySkill.pointsForUpgrade > this.det.points) return this.showTransaction(`required ${mySkill.pointsForUpgrade}point${mySkill.pointsForUpgrade === 1 ? "" : "s"} for upgrade`,2000)
                 this.det.points -= mySkill.pointsForUpgrade
                 mySkill.lvl+=1
                 mySkill.effects.plusDmg+=mySkill.upgradePlus
@@ -2250,7 +2250,7 @@ class App{
                 upgradeOrLearn.innerHTML = `Learn`
                 const theSkillToLearn = skills.find(skl => skl.name === skill.name)
                 if(!theSkillToLearn) return log("skill to learn not found")
-                if(theSkillToLearn.pointsToClaim > this.det.points) return this.showTransaction(`required ${theSkillToLearn.pointsToClaim}points to learn this skill`)
+                if(theSkillToLearn.pointsToClaim > this.det.points) return this.showTransaction(`required ${theSkillToLearn.pointsToClaim}points to learn this skill`,2000)
                 this.det.points -= theSkillToLearn.pointsToClaim
                
                 this.det.skills.push(theSkillToLearn)
@@ -7874,20 +7874,20 @@ class App{
                 lvl: 1,
                 pointsToClaim: 1,
                 pointsForUpgrade: 1,
-                element: "none",
+                element: "normal",
                 requireMode: "any",
-                skillType: "buff", // buff // attack // passive
+                skillType: "na", // buff // attack // passive // na
                 animationLoop: false,
                 displayName: "Flex aura",
                 castDuration: 10,
                 returnModeDura: 900,
                 skillCoolDown: 1000 * 2,
                 demand: {name:"mp", minCost: 1, cost: .3}, // percent of mana and min cost
-                effects: { effectType: "buff", dmgPm: 0, plusDmg: 1000, chance: 10, bashPower: 10},
+                effects: { effectType: "buff", dmgPm: 0, plusDmg: 0, chance: 10, bashPower: 10},
                 tier: "common",  
-                upgradePlus: 0,      
+                upgradePlus: 60,      
                 desc: "You can conceal and show your aura, This is best to do when you want someone to easily spot you in some certain places. Your aura can be dense depends on your magic force."
-            }],
+            },],
             race: "human"
         }
         // GUI
@@ -13084,7 +13084,6 @@ class App{
         groundMesh.material = groundMat
 
         groundMat.specularColor = new Color3(0,0,0)
-        groundMesh.receiveShadows = true
         // loadingWhat = 'environment'
         // const Ground = await SceneLoader.ImportMeshAsync("", directory, meshName, scene)
         // Ground.meshes.forEach(ground => ground.receiveShadows = true)
