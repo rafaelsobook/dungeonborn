@@ -27,6 +27,12 @@
     <p class="new-craft-notif"></p>
     <p class="map-name remove-map"></p>
 
+    <div class="info-popup-message">
+        loading info ....
+        <button class="blackBtn" >close</button>
+    </div>
+
+
     <!-- settings container -->
     <div class="settings-container my-stat-hidding">
         <div class="setting-ttle-bx">
@@ -77,12 +83,15 @@
                     </div>
 
                     <p class="set-cap-big">Actions</p>
-                    <p class="sett">Click Anywhere on screen to attack, Equip your sword on your item box to initiate weapon attacks</p>
+                    <p class="sett">Click Anywhere on screen to attack, Equip your sword on your item box and set your mode to weapon <br />
+                    You can change your mode by clicking the circles on your bottom right of the screen. <br />
+                    An Item spear can be thrown on the enemy if you are holding one
+                    </p>
                 
                     
                     <p class="set-cap-big">Trigger Skills</p>
                     <p class="sett">Skills can be acquired on your top right, Get enough points to unlock different skills</p>
-                    <p class="sett">Some skills acquire more points, Leveling up is a key for having more points</p>
+                    <p class="sett">Some skills require more points, Raising your level can help you acquire more points</p>
                 </div>
                 <div class="set-view forhelp">
                     <p class="set-cap-big">Tutorials</p>
@@ -112,6 +121,7 @@
     <!-- LORDS LIST -->
     <div class="lords-container my-stat-hidding">
         <p class="cont-title">Top 5 Lordz</p>
+        <button class="info-btns lordsinfo">ῑ</button>
         <ul class="lords-list">
 
         </ul>
@@ -162,6 +172,7 @@
     </div>
     <div class="compatible-mat-cont transClosePopUp">
         <h2 class="cmc-ttle wdfull">Select Material For Craft</h2>
+        <button class="info-btns fixEnhanceInfo">ῑ</button>
         <div class="cmc-myrec-bx">
             <p class="cmc-t-iron">total iron: 5</p>
             <img src="./images/UI/coins.png" alt="" class="cmc-coinimg"> 
@@ -333,8 +344,38 @@
             </div>
         </div>
     </div>
-
-
+    <div class="myunderlings-cont">
+        <p class="myc-cap">My Underlings</p>
+        <button class="info-btns underlingsinfo">ῑ</button>
+        <ul class="my-underlings">
+            <li class="underling-bx">
+                <div class="myc-partition">
+                    <img src="./images/questpics/goblinslayer.png" alt="" class="myc-img">
+                    <p class="myc-monsname">chesuf</p>
+                </div>
+                <div class="myc-partition">
+                    <p class="myc-monsType">Goblin</p>
+                    <p class="myc-monslvl">lvl 3</p>
+                </div>
+            </li>
+        </ul>
+        <button class="cancel-parent blackBtn">close</button>
+    </div>
+    <div class="monsterinfo-cont my-stat-hidding">
+        <p class="mic-cap">monster info</p>
+        <div class="mic-top">
+            <img src="./images/monsters/dermogoid.png" alt="" class="mic-img">
+            <p class="mic-name">Dermogoid</p>
+        </div>
+        <p class="mic-desc">Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores nostrum ut natus repellat quidem quo voluptatibus tenetur, ex, quisquam ea quaerat itaque error sit rerum, officia aliquam. Ipsum, ipsa labore.</p>
+        <div class="mic-mid">            
+            <p class="mic-hp">average life: 1000 - 1200</p>
+            <p class="mic-dmg">average dmg: 100 - 120</p>
+            <p class="mic-spd">speed: slow</p>
+        </div>
+        <div class="mic-btns"></div>
+        <button class="cancel-parent blackBtn">close</button>
+    </div>
     <div class="home-page">
         <div class="copyright">Ⓒ dungeonBorn 2023 beta</div>
         <!-- <img src="./images/wallpaper/wall3.jpg" class="wallpaperz" /> -->
@@ -505,8 +546,10 @@
     </div>
     <div class="all-myskills-container transClose">
         <img src="./images/blessings/oblivion.png" alt="" class="rotating-star">
-
+        <button class="info-btns skillsinfo">ῑ</button>
+        
         <p class="skill-ttle">Skills To Conquer</p>
+        <p class="skill-rempoints">Available Points </p>
         <div class="skill-categ">
             <button class="skillcateg-btn myskillset">My skills</button>
             <button class="skillcateg-btn allskillset">All skills</button>
@@ -595,6 +638,10 @@
         <button class="rui-btn mystats">
             <img src="./images/UI/profileBook.png" class="rui-img" />
             <p class="rui-caps">stats</p>
+        </button>
+        <button class="rui-btn underlings">
+            <img src="./images/UI/underlings.png" class="rui-img" />
+            <p class="rui-caps">underlings</p>
         </button>
         <button class="rui-btn settingsIcon">
             <img src="./images/UI/menusett.png" class="rui-img" />

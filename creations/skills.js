@@ -24,17 +24,17 @@ const skills = [
         pointsToClaim: 3,
         pointsForUpgrade: 2,
         element: "any",
-        requireMode: "fist",
+        requireMode: "any",
         skillType: "attack", // buff // attack // passive
         animationLoop: false,
         displayName: "Fireball",
         castDuration: 500,
         returnModeDura: 900,
-        skillCoolDown: 2000,
+        skillCoolDown: 5000,
         demand: {name:"mp", minCost: 20, cost: .3}, // percent of mana and min cost
         effects: { effectType: "damage", dmgPm: 0, plusDmg: 50, chance: 10, bashPower: 10},
         tier: "common",  
-        upgradePlus: 20,      
+        upgradePlus: 60,      
         desc: "This skill can be dangerous depends on the caster"
     },
     {
@@ -42,8 +42,8 @@ const skills = [
         lvl: 1,
         pointsToClaim: 5,
         pointsForUpgrade: 2,
-        element: "any",
-        requireMode: "fist",
+        element: "normal",
+        requireMode: "any",
         skillType: "attack", // buff // attack // passive
         animationLoop: false,
         displayName: "re: phantasm",
@@ -61,11 +61,11 @@ const skills = [
         lvl: 1,
         pointsToClaim: 3,
         pointsForUpgrade: 2,
-        element: "fire",
+        element: "normal",
         requireMode: "any",
         skillType: "attack", // buff // attack // passive
         animationLoop: false,
-        displayName: "Fireball",
+        displayName: "Spinning Star",
         castDuration: 500,
         returnModeDura: 900,
         skillCoolDown: 2000,
@@ -88,7 +88,7 @@ const skills = [
         castDuration: 10,
         returnModeDura: 900,
         skillCoolDown: 2000,
-        demand: {name:"mp", minCost: 20, cost: .3}, // percent of mana and min cost
+        demand: {name:"sp", minCost: 15, cost: .3}, // percent of mana and min cost
         effects: { effectType: "damage", dmgPm: 0, plusDmg: 10, chance: 10, bashPower: 10},
         tier: "common",
         upgradePlus: 2,       
@@ -101,9 +101,9 @@ const skills = [
         pointsForUpgrade: 1,
         element: "normal",
         requireMode: "any",
-        skillType: "Dash Back", // buff // attack // passive // support
+        skillType: "normal", // buff // attack // passive // support
         animationLoop: false,
-        displayName: "Leap",
+        displayName: "Dash Back",
         castDuration: 10,
         returnModeDura: 900,
         skillCoolDown: 2000,
@@ -112,7 +112,45 @@ const skills = [
         tier: "common",
         upgradePlus: 2,       
         desc: "Enhancing Your feet and dashing backwards with full power in your legs"
-    }
+    },
+    {
+        name: "pact",
+        lvl: 1,
+        pointsToClaim: 5,
+        pointsForUpgrade: 7,
+        element: "dark",
+        requireMode: "any",
+        skillType: "buff", // buff // attack // passive
+        animationLoop: false,
+        displayName: "Summoner's Pact",
+        castDuration: 500,
+        returnModeDura: 1000,
+        skillCoolDown: 1000 * 2,
+        demand: {name:"mp", minCost: 200, cost: .3}, // percent of mana and min cost
+        effects: { effectType: "damage", dmgPm: 0, plusDmg: 1000, chance: 10, bashPower: 10},
+        tier: "rare",  
+        upgradePlus: 100,      
+        desc: "You can consider yourself as a summoner for having this skill. Use this skill on monsters with lower life if the power of this skill plus your magic force is greater than the monster's life then it will increase the chance to capture your target"
+    },
+    {
+        name: "flexaura",
+        lvl: 1,
+        pointsToClaim: 1,
+        pointsForUpgrade: 1,
+        element: "normal",
+        requireMode: "any",
+        skillType: "na", // buff // attack // passive // na
+        animationLoop: false,
+        displayName: "Flex aura",
+        castDuration: 10,
+        returnModeDura: 900,
+        skillCoolDown: 1000 * 2,
+        demand: {name:"mp", minCost: 1, cost: .3}, // percent of mana and min cost
+        effects: { effectType: "buff", dmgPm: 0, plusDmg: 0, chance: 10, bashPower: 10},
+        tier: "common",  
+        upgradePlus: 60,      
+        desc: "You can conceal and show your aura, This is best to do when you want someone to easily spot you in some certain places. Your aura can be dense depends on your magic force."
+    },
 ]
 
 export default skills;

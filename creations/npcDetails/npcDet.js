@@ -1,7 +1,8 @@
 import AllCrafts from "../crafts/crafts.js" // lagi dapat may JS to
 
 const npcDet = {
-    _id: '', 
+    _id: '',
+    isAStoryNpc: false,
     name: "", 
     x: 0, 
     z: 57,
@@ -30,6 +31,7 @@ const randomNum = () => {
 const npcInfos = [
     {
         _id: 'npc101', 
+        isAStoryNpc: false,
         name: "oaklin", 
         x: 5, 
         z: 13,
@@ -55,6 +57,7 @@ const npcInfos = [
     },
     {
         _id: 'npc9213club', 
+        isAStoryNpc: false,
         name: "Bernard", 
         x: 13.5, 
         z: 7.8,
@@ -76,7 +79,8 @@ const npcInfos = [
     },
     {
         _id: 'npc102', 
-        name: "Eugo", 
+        name: "Eugo",
+        isAStoryNpc: false, 
         x: -5, 
         z: 57,
         nType: 'standby', 
@@ -102,6 +106,7 @@ const npcInfos = [
     {
         _id: 'npc43223', 
         name: "Anton", 
+        isAStoryNpc: false,
         x: -3.7, 
         z: -7,
         nType: 'standby', 
@@ -127,6 +132,7 @@ const npcInfos = [
     {
         _id: 'npcGuard42', 
         name: "Juleus Guard", 
+        isAStoryNpc: false,
         x: 4.31, 
         z: -77.9,
         nType: 'standby', 
@@ -152,6 +158,7 @@ const npcInfos = [
     {
         _id: 'npcGuard4221', 
         name: "Adonis Guard", 
+        isAStoryNpc: false,
         x: -4.31, 
         z: -77.9,
         nType: 'standby', 
@@ -358,6 +365,7 @@ const npcInfos = [
     {...npcDet,
         _id: `npc${randomNum()}`,
         name: 'Nick',
+        isAStoryNpc: true,
         nType: "standby",
         x: 10.4,
         z: 11.5,
@@ -371,8 +379,19 @@ const npcInfos = [
         condition: function(playerDet){
             if(playerDet.storyQue.some(stry => stry === "firstFriend")){
                 console.log('still have it ', playerDet.storyQue )
+  
                 return this.speech(playerDet.name)
-            }else{
+            }
+            if(playerDet.storyQue.some(stry => stry === "firstGoblinKilled")){
+                return this.goblinKillSpeech(playerDet.name)
+            }
+            if(playerDet.storyQue.some(stry => stry === "firstGolemKilled")){
+                return this.golemKillSpeech(playerDet.name)
+            }
+            if(playerDet.storyQue.some(stry => stry === "firstCraftingFinished")){
+                return this.firstCraftingSpeech(playerDet.name)
+            }
+            else{
                 return this.normSpeech
             }
         },
@@ -380,15 +399,70 @@ const npcInfos = [
         speech: function(mainName){
             return [
             { name: mainName, message: "Are you ...." },
-            {name: 'Nick', message: "Greetings Friend, I'm Informed I will see you here..."}, 
-            {name: 'Nick', message: "You can call me nick, I'm here to support you in your journey"}, 
+            {name: 'Nick', message: "Greetings ..., I'm Informed I will see you here..."}, 
+            {name: 'Nick', message: "I'm Nick, They sent me to give you some things you need"}, 
             {name: 'Nick', message: "I Know the Person who sent you here, No One must know where you came from ..."}, 
-            {name: 'Nick', message: "I'm here to support you In your Journey ..."}]
+            {name: 'Nick', message: "I'm here to support you with ..."}]
+        },
+        goblinKillSpeech: function (mainName){
+            return [
+                { name: mainName, message: "Nick !, Right on time, I have killed a goblin ", animName: "tellinghappy"},
+                { name: mainName, message: "those monsters, I can't beleive they really are here and I have killed one" },
+                {name: 'Nick', message: "Good to know you are fine ... !"},
+                {name: 'Nick', message: "The magiots will definitely get mad if something happen to you"},
+                {name: mainName, message: "Magos ..., magiots ?"},
+                {name: 'Nick', message: "The one who summoned you, they are the a̾ꙅ𝖆^ҽçհ ҟ. azxricks in common"},
+                {name: 'Nick', message: "Most people don't know them but they are the founders of this world"},
+                {name: 'Nick', message: "They created the scrolls that can change a human's race"},
+                {name: 'Nick', message: "The dungeons outside is also a living proof of their powers"},
+                {name: 'Nick', message: "Magiots, The Four Magos ... azxrick is their leader and the one who summoned you"},
+                {name: 'Nick', message: "Simply, They are known as One Two Three and Four. Number five known as daviot ..."},
+                {name: 'Nick', message: "He is the reason why the balance of this world is ruined and the magiots cannot return"},
+                {name: 'Nick', message: "We need to get stronger so we can take daviot's core, and release the magiots"},
+                {name: mainName, message: "I understand, Get strong and defeat number five"},
+                {name: 'Nick', message: "Easier said than done ...No matter, We have all the time we need"},
+                {name: 'Nick', message: "This Village has a lot of problem right now ..."},
+                {name: 'Nick', message: "Outside the village, There is a Golem that they found that causing havoc"},
+                {name: 'Nick', message: "I tried killing one, But seems like they keep on coming"},
+                {name: mainName, message:"(whispers)... hmmm seems like you want me to-" },
+                {name: 'Nick', message: "You think you can take one ? "},
+                {name: mainName, message: "(whispers)... knew it !!"},
+                {name: mainName, message: "I will try but are they not strong ?"},
+                {name: 'Nick', message: `${mainName} You are summoned here for a reason that you have what it takes to be a Hero`},
+                {name: mainName, message: `Yeah but, I don't think I can handle tha-`},
+                {name: 'Nick', message: `I need to go now, there's a tower that I need to watch ... Be careful out there`},
+                {name: mainName, message: `Wait tell me more about the Golem yaa ... nevermind`, animName: "tellingwait"},
+            ]
+        },
+        golemKillSpeech: function (mainName){
+            return [
+                { name: "Nick", message: "here you are, How's adventuring "},
+                { name: mainName, message: "I killed the Golem and took its core"},
+                { name: mainName, message: "What are we gonna do with this .."},
+                { name: "Nick", message: "I'm Impressed, You defeated a Golem for a short period of time"},
+                { name: "Nick", message: "You have a potential kid..."},
+                { name: "Nick", message: "Take the core to a dwarven shop, And craft a sword using that core"},
+                { name: "Nick", message: "After that go with me, We will go buy some slave for you"},
+                { name: "Nick", message: "Uhh and bring money with you .... Atleast 30,000"},                
+            ]
+        },
+        firstCraftingSpeech: function (mainName){
+            return [
+                { name: "Nick", message: `Well done ${mainName} ! I can see you have successfully crafted a weapon`},
+                { name: "Nick", message: "Tho you have to be aware ... crafting or enhancing weapon can sometimes fail"},
+                { name: "Nick", message: "Enough of that ! We have an emergency !"},                
+                { name: "Nick", message: "Lots of demon are showing near the Village"},                
+                { name: "Nick", message: "You think you can test your new sword on them ?"},                
+                { name: "Nick", message: "I know it's hard ! hundreds of adventurers already died !"},                
+                { name: "Nick", message: "Only 10 survived ! .. According to them they saw the demons in the mist !"},                
+                { name: "Nick", message: "After the hidden land... That is where the massacre happens "},                
+                { name: "Nick", message: "I'll go there Immediately ! there's no time "},                
+            ]
         },
         normSpeech: [
-        {name: "Nick", message: "It is still early for you to see your goal"},
-        {name: "Nick", message: "Get Strong ... As You progress, things get more difficult"},
-        {name: "Nick", message: "So Be Careful Out there ..."},
+            {name: "Nick", message: "It is still early for you to see your goal"},
+            {name: "Nick", message: "Get Strong ... Explore the forest or dungeon outside"},
+            {name: "Nick", message: "Be Careful Out there ..."},
         ]
     },
     {...npcDet,
@@ -425,7 +499,7 @@ const npcInfos = [
             return {theSpeech: this.nextSpeech(crftNames), additionalDet: toLearn}
         },
         dirTarg: {x: -3, z: -1},
-        speechForBonfire: [{name: 'jericho', message: "Are you a traveler, I've never seen you here ..."},{name: 'jericho', message: "For your safety, I will teach you a craft ..."}, {name: 'jericho', message: "For now I'll teach you how to make a bonfire, a useful craft for survival"},{name: 'jericho', message: "If you are out in the wild you can simply craft it so evil spirits will not attempt to touch you"}],
+        speechForBonfire: [{name: 'jericho', message: "Here you are, I've heard you from nick ..."},{name: 'jericho', message: "For your safety, I will teach you a craft ..."}, {name: 'jericho', message: "I'll teach you how to make bonfire, a useful craft for survival"},{name: 'jericho', message: "There's a lot I want to teach you, for now try exploring swampforest and gain exp from monsters"}],
         nextSpeech: function (crftNames) { return [{name: "jericho", message: "You are good out there ..."}, {name: "jericho", message: `Let me teach you a new craft ...`},{name: "jericho", message: `learn how to craft ${crftNames.length > 1 ? crftNames.join(" and ") : crftNames[0]}`}] },
         speech: [{name: 'jericho', message: "I hope this crafts will help you in your journey"}, {name: 'jericho', message: "Enjoy Adventuring ! Be Safe there ..."}],
         errSpeech: [{name: "jericho", message: "hmmm ... I don't know what crafts are in my mind right now"}]
@@ -570,7 +644,7 @@ const npcInfos = [
         spd: .1,
         condition: "none",
         dirTarg: {x: 0, z: 2},
-        speech: [{name: 'Justin', message: "Ohh I can't wait for my men to came here"}, {name: 'Justin', message: "They Will bring me new slaves to sell !"}, {name: 'Justin', message: "I can't wait to play with them first hwe hwe hwe ! ..."}],
+        speech: [{name: 'Justin', message: "Ohh I can't wait for my men to arrive here"}, {name: 'Justin', message: "They caught lot of monsters in the forest"}, {name: 'Justin', message: "I will sell them with higher price ... especially the rare breeds"}, {name: 'Justin', message: "Ohh and meet my dragon, He's shy around many people"}],
     },
     {...npcDet,
         _id: `npc${randomNum()}`,
@@ -588,7 +662,6 @@ const npcInfos = [
         spd: .1,
         condition: "none",
         dirTarg: {x: 0, z: 2},
-        speech: [{name: 'Justin', message: "Ohh I can't wait for my men to came here"}, {name: 'Justin', message: "They Will bring me new slaves to sell !"}, {name: 'Justin', message: "I can't wait to play with them first hwe hwe hwe ! ..."}],
     },
 ]
 

@@ -15,6 +15,13 @@
           box-sizing: border-box;
 }
 
+.cannot-click {
+  pointer-events: none;
+  -webkit-filter: blur(1px);
+          filter: blur(1px);
+  opacity: 0.5;
+}
+
 .blackBtn {
   outline: none;
   background: -webkit-gradient(linear, left top, left bottom, from(#2e2e2e), color-stop(#202020), color-stop(#2e2e2e), to(#646464));
@@ -71,6 +78,304 @@ body {
 * {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
+}
+
+.myunderlings-cont {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  width: 60%;
+  height: 50%;
+  display: none;
+  padding: 10px;
+  background: #1f1f1f;
+  z-index: 4;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 15px;
+  border-radius: 5px;
+}
+
+.myunderlings-cont .myc-cap {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  color: rgba(160, 162, 173, 0.94);
+  height: 5%;
+}
+
+.myunderlings-cont .my-underlings {
+  width: 100%;
+  height: 85%;
+  border: 1px solid rgba(124, 124, 124, 0.84);
+  border-radius: 4px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: flex-start;
+  gap: 12px;
+  overflow-y: scroll;
+  padding: 20px;
+}
+
+.myunderlings-cont .my-underlings .underling-bx {
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
+  width: 100%;
+  padding: 5px 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 20px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#3b424b), color-stop(#5b6169), to(#34373a));
+  background: linear-gradient(to bottom, #3b424b, #5b6169, #34373a);
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid rgba(238, 254, 255, 0.822);
+}
+
+.myunderlings-cont .my-underlings .underling-bx .myc-partition {
+  pointer-events: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  gap: 15px;
+}
+
+.myunderlings-cont .my-underlings .underling-bx .myc-partition .myc-monsname {
+  color: rgba(238, 254, 255, 0.822);
+}
+
+.myunderlings-cont .my-underlings .underling-bx .myc-partition .myc-img {
+  width: 40px;
+  margin-right: 15px;
+}
+
+.myunderlings-cont .my-underlings .underling-bx .myc-partition .myc-monsType {
+  margin-right: 20px;
+  color: #14ac00;
+}
+
+.myunderlings-cont .my-underlings .underling-bx .myc-partition .myc-monslvl {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  color: rgba(238, 254, 255, 0.822);
+}
+
+.myunderlings-cont .my-underlings .underling-bx:hover {
+  opacity: 0.8;
+  -webkit-transition: 0.2s ease-in-out;
+  transition: 0.2s ease-in-out;
+}
+
+.myunderlings-cont .my-underlings .underling-bx:active {
+  -webkit-filter: invert(1);
+          filter: invert(1);
+}
+
+.monsterinfo-cont {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  width: 45%;
+  height: auto;
+  border-radius: 5px;
+  border: 2px solid rgba(105, 0, 0, 0.8);
+  background: -webkit-gradient(linear, left top, left bottom, from(#423f3f), color-stop(#242121), color-stop(#181616), to(#242121));
+  background: linear-gradient(to bottom, #423f3f, #242121, #181616, #242121);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 10px;
+  z-index: 4;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.monsterinfo-cont .mic-cap {
+  font-family: "Jim Nightshade", cursive;
+  color: #f5f5f5;
+}
+
+.monsterinfo-cont .mic-top {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 20px;
+  padding: 10px;
+  margin-bottom: 15px;
+  color: #c0c0c0;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  width: 100%;
+  border-radius: 5px;
+  border-bottom: 2px solid rgba(102, 14, 14, 0.54);
+}
+
+.monsterinfo-cont .mic-top .mic-img {
+  width: 65px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#727171), color-stop(#666464), color-stop(#3b3b3b), to(#312e2e));
+  background: linear-gradient(to bottom, #727171, #666464, #3b3b3b, #312e2e);
+  border-radius: 5px;
+  border: 2px solid rgba(102, 14, 14, 0.54);
+}
+
+.monsterinfo-cont .mic-desc {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  color: #bebebe;
+}
+
+.monsterinfo-cont .mic-mid {
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+  color: #bebebe;
+  margin-bottom: 20px;
+}
+
+.monsterinfo-cont .mic-btns {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.info-btns {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(171, 171, 171, 0.979);
+  color: rgba(171, 171, 171, 0.979);
+  height: 30px;
+  width: 30px;
+  background: none;
+  cursor: pointer;
+  -webkit-transition: 0.1s;
+  transition: 0.1s;
+}
+
+.info-btns:hover {
+  -webkit-filter: brightness(1.5);
+          filter: brightness(1.5);
+  color: rgba(240, 240, 240, 0.979);
+  -webkit-transition: 0.1s;
+  transition: 0.1s;
+}
+
+.info-btns:active {
+  color: crimson;
+  border: 1px solid rgba(102, 14, 14, 0.54);
+  -webkit-transform: scale(0.9);
+          transform: scale(0.9);
+}
+
+.info-popup-message {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(0);
+          transform: translate(-50%, -50%) scale(0);
+  width: auto;
+  height: auto;
+  padding: 15px 40px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 20px;
+  background: #211c00;
+  color: #b9b9b9;
+  border: 1px solid rgba(194, 194, 194, 0.84);
+  border-radius: 5px;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  display: none;
+  -webkit-transition: 0.1s ease-in-out;
+  transition: 0.1s ease-in-out;
+  opacity: 0.9;
+  z-index: 10;
 }
 
 .lords-container {
@@ -770,6 +1075,15 @@ body {
   opacity: 0.4;
 }
 
+.all-myskills-container .skill-rempoints {
+  font-family: "Bellefair", serif;
+  color: #b8b8b8;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
 .all-myskills-container .skill-ttle {
   font-family: "Caudex", serif;
   color: #949494;
@@ -847,6 +1161,7 @@ body {
   border: 1px solid #949494;
   background: -webkit-gradient(linear, left top, left bottom, from(#9e9e9e), color-stop(#9b9b9b), to(#777777));
   background: linear-gradient(#9e9e9e, #9b9b9b, #777777);
+  cursor: pointer;
 }
 
 .all-myskills-container .myskill-list .skill-bx .sb-left {
@@ -907,6 +1222,15 @@ body {
   border: 1px solid #d1d1d1;
   padding: 3px 12px;
   cursor: pointer;
+}
+
+.all-myskills-container .myskill-list .skill-bx:hover {
+  opacity: 0.5;
+}
+
+.all-myskills-container .myskill-list .skill-bx:active {
+  -webkit-filter: brightness(-1);
+          filter: brightness(-1);
 }
 
 .all-myskills-container .skillcont-close {
@@ -2168,9 +2492,9 @@ nav {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
   -webkit-box-align: start;
       -ms-flex-align: start;
           align-items: flex-start;
@@ -2180,6 +2504,8 @@ nav {
   width: 100%;
   height: 90%;
   border: 1px solid rgba(0, 0, 0, 0.1);
+  gap: 15px;
+  overflow-y: scroll;
 }
 
 .craft-container .to-crafts .crft-bx {
@@ -4115,13 +4441,6 @@ nav {
   -webkit-transform: scale(0.96);
           transform: scale(0.96);
   opacity: 0.9;
-}
-
-.shopchoice-cont .cannot-click {
-  pointer-events: none;
-  -webkit-filter: blur(1px);
-          filter: blur(1px);
-  opacity: 0.5;
 }
 
 @media (max-height: 500px) {

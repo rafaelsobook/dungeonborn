@@ -1,0 +1,17 @@
+[
+    {
+        "infoname": "lordsinfo",
+        "desc": "Becoming one of the lords require divnine's hallo, demon lords core or an elder elf's spirit"
+    },
+    {
+        "infoname": "skillsinfo",
+        "desc": "skills are necessary if you want to go further, Reason why you can't see the rest of the skills is because you don't have enough points, gain points by leveling up."
+    },
+    {
+        "infoname": "underlingsinfo",
+        "desc": "Form a contract with monsters, You can do this by using a skill called PACT."
+    },{
+        "infoname": "fixEnhanceInfo",
+        "desc": "Be aware that enhancing an item or weapon can sometimes break the item itself if the process did not go well."
+    }
+]

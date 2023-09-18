@@ -394,6 +394,20 @@ const records = [
         notLootIn: ["dungeon"]
     },
     { 
+        dn: "Golem's Birth",
+        name: 'golemsbirth', 
+        itemType: 'sword',
+        desc: "A Robust Sword, Known for It's hardness, You will get tired but never the sword.",
+        origPrice: 7000,
+        secondPrice: 4000,
+        craftMaterial: { name: "golemcore", qnty: 1, forgeChance: 10},
+        plusDmg: 145,
+        cState: 6000,
+        durability: 6000,
+        rarity: 4,
+        notLootIn: ["dungeon"]
+    },
+    { 
         dn: 'Ruzty Sword',
         name: 'ruztysword', 
         itemType: 'sword',
@@ -714,6 +728,19 @@ const records = [
         origPrice: 100,
         secondPrice: 100,
         desc: "This core has a chaotic green color and can be good quality sometimes.",
+        rarity: 0,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        dn: "Golem Core",
+        name: 'golemcore', 
+        for: "golem",
+        itemType: 'core', 
+        plusDef: 0, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 100,
+        secondPrice: 100,
+        desc: "One of the robust core you can found, Some craftsmen enjoy using this tool. Steeming with light on its core this core is one of a kind",
         rarity: 0,
         notLootIn: ["dungeon", "heartland"]
     },
