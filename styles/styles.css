@@ -1054,15 +1054,21 @@ body {
           transform: translate(-50%, -50%) scale(1);
   z-index: 5;
   left: 70%;
-  width: 43%;
-  height: 70%;
+  width: 45%;
+  height: 80%;
   border: 2px solid #616161;
   border-radius: 3px;
   background: -webkit-gradient(linear, left top, left bottom, from(#161616), color-stop(#2c2c2c), color-stop(#141414), color-stop(#2f2f2f), to(#3e4146));
   background: linear-gradient(#161616, #2c2c2c, #141414, #2f2f2f, #3e4146);
-  padding: 20px;
+  padding: 16px;
   overflow: hidden;
   display: none;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 .all-myskills-container .rotating-star {
@@ -1082,6 +1088,7 @@ body {
   text-align: center;
   margin-bottom: 10px;
   font-size: 0.9rem;
+  height: 5%;
 }
 
 .all-myskills-container .skill-ttle {
@@ -1091,6 +1098,7 @@ body {
   text-align: center;
   margin-bottom: 20px;
   font-size: 1.6rem;
+  height: 5%;
 }
 
 .all-myskills-container .skill-categ {
@@ -1104,6 +1112,7 @@ body {
       -ms-flex-align: center;
           align-items: center;
   padding: 5px;
+  height: 7%;
 }
 
 .all-myskills-container .skill-categ .skillcateg-btn {
@@ -1133,7 +1142,7 @@ body {
           flex-direction: column;
   width: 100%;
   overflow-y: scroll;
-  height: 75%;
+  height: 70%;
   gap: 15px;
 }
 
@@ -1242,6 +1251,7 @@ body {
   cursor: pointer;
   font-size: 1.2rem;
   color: #f5f5f5;
+  height: 5%;
 }
 
 nav {
@@ -4484,6 +4494,45 @@ nav {
   }
 }
 
+.naming-cont {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  z-index: 4;
+  width: 300px;
+  height: auto;
+  padding: 15px 20px;
+  z-index: 10;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background: #304d59;
+  gap: 15px;
+  display: none;
+  border-radius: 4px;
+}
+
+.naming-cont .mons-rename {
+  width: 70%;
+  padding: 5px;
+  background: none;
+  border: 1px solid #9e9e9e;
+  color: #9e9e9e;
+  outline: none;
+  border-radius: 3px;
+}
+
+.naming-cont .rename-btn {
+  border: 1px solid #9e9e9e;
+}
+
 .transaction-message {
   position: absolute;
   top: 50%;
@@ -4505,6 +4554,7 @@ nav {
   -webkit-transition: 0.1s;
   transition: 0.1s;
   transform: translate(-50%, -50%) scale(1);
+  z-index: 6;
 }
 
 .trans-close {
