@@ -1119,25 +1119,29 @@ class App{
     async showAdventurerRecord(){
         topAdventurersCont.classList.remove("my-stat-hidding")
         const allAdventurers = await this.useFetch(`${APIURL}/characters`, "GET", this.token)
+        log(allAdventurers)
         let onlyAdventurers = []
         allAdventurers.forEach(plyrs => {
             if(plyrs.rank !== "none"){
+                
+                log(plyrs.rank)
+                const theRank = ranks.find(rnks => rnks.rankDig === plyrs.rank)
+                log(theRank)
                 const plCurrPoints = plyrs.clearedQuests.currPoints
                 const plCleared = plyrs.clearedQuests.totalCleared
-                const {rankDig, displayRank} = ranks.find(rnks => rnks.rankDig === plyrs.rank)
                 const adventurerDet = {
                     lvl: plyrs.lvl,
                     name: plyrs.name,
                     plCurrPoints,
                     plCleared,
-                    rankNum: parseInt(rankDig),
-                    rankDisplay: displayRank,
+                    rankNum: parseInt(theRank.rankDig),
+                    rankDisplay: theRank.displayRank,
                     killed: plyrs.monsterKilled
                 }
                 onlyAdventurers.push(adventurerDet)
             }
         })
-        log(onlyAdventurers)
+       
         toplist.innerHTML = ''
         onlyAdventurers.sort(function(a, b){
             return b.rankNum-a.rankNum
@@ -2362,6 +2366,7 @@ class App{
 
         const collisionForEnemy = MeshBuilder.CreateGround(skillName, {size: .5}, this._scene)
         collisionForEnemy.isVisible = false
+        collisionForEnemy.actionManager = new ActionManager(this._scene)
 
         let fireExplosionJson
         let fireExplode
@@ -2457,11 +2462,6 @@ class App{
             case "fireBall":
                 this.setAttachSound(skillName, `fireBall.${player._id}`, player.bx, true)
                 
-                // particles for explosion
-                // fireExplosionJson = {"name":"Explode Particle","id":"default system","capacity":10000,"disposeOnStop":false,"manualEmitCount":-1,"emitter":[0,0,0],"particleEmitterType":{"type":"SphereParticleEmitter","radius":1,"radiusRange":1,"directionRandomizer":0},"texture":{"tags":null,"url":"https://www.babylonjs.com/assets/Flare.png","uOffset":0,"vOffset":0,"uScale":1,"vScale":1,"uAng":0,"vAng":0,"wAng":0,"uRotationCenter":0.5,"vRotationCenter":0.5,"wRotationCenter":0.5,"homogeneousRotationInUVTransform":false,"isBlocking":true,"name":"https://www.babylonjs.com/assets/Flare.png","hasAlpha":false,"getAlphaFromRGB":false,"level":1,"coordinatesIndex":0,"coordinatesMode":0,"wrapU":1,"wrapV":1,"wrapR":1,"anisotropicFilteringLevel":4,"isCube":false,"is3D":false,"is2DArray":false,"gammaSpace":true,"invertZ":false,"lodLevelInAlpha":false,"lodGenerationOffset":0,"lodGenerationScale":0,"linearSpecularLOD":false,"isRenderTarget":false,"animations":[],"invertY":true,"samplingMode":3,"_useSRGBBuffer":false},"isLocal":false,"animations":[],"beginAnimationOnStart":false,"beginAnimationFrom":0,"beginAnimationTo":60,"beginAnimationLoop":false,"startDelay":0,"renderingGroupId":0,"isBillboardBased":true,"billboardMode":7,"minAngularSpeed":0,"maxAngularSpeed":0,"minSize":0.1,"maxSize":0.1,"minScaleX":1,"maxScaleX":1,"minScaleY":1,"maxScaleY":1,"minEmitPower":3,"maxEmitPower":3,"minLifeTime":2.9,"maxLifeTime":3,"emitRate":800,"gravity":[0,0,0],"noiseStrength":[10,10,10],"color1":[0.10588235294117647,0,0,1],"color2":[0.1803921568627451,0.01568627450980392,0,1],"colorDead":[0.1568627450980392,0,0,1],"updateSpeed":0.083,"targetStopDuration":0,"blendMode":0,"preWarmCycles":0,"preWarmStepOffset":1,"minInitialRotation":0,"maxInitialRotation":0,"startSpriteCellID":0,"spriteCellLoop":true,"endSpriteCellID":0,"spriteCellChangeSpeed":1,"spriteCellWidth":0,"spriteCellHeight":0,"spriteRandomStartCell":false,"isAnimationSheetEnabled":false,"sizeGradients":[{"gradient":0,"factor1":1.4,"factor2":2},{"gradient":1,"factor1":0.01,"factor2":0.25}],"textureMask":[1,1,1,1],"customShader":null,"preventAutoStart":false}
-                // fireExplode = magicParticles[0].clone("fireExplosion")
-                
-                collisionForEnemy.actionManager = new ActionManager(this._scene)
                 collisionForEnemy.position = new Vector3(pFos.x, this.yPos, pFos.z)
                 fireClone = fire.clone("fireclone")
                 smokeClone = smoke.clone("smokeClone")
@@ -2469,6 +2469,7 @@ class App{
             
                 Monsterz.forEach(mons => {
                     this.toRegAction(collisionForEnemy, mons.body, () => {
+                        if(mons.isAMinnion) return
                         const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
                         log(`fireball hit ${mons.monsName}`);
                         // sound
@@ -2580,13 +2581,12 @@ class App{
             break
             case "spinningStar":
                 this.setAttachSound(skillName, `spinningStar.${player._id}`, player.bx, true)
+                
                 const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
                 // particles for explosion
                 fireExplosionJson = {"name":"Explode Particle","id":"default system","capacity":10000,"disposeOnStop":false,"manualEmitCount":-1,"emitter":[0,0,0],"particleEmitterType":{"type":"SphereParticleEmitter","radius":1,"radiusRange":1,"directionRandomizer":0},"texture":{"tags":null,"url":"https://www.babylonjs.com/assets/Flare.png","uOffset":0,"vOffset":0,"uScale":1,"vScale":1,"uAng":0,"vAng":0,"wAng":0,"uRotationCenter":0.5,"vRotationCenter":0.5,"wRotationCenter":0.5,"homogeneousRotationInUVTransform":false,"isBlocking":true,"name":"https://www.babylonjs.com/assets/Flare.png","hasAlpha":false,"getAlphaFromRGB":false,"level":1,"coordinatesIndex":0,"coordinatesMode":0,"wrapU":1,"wrapV":1,"wrapR":1,"anisotropicFilteringLevel":4,"isCube":false,"is3D":false,"is2DArray":false,"gammaSpace":true,"invertZ":false,"lodLevelInAlpha":false,"lodGenerationOffset":0,"lodGenerationScale":0,"linearSpecularLOD":false,"isRenderTarget":false,"animations":[],"invertY":true,"samplingMode":3,"_useSRGBBuffer":false},"isLocal":false,"animations":[],"beginAnimationOnStart":false,"beginAnimationFrom":0,"beginAnimationTo":60,"beginAnimationLoop":false,"startDelay":0,"renderingGroupId":0,"isBillboardBased":true,"billboardMode":7,"minAngularSpeed":0,"maxAngularSpeed":0,"minSize":0.1,"maxSize":0.1,"minScaleX":1,"maxScaleX":1,"minScaleY":1,"maxScaleY":1,"minEmitPower":3,"maxEmitPower":3,"minLifeTime":2.9,"maxLifeTime":3,"emitRate":800,"gravity":[0,0,0],"noiseStrength":[10,10,10],"color1":[0.10588235294117647,0,0,1],"color2":[0.1803921568627451,0.01568627450980392,0,1],"colorDead":[0.1568627450980392,0,0,1],"updateSpeed":0.083,"targetStopDuration":0,"blendMode":0,"preWarmCycles":0,"preWarmStepOffset":1,"minInitialRotation":0,"maxInitialRotation":0,"startSpriteCellID":0,"spriteCellLoop":true,"endSpriteCellID":0,"spriteCellChangeSpeed":1,"spriteCellWidth":0,"spriteCellHeight":0,"spriteRandomStartCell":false,"isAnimationSheetEnabled":false,"sizeGradients":[{"gradient":0,"factor1":1.4,"factor2":2},{"gradient":1,"factor1":0.01,"factor2":0.25}],"textureMask":[1,1,1,1],"customShader":null,"preventAutoStart":false}
                 fireExplode = new BABYLON.ParticleSystem.Parse(fireExplosionJson, this._scene, "")
                 fireExplode.stop()
-                
-                collisionForEnemy.actionManager = new ActionManager(this._scene)
                 fireClone = fire.clone("fireclone")
                 smokeClone = smoke.clone("smokeClone")
                 
@@ -2604,6 +2604,7 @@ class App{
                 if(!demonDet){
                     Monsterz.forEach(mons => {
                         this.toRegAction(collisionForEnemy, mons.body, () => {
+                            if(mons.isAMinnion) return
                             const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
                             log(`fireball hit ${mons.monsName}`);
 
@@ -2688,7 +2689,7 @@ class App{
                 // this.setAttachSound(skillName, `fireBall.${player._id}`, player.bx, true)
                 const violetColor = { r:0.44, g:0, b:0.95}
                 const v2c = {r:0.71, g:0.07, b:0.87}
-                collisionForEnemy.actionManager = new ActionManager(this._scene)
+                
                 collisionForEnemy.position = new Vector3(pFos.x, this.yPos, pFos.z)
                 
                 collisionForEnemy.lookAt(new Vector3(forwardDir.x, this.yPos, forwardDir.z),0,0,0)
@@ -2712,8 +2713,10 @@ class App{
  
                 Monsterz.forEach(mons => {
                     this.toRegAction(collisionForEnemy, mons.body, () => {
+                        
                         const newColPos = mons.body.getAbsolutePosition()
                         if(mons.isAMinnion) return log("this is a minnion")
+                        
                         if(mons.hp <= magicDmgTotal){
                             this.createNewCircle(magicCircles[1],violetColor, {x: 0, y: 0,z:0}, {x: newColPos.x, y: .05, z: newColPos.z}, player._id, 1000, false)
                             this.disposeActionM(mons.atkDetection)
@@ -2762,6 +2765,7 @@ class App{
                 this.flyingWeaponz.push({meshId: makeRandNum(), mesh: collisionForEnemy})
             break;
         }
+
         setTimeout(() => {
             particleMesh.dispose()
             if(collisionForEnemy){
@@ -2805,9 +2809,10 @@ class App{
         // }, removTimeOut)
     }
     initExplosion(emitter){
-        magicParticles[0].emitter = emitter
-        magicParticles[1].emitter = emitter
-        magicParticles[2].emitter = emitter
+        const emitPos = emitter.position
+        magicParticles[0].emitter = new Vector3(emitPos.x,emitPos.y,emitPos.z)
+        magicParticles[1].emitter = new Vector3(emitPos.x,emitPos.y,emitPos.z)
+        magicParticles[2].emitter = new Vector3(emitPos.x,emitPos.y,emitPos.z)
         magicParticles[0].start()
         magicParticles[1].start()
         magicParticles[2].start()
@@ -2859,13 +2864,8 @@ class App{
                     this.stopPress();
                     this.disableMoving()
                     this.stopMoving()
-                    const prevMode = this.myChar.mode
-                    this.myChar.mode = "none"
-                    setTimeout(() => {
-                        this.allCanPress()
-                        if(prevMode === "none") prevMode = "fist"
-                        this.myChar.mode = prevMode
-                    }, 100)
+            
+                    this.allCanPress()
                     if(effect){
                         switch(effect){
                             case "fall":
@@ -3132,8 +3132,10 @@ class App{
             if(!skillRecord) return log("skill not found")
             if(this.det.hp <= 0) return skillCont.style.display = "none"
             let willContinueSkill = false
+            
             const demandCost = skillRecord.demand.minCost
             let demandName = "MP"
+            let cancelCaptionName = `require more ${demandName}`
             switch(skillRecord.demand.name){
                 case "hp":
                     demandName = "HP"
@@ -3152,7 +3154,15 @@ class App{
                     }
                 break
             }
-            if(!willContinueSkill) return this.showTransaction(`require more ${demandName}`,1500);
+            switch(skillRecord.name){
+                case "pact":
+                    if(skillRecord.lvl < this.det.minnions.length){
+                        cancelCaptionName = `Your skill level is low to perform`
+                        willContinueSkill = false
+                    }
+                break
+            }
+            if(!willContinueSkill) return this.showTransaction(cancelCaptionName,1500);
             if(this.myChar.mode === "none") return this._statPopUp("skill not ready", 0, "red");
             if(this.myChar._casting) return this._statPopUp("still casting other skill", 0, "red");
             const prevMode = this.myChar.mode
@@ -3165,7 +3175,7 @@ class App{
             this.myChar.runningS.stop()
             setTimeout(() => {
                 this.allCanPress()
-            }, 600)
+            }, 500)
             const phyDmg = this.recalMeeleDmg()
             const magDmg = this.recalMagicDmg()
             const elemColor = rgbColors.find(det => det.name === this.det.aptitude[0].name)
@@ -3185,6 +3195,7 @@ class App{
             }else{   
                 this.skillIntro(skillRecord, this.myChar)
             }
+            clearTimeout(this._skillReleaseTimeOut)
             this._skillReleaseTimeOut = setTimeout(() => {
                 if(this.socketAvailable){
                     this.socket.emit("cast-skill", {
@@ -4624,15 +4635,17 @@ class App{
                     log(this.det.rank)
                     // const myrankDig = ranks.find(rnk => rnk.displayRank === this.det.rank)
                     // if(!myrankDig) return log("not found rank display")
-                    this.det.rank = parseInt(this.det.rank)+1
-                    this.det.rank = this.det.rank.toString()
+                    if(parseInt(this.det.rank) < 7){
+                        this.det.rank = parseInt(this.det.rank)+1
+                        this.det.rank = this.det.rank.toString()
 
-                    this.det.clearedQuests.currPoints=0;
-                    const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
-                    setTimeout(() => {
-                        this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 3000);
-                        this._allSounds.congratsS.play()
-                    }, 2500)
+                        this.det.clearedQuests.currPoints=0;
+                        const myCurRank = ranks.find(rnk => rnk.rankDig === this.det.rank)
+                        setTimeout(() => {
+                            this.showTransaction(`You Are Promoted To Rank ${myCurRank.displayRank}`, 3000);
+                            this._allSounds.congratsS.play()
+                        }, 2500)
+                    }             
                 }
             })
             await this.updateMyDetailsOL(this.det, true);
@@ -5736,6 +5749,46 @@ class App{
 
         await this.expGain(demon.expGain)
     }
+    monsterIsHitByMin(attackerId, monsId, dmgTaken, updatedLife){
+        const theMinnion = Monsterz.find(minn => minn.monsId === attackerId)
+        //dmgTaken is only for the tcpcon after deducting on the server
+        // we will get the updated hp from the server which is monsCurrentHp
+        log('monster got hit by min')
+        const theMons = Monsterz.find(enem => enem.monsId === monsId)
+        if(this.socketAvailable && updatedLife){
+            theMons.hp = updatedLife   
+        }else{
+            theMons.hp -= dmgTaken
+        }
+        theMons.robHealthGui.width = `${(parseInt(theMons.hp)/parseInt(theMons.maxHp) * 100) * 4}px`;
+        theMons.bloodSplat?.start()
+        if(theMinnion){ // sound ng atake ng minnion
+            log(theMinnion.punchedS)
+            theMinnion.punchedS.setPlaybackRate(.9 + Math.random()*.3)
+            theMinnion.punchedS.play()
+        }
+        if(!theMons.monsName.includes("slime")) theMons.weapon.position.y = 100
+        if(theMons.hp <= 0 ){
+            //enemy
+            clearInterval(theMons.atkInterval)            
+            
+            theMons.isChasing = false
+            theMons.isAttacking = false
+            theMons.targHero = undefined
+            if(!this.socketAvailable){
+                this.monsterDied(theMons.monsId)
+            }else{
+                this.socket.emit("monsDied", {monsId, monsName: theMons.monsName, place: this.currentPlace, willAnimate: true})
+            }
+        }else{
+            let totalOfHitAnim = -1
+            theMons.anims.forEach(anim => {
+                if(anim.name.includes("hit")) totalOfHitAnim++
+            })
+            this.playAnim(theMons.anims, `hit${totalOfHitAnim === 0 ? '' : totalOfHitAnim}`)
+        }
+        
+    }
     monsterIsHit(monsId, playerPos, playerId, theDamage, monspos, mode, isCritical){
         const monster = Monsterz.find(mons => mons.monsId === monsId)
         if(!monster) return log("did not found the monster")
@@ -5891,31 +5944,138 @@ class App{
                     }
                     this.readCheckMyQuest("slay", monster.monsName, monster.monsBreed)   
                 })                     
-            }  
+            }
+            return
         }
         if(playerId === this.det._id){
-            Monsterz.forEach(mns => {
-                if(mns.isAMinnion && mns.minnionOwner === this.det._id){
-                    
-                    if(monster.hp > 0){
-                        mns.targHero = monsId
-                        mns.isChasing = true;
-                        mns.regEnemy.forEach(enem => {
-                            if(enem.monsId === monsId) return log("this monster already my enemy")
-                            this.toRegAction(mns.atkDetection, monster.body, () => {
-                                this.playAnim(mns.anims, "attack1");
-                            })
-                            this.toRegActionExit(mns.atkDetection, monster.body, () => {
-                                mns.targHero = monsId
-                                mns.isChasing = true;
-                            })
-                            mns.regEnemy.push({monsId})
+            // for my minnions
+            Monsterz.forEach(minn => {
+                if(!minn.isAMinnion) return
+                if(minn.minnionOwner === this.det._id){ // can be two or three
+                    Monsterz.forEach(enem => {
+                        if(enem.monsId === minn.monsId) return // means me
+                        if(enem.minnionOwner === this.det._id) return // means also my other minnion
+                        if(enem.isAMinnion) return
+                        const minnEnemyAlreadyRegistered = minn.regEnemy.some(enemMonsId => enemMonsId === enem.monsId)
+                        if(minnEnemyAlreadyRegistered) return console.warn(`${enem.monsName} is already registered`)
+
+                        const myMinnionDet = this.det.minnions.find(mnion => mnion.monsId === minn.monsId)
+                                
+                        this.toRegAction(minn.atkDetection, enem.body, () => {
+                            let minnionEnemy = Monsterz.find(minenem => minenem.monsId === enem.monsId)               
+                            
+                            console.warn("Collided")
+                            let myMinnion = Monsterz.find(momon => momon.monsId === minn.monsId)
+                            let mnspos = myMinnion.body.position
+                            let animName = `attack${Math.floor(.6 + Math.random()*1)}`
+                            if(!myMinnion) return log("my minnion Not found")
+                            if(!minnionEnemy){
+                                myMinnion.isChasing = false
+                                myMinnion.isAttacking = false
+                                myMinnion.targHero = undefined
+                                return clearInterval(minn.intervalWillAttack)
+                            }
+                            if(myMinnion.targHero === this.det._id) return // means this is returning
+                            
+                            // attack first
+                            if(this.socketAvailable){
+                                this.socket.emit('minion-attack', {
+                                    monsId: myMinnion.monsId,
+                                    targHero: minnionEnemy.monsId, 
+                                    pos: {x: mnspos.x, y:0, z: mnspos.z},
+                                    place: this.currentPlace,
+                                    animName,
+                                    targPos: minnionEnemy.body.position
+                                })
+                            }else{
+                                myMinnion.isChasing = false
+                                myMinnion.isAttacking = true                            
+                                myMinnion.targHero = minnionEnemy.monsId        
+                                this.stopAnim(myMinnion.anims, "running", true)
+
+                                this.minnionAttackAnimation(myMinnion.monsId, this.currentPlace, animName)
+                            } 
+                            myMinnion.weapon.position.y = -3
+
+                            clearTimeout(minn.onCollideTimeOut)
+                            clearInterval(minn.intervalWillAttack)
+                            minn.intervalWillAttack = setInterval(() => {
+                                minnionEnemy = Monsterz.find(minenem => minenem.monsId === enem.monsId)               
+                                myMinnion = Monsterz.find(momon => momon.monsId === minn.monsId)
+                                mnspos = myMinnion.body.position
+                                if(!minnionEnemy){
+                                    myMinnion.isChasing = false
+                                    myMinnion.isAttacking = false
+                                    myMinnion.targHero = undefined
+                                    clearInterval(minn.intervalWillAttack)
+                                    return console.warn("Enemy not found")
+                                }
+                                if(this.socketAvailable){
+                                    this.socket.emit('minion-attack', {
+                                        monsId: myMinnion.monsId,
+                                        targHero: minnionEnemy.monsId, 
+                                        pos: {x: mnspos.x, y:0, z: mnspos.z},
+                                        place: this.currentPlace,
+                                        animName,
+                                        targPos: minnionEnemy.body.position
+                                    })
+                                }else{
+                                    myMinnion.isChasing = false
+                                    myMinnion.isAttacking = true                            
+                                    myMinnion.targHero = minnionEnemy.monsId        
+                                    this.stopAnim(myMinnion.anims, "running", true)
+
+                                    this.minnionAttackAnimation(myMinnion.monsId, this.currentPlace, animName)
+                                } 
+                                if(!myMinnion.monsName.includes("slime")) myMinnion.weapon.position.y = -2
+                            }, myMinnionDet.atkInterval)
+
                         })
-                    }
-                    
+                        this.toRegActionExit(minn.atkDetection, enem.body, () => {
+                            // this.minnionChase(mnsx.monsId, monster.monsId)
+                            let myMinnion = Monsterz.find(momon => momon.monsId === minn.monsId)
+                            clearInterval(minn.intervalWillAttack)
+                            clearTimeout(minn.onCollideTimeOut)
+                            minn.onCollideTimeOut = setTimeout(() => {
+                                if(this.socketAvailable){
+                                    this.socket.emit("monsWillChase", {monsId: myMinnion.monsId, targHero: enem.monsId})
+                                }else{
+                                    myMinnion.isAttacking = false
+                                    myMinnion.isChasing = true
+                                    myMinnion.targHero = enem.monsId
+                                }
+                            }, 1000)
+                        })
+                        this.toRegAction(minn.weapon, enem.body, () => {
+                            const myposition = minn.body.position
+                            
+                            const minnionEnemy = Monsterz.find(minnenem => minnenem.monsId === enem.monsId)
+                            
+                            if(!minnionEnemy) return log("enemy no longer here maybe dead")
+                            const mpos = minnionEnemy.body.position
+
+                            if(!this.socketAvailable){            
+                                this.monsterIsHitByMin(minn.monsId,minnionEnemy.monsId, myMinnionDet.dmg, false)                            
+                            }else{
+                                // babawasan niya yung buhay ng monster
+                                this.socket.emit("monsterIsHitByMin", {monsId: minnionEnemy.monsId, dmgTaken: myMinnionDet.dmg, attackerId: minn.monsId,
+                                pos: {x: mpos.x, z: mpos.z}, mypos: {x: myposition.x, z: myposition.z},
+                                place: this.currentPlace, willAnimate: true })
+                            }
+                        })
+                        minn.regEnemy.push(enem.monsId)
+                    })
+                    console.warn(`${minn.monsName} has registered ${minn.regEnemy.length} enemies !`)
                 }
             })
-            log(Monsterz)
+            // chase
+            Monsterz.forEach(mns => {
+                if(mns.minnionOwner === this.det._id){
+                    console.warn(`${mns.monsName} will chase ${monster.monsName}`)  
+                    // means nag fa follow siya saken kaya pwede siya umatake ng iba                  
+                    if(!mns.isAttacking) return this.minnionChase(mns.monsId, monster.monsId)
+                }
+            })            
         }
         // this.addToBash({_id: monster.monsId, mesh: monster.body, bashPower})
     }
@@ -5925,6 +6085,10 @@ class App{
         theMons.enemyDetection.position.y = 100
         theMons.atkDetection.position.y = 100
         theMons.weapon.position.y = 100
+        this.disposeActionM(theMons.body)
+        this.disposeActionM(theMons.enemyDetection)
+        this.disposeActionM(theMons.atkDetection)
+        this.disposeActionM(theMons.weapon)
         if(willAnimate){
             theMons.anims.forEach(anim => {
                 if(anim.name === "death"){
@@ -6073,64 +6237,73 @@ class App{
         let deductInArmor = dmgTaken
         if(this.det.shield.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.shield.meshId)
-            if(!myArmor) return log("shield not found")
-            if(myArmor.cState >= 1){
-                myDef+= this.det.shield.plusDef
-                this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.shield.meshId){
-                        this.reduceDurability(itm, deductInArmor/2)
-                        deductInArmor = deductInArmor/2
-                    }
-                })
-            }else{
-                this.unEquip(myArmor)
-                await this.deductItem(myArmor.meshId, 1)
-                this._allSounds.brokenS.play()
-                this._statPopUp(`Shield Broken`)
+            if(myArmor){
+                if(myArmor.cState >= 1){
+                    myDef+= this.det.shield.plusDef
+                    this.det.items.forEach(itm => {
+                        if(itm.meshId === this.det.shield.meshId){
+                            this.reduceDurability(itm, deductInArmor/2)
+                            deductInArmor = deductInArmor/2
+                        }
+                    })
+                }else{
+                    this.unEquip(myArmor)
+                    await this.deductItem(myArmor.meshId, 1)
+                    this._allSounds.brokenS.play()
+                    this._statPopUp(`Shield Broken`)
+                }
             }
         }
         if(this.det.armor.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.armor.meshId)
-            if(myArmor.cState >= 1){
-                myDef+= this.det.armor.plusDef
-                this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.armor.meshId) this.reduceDurability(itm, deductInArmor/3)
-                })
-            }else{
-                this.unEquip(myArmor)
-                await this.deductItem(myArmor.meshId, 1)
-                this._allSounds.brokenS.play()
-                this._statPopUp(`Armor Broken`)
+            if(myArmor){
+                if(myArmor.cState >= 1){
+                    myDef+= this.det.armor.plusDef
+                    this.det.items.forEach(itm => {
+                        if(itm.meshId === this.det.armor.meshId) this.reduceDurability(itm, deductInArmor/3)
+                    })
+                }else{
+                    this.unEquip(myArmor)
+                    await this.deductItem(myArmor.meshId, 1)
+                    this._allSounds.brokenS.play()
+                    this._statPopUp(`Armor Broken`)
+                }
             }
+       
         }
         if(this.det.gear.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.gear.meshId)
-            if(myArmor.cState >= 1){
-                myDef+= this.det.gear.plusDef
-           
-                this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.gear.meshId) this.reduceDurability(itm, deductInArmor/3)
-                })
-            }else{
-                this.unEquip(myArmor)
-                await this.deductItem(myArmor.meshId, 1)
-                this._allSounds.brokenS.play()
-                this._statPopUp(`Armor Broken`)
+            if(myArmor){
+                if(myArmor.cState >= 1){
+                    myDef+= this.det.gear.plusDef
+               
+                    this.det.items.forEach(itm => {
+                        if(itm.meshId === this.det.gear.meshId) this.reduceDurability(itm, deductInArmor/3)
+                    })
+                }else{
+                    this.unEquip(myArmor)
+                    await this.deductItem(myArmor.meshId, 1)
+                    this._allSounds.brokenS.play()
+                    this._statPopUp(`Armor Broken`)
+                }
             }
+
         }
         if(this.det.helmet.name !== "none") {
             const myArmor = this.det.items.find(itm => itm.meshId === this.det.helmet.meshId)
-            if(myArmor.cState >= 1){
-                myDef+= this.det.helmet.plusDef
-            
-                this.det.items.forEach(itm => {
-                    if(itm.meshId === this.det.helmet.meshId) this.reduceDurability(itm, deductInArmor/3)
-                })
-            }else{
-                this.unEquip(myArmor)
-                await this.deductItem(myArmor.meshId, 1)
-                this._allSounds.brokenS.play()
-                this._statPopUp(`helmet Broken`)
+            if(myArmor){
+                if(myArmor.cState >= 1){
+                    myDef+= this.det.helmet.plusDef
+                
+                    this.det.items.forEach(itm => {
+                        if(itm.meshId === this.det.helmet.meshId) this.reduceDurability(itm, deductInArmor/3)
+                    })
+                }else{
+                    this.unEquip(myArmor)
+                    await this.deductItem(myArmor.meshId, 1)
+                    this._allSounds.brokenS.play()
+                    this._statPopUp(`helmet Broken`)
+                }
             }
         }
 
@@ -6409,11 +6582,27 @@ class App{
         }
         return myDef
     }
+    minnionChase(minnionId, enemId){
+        const minnionEnemy = Monsterz.find(enem => enem.monsId === enemId)
+        if(!minnionEnemy) return log("I did not found the enemy")
+        const minnionDet = Monsterz.find(mon => mon.monsId === minnionId)
+        if(!minnionDet) return log("this minnion is not found on the monsters array")
+        clearInterval(minnionDet.intervalWillAttack)
+        if(this.socketAvailable){
+            this.socket.emit("monsWillChase", {monsId: minnionId, targHero:enemId})
+        }else{
+            minnionDet.isChasing = true
+            minnionDet.isAttacking = false
+            minnionDet.targHero = minnionEnemy.monsId
+        }
+
+        
+    }
     regEnemyToAttack(){
-        log(Monsterz)
+ 
         Monsterz.forEach(monster => {
             const alreadyHave = this.enemyRegistered.some(enemId => enemId === monster.monsId)
-            if(alreadyHave) return log("this monster is already registered !")
+            if(alreadyHave) return
             
             this.myChar.weaponCol.actionManager.registerAction(new ExecuteCodeAction(
                 {
@@ -6426,7 +6615,7 @@ class App{
                     if(themons.isAMinnion && themons.minnionOwner === this.det._id) return log("this is my minnion")
                     let myTotalDmg = parseInt(this.recalMeeleDmg())
          
-                    this.focusOn = monster.body
+                    if(!monster.isAMinnion) this.focusOn = monster.body
 
                     if(this.myChar.mode === "fist"){
                         this.myChar.punchedS.setPlaybackRate(.8 + Math.random()*.4)
@@ -6479,10 +6668,13 @@ class App{
                     }
                 }
             ))
+
+
             this.toRegAction(this.myChar.detector, monster.body, () => this.focusOn = monster.body)
             this.toRegActionExit(this.myChar.detector, monster.body, () => this.focusOn = null)
             this.enemyRegistered.push(monster.monsId)
         })
+ 
         players.forEach(player => {
             if(player._id === this.det._id) return
             const alreadyHave = this.enemyRegistered.some(enemId => enemId === player._id)
@@ -6726,7 +6918,7 @@ class App{
         return monsRootMesh
     }
     goDown(mesh, dura){
-        this.goingUpDowns.push({mesh, spd: -1})
+        this.goingUpDowns.push({mesh, spd: -2})
         setTimeout(() => {
             this.goingUpDowns = this.goingUpDowns.filter(gmesh => gmesh.mesh.name !== mesh.name)
         }, dura)
@@ -6780,8 +6972,8 @@ class App{
         micImg.src = `./images/monsters/${monsName}.png`
         micName.innerHTML = myUnderlingDet.dn
         micDesc.innerHTML = theMonster.desc
-        micHp.innerHTML = `Average life: ${theMonster.hp}-${Math.floor(theMonster.hp*1.3)}`
-        micDmg.innerHTML = `Average dmg: ${theMonster.dmg}-${Math.floor(theMonster.dmg*1.2)}`
+        micHp.innerHTML = `Average life: ${Math.floor(theMonster.hp)}-${Math.floor(theMonster.hp*1.3)}`
+        micDmg.innerHTML = `Average dmg: ${Math.floor(theMonster.dmg)}-${Math.floor(theMonster.dmg*1.2)}`
         let speedName = "fast"
         if(theMonster.spd > 0 && theMonster.spd <= 2.5) speedName = "slow"
         if(theMonster.spd > 2.5 && theMonster.spd <= 3) speedName = "average"
@@ -6791,8 +6983,7 @@ class App{
         const notAllowedMinnions = this.floorPlaces.some(plceName => this.currentPlace.includes(plceName))
         if(notAllowedMinnions) return this.showTransaction("Cannot Summon Here", 2500)
         log(myUnderlingDet)
-        if(isMyunderling){
-            
+        if(isMyunderling){            
             const myMonster = Monsterz.find(mnsx => mnsx.monsId === monsId)
             const renameBtn = createElement("button", "mic-btn blackBtn", "Rename", () => {
                 const namingCont = document.querySelector(".naming-cont")
@@ -6820,18 +7011,60 @@ class App{
                 body.append(namingCont)
             })
             micBtns.append(renameBtn)
-            if(!myUnderlingDet.isSummoned){
-                
-                if(myMonster){
+            if(!myUnderlingDet.isSummoned){                
+                if(myMonster){ // means the monster is in the same place otherwise it is not on Monsterz array
+                    const followMeBtn = createElement("button","mic-btn blackBtn", "Go Here", () => {
+                        monsInfoCont.classList.add("my-stat-hidding")
+                        
+                        let theMinnionToFollow = Monsterz.find(minn => minn.monsId === monsId)
+                        if(theMinnionToFollow){             
+                            const theFollowBx = this._scene.getMeshByName(`follow.${monsId}`)               
+                            if(theFollowBx){
+                                if(this.socketAvailable){
+                                    this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
+                                }else{
+                                    theMinnionToFollow.isChasing = true
+                                    theMinnionToFollow.targHero = this.myChar._id
+                                    theMinnionToFollow.isAttacking = false
+                                }
+                                return
+                            }
+                            const newCollBox = MeshBuilder.CreateGround(`follow.${monsId}`, { height: 2, width: 2}, this._scene)
+                            newCollBox.isVisible = false
+                            newCollBox.actionManager = new ActionManager(this._scene)
+                            newCollBox.parent = theMinnionToFollow.body
+
+                            if(this.socketAvailable){
+                                this.socket.emit("monsWillChase", {monsId, targHero: this.det._id})
+                            }else{
+                                theMinnionToFollow.isChasing = true
+                                theMinnionToFollow.targHero = this.myChar._id
+                                theMinnionToFollow.isAttacking = false
+                            }
+
+                            this.toRegAction(newCollBox, this.myChar.bx, () => {
+                                theMinnionToFollow = Monsterz.find(minn => minn.monsId === monsId)
+                                const minnCurpos = theMinnionToFollow.body.position
+                                if(this.socketAvailable){
+                                    this.socket.emit("monsWillStop", {monsId,pos: {x: minnCurpos.x,y:0,z:minnCurpos.z}})
+                                }else{
+                                    Monsterz = Monsterz.map(mon => mon.monsId === theMinnionToFollow.monsId ? {...mon, isChasing: false, isAttacking: false, targHero: undefined} : mon)
+                                    theMinnionToFollow.body.position = new Vector3(minnCurpos.x, minnCurpos.y, minnCurpos.z)
+                                }
+                                this.disposeActionM(newCollBox)
+                                this.disposeMeshes([newCollBox])
+                            })
+                        }
+                    })
+                    micBtns.append(followMeBtn)
                     const unsummonBtn = createElement("button","mic-btn blackBtn", "UnSummon", () => {
                         monsInfoCont.classList.add("my-stat-hidding")
                         displayElems([undelingsCont], "none")
                         
                         if(!myMonster) return this.showTransaction("Your Monster is not summoned and not in theMonz")
                         if(this.socketAvailable){
-                            this.socket.emit("monsDied", {monsId, monsName, place: this.currentPlace, willAnimate: false, willGoDown: true})
-                        }else{
-                            
+                            this.socket.emit("monsDied", {monsId, monsName: myMonster.monsName, place: this.currentPlace, willAnimate: false, willGoDown: true})
+                        }else{                            
                             this.goDown(myMonster.body, 3000)
                             this.monsterDied(monsId, false)
                         }
@@ -7598,8 +7831,6 @@ class App{
                this.setRunningSound()
             break;
         }
-        log("Our Current place is " + this.currentPlace)
-        log("Set The Proper Sound for " + this.myChar.mode)
     }
     openStoryWritten(startWord, arrayOfWords, callBack){
         let intervalWritten
@@ -8221,7 +8452,7 @@ class App{
                     dn: "monoloth",
                     armorName: "spikey",
                     monsBreed: "normal",
-                    pos: {x: -70 + Math.random() * 120, z: 50 + Math.random()*15},
+                    pos: {x: -20 + Math.random() * 50, z: -20 + Math.random()*40},
                     spd: 3.5 + Math.random() * .5,
                     hp: 1100,
                     maxHp: 1100,
@@ -10483,7 +10714,7 @@ class App{
             const isMade = Monsterz.some(monstar => monstar.monsId === mon.monsId)
             if(!isMade){
                 let monsterRoot = this.giveMonsterRoot(mon.monsName)
-                log(`mons display name ${mon.dn}`)
+                
                 this.createMonster(monsterRoot, mon, this._scene)
             }
         })
@@ -10525,14 +10756,14 @@ class App{
         if(isLoading || treasure === undefined) return log('still loading or undeifned seed')
         if(theTreasurez.length){                
             theTreasurez.forEach(trez => {
-                log("generating trasure " + trez.name)
+                
                 const isMade = this.Treasures.some(box => box.meshId === trez.meshId)
                 if(!isMade) this.createTreasure(treasure, trez);
             })
         }
     }
     checkFlowers(){
-        if(isLoading) return log("still loading ...")
+        if(isLoading) return 
         if(this.currentPlace === "heartland") return
         if(theFlowerz.length){
             theFlowerz.forEach(tre => {
@@ -10541,41 +10772,36 @@ class App{
                 if(!isMade){
                     switch(tre.spawntype){
                         case "flowers":
-                            log("it is a flower");
+                           
                             this.createFlower(stamFlower, tre, this._scene)
                         break;
                         case "herbs":
-                            log("it is a HERB");
+                            
                             this.createFlower(herbleaves, tre, this._scene);
                         break
                     }
-                }else{
-                    log("A flower has been made")
                 }
             })
         }
     }
-    checkLootz(){
-        log("checking theLootz")
-        if(isLoading) return log("still loading ...")
-        if(!allsword) return log("allsword not yet ready")
+    checkLootz(){        
+        if(isLoading) return 
+        if(!allsword) return
         if(theLootz.length){
             theLootz.forEach(loot => {
                 log(loot)
-                if(loot.place !== this.currentPlace) return log(`this loot not here`)
+                if(loot.place !== this.currentPlace) return 
                 const isMade = this.lootz.find(lt => lt.meshId === loot.meshId)
                 if(!isMade){
-                    log(`sword.${loot.meshId} not yet made so we will make`)
+                    
                     if(loot.itemType === "sword"){
                         allsword.forEach(swor => {
                             if(swor.name.split(".")[1] === loot.name){
-                                log("it is drakfoid")
+                                
                                 this.placeSword(loot, swor,.23, this._scene)
                             }
                         })
                     }
-                }else{
-                    log(`${loot.meshId} is already in the this.lootz`)
                 }
             })
         }
@@ -10930,12 +11156,12 @@ class App{
             this.checkBedLeaves()
         })
         this.socket.on("check-monsdied", data => {
-            if(data.place !== this.currentPlace) return
+            if(data.place !== this.currentPlace) return log("not the same place")
             const theMons = Monsterz.find(mons => mons.monsId === data.monsId)
             if(!theMons) return log("monster maybe already removed");
 
-            log("there is one monster that died on other client")
-            clearTimeout(theMons.intervalWillAttack)
+            log("there is one monster that died")
+            clearInterval(theMons.intervalWillAttack)
             this.stopAnim(theMons.anims, 'hit', true);
             this.monsterDied(data.monsId, data.willAnimate)
             if(data.willGoDown){                
@@ -10972,6 +11198,11 @@ class App{
             theMons.hp = theMonsterHP
             theMons.robHealthGui.width = `${(parseInt(theMons.hp)/parseInt(theMons.maxHp) * 100) * 4}px`;
         })
+        this.socket.on("monsterGotHitByMinn", data => {
+            if(data.place === this.currentPlace){
+                this.monsterIsHitByMin(data.attackerId,data.monsId, data.dmgTaken, data.monsCurrentHp)
+            }
+        })
         this.socket.on("monsIsChasing", data => {
             Monsterz.forEach(mons => {
                 if(mons.monsId === data.monsId){
@@ -10983,9 +11214,13 @@ class App{
             })
         })
         this.socket.on("monsStopped", data => {
+            
             const theMons = Monsterz.find(mons => mons.monsId === data.monsId)
-            if(!theMons) return log("cannot attack undefined monster")
+            if(!theMons) return log("cannot find undefined monster")
             Monsterz = Monsterz.map(mon => mon.monsId === data.monsId ? {...mon, isChasing: false, isAttacking: false, targHero: undefined} : mon)
+            theMons.isChasing = false
+            theMons.targHero = undefined
+            theMons.isAttacking = false
             theMons.body.position = new Vector3(data.pos.x, theMons.body.position.y, data.pos.z)
         })
         this.socket.on("monsAttack", data => {
@@ -11006,6 +11241,28 @@ class App{
             }
             theMons.hp = theMonsterHP
             theMons.robHealthGui.width = `${(parseInt(theMons.hp)/parseInt(theMons.maxHp) * 100) * 4}px`;
+        })
+        this.socket.on("minionAttacked", data => {
+            log("A minnion Attacked")           
+            const theMinnion = Monsterz.find(mons => mons.monsId === data.monsId)
+            if(!theMinnion) return log("cannot attack undefined minnion from TCP server")
+            theMinnion.isChasing = false
+            theMinnion.isAttacking = true
+            const theTargeIsHere = this._scene.getMeshByName(`box.${data.targHero}`)
+            if(!theTargeIsHere){
+                theMinnion.isChasing = false
+                theMinnion.isAttacking = false
+                theMinnion.targHero = undefined
+                log("minnion targ not here")
+            }else{
+                theMinnion.targHero = data.targHero
+                const minnPos = data.pos
+                theMinnion.position = new Vector3(minnPos.x,0,minnPos.z)
+                theMinnion.isChasing = false
+                theMinnion.isAttacking = true
+                this.minnionAttackAnimation(data.monsId, data.place, data.animName, data.targPos)
+            }
+            log(theMinnion)
         })
         this.socket.on("mons-thrown", data => {
             
@@ -11116,7 +11373,7 @@ class App{
                     log("the killer is me")
                     this.focusOn = null
                 }
-            }            
+            }
             
             log(`A User Died `)
 
@@ -11306,9 +11563,27 @@ class App{
     }
     renderMonsters(){
         Monsterz.forEach(mons => {
-            if(mons.isChasing && !mons.isHit){
+            if(mons.isChasing && !mons.isHit && !mons.isAttacking && !mons.isAMinnion){
                 const toChase = this._scene.getMeshByName(`box.${mons.targHero}`)
                 if(toChase){
+                    mons.body.lookAt(new Vector3(toChase.position.x,mons.body.position.y,toChase.position.z),0,0,0)
+                    this.playAnim(mons.anims, "running")
+                    mons.body.locallyTranslate(new Vector3(0,0,mons.spd * (this._engine.getDeltaTime()/1000)))
+                }
+            }
+            if(mons.isChasing && mons.isAMinnion){
+                const enemMonster = Monsterz.find(enem => enem.monsId === mons.targHero)
+                const minnionMaster = players.find(pl => pl._id === mons.targHero)
+                if(enemMonster){
+                    log("chasing monster enemy")
+                    const toChase = enemMonster.body
+                    mons.body.lookAt(new Vector3(toChase.position.x,mons.body.position.y,toChase.position.z),0,0,0)
+                    this.playAnim(mons.anims, "running")
+                    mons.body.locallyTranslate(new Vector3(0,0,mons.spd * (this._engine.getDeltaTime()/1000)))
+                }
+                if(minnionMaster){
+                    log("chasing owner")
+                    const toChase = minnionMaster.bx
                     mons.body.lookAt(new Vector3(toChase.position.x,mons.body.position.y,toChase.position.z),0,0,0)
                     this.playAnim(mons.anims, "running")
                     mons.body.locallyTranslate(new Vector3(0,0,mons.spd * (this._engine.getDeltaTime()/1000)))
@@ -11709,6 +11984,12 @@ class App{
                 log({x:this.myChar.bx.position.x,z:this.myChar.bx.position.z})
                 log("my details",this.det)
                 log(`monsters total `, Monsterz)
+                log(`focus on ${this.focusOn}`)
+                Monsterz.forEach(mxx => {
+                    if(mxx.minnionOwner === this.det._id){
+                        log(mxx)
+                    }
+                } )
                 // this.myChar.mode = "poisoned"
                 // this.det.maxHp += 200
                 // this.det.hp+=199
@@ -14789,6 +15070,15 @@ class App{
             this.monsterAttack(monsId, ourDet.monsName, theMonzFos, theIdOfPlayer, `attack${randNum}`)
         }
     }
+    minnionAttackAnimation(monsId, placeOfAttack, animationName, enemFos){
+        const theMonster = Monsterz.find(mons => mons.monsId === monsId)
+        if(!theMonster) return log("this monster that attack is not found")
+        if(placeOfAttack !== this.currentPlace) return log("A monster attacked in different place")
+        theMonster.isChasing = false
+        theMonster.isAttacking = true
+        
+        this.playAnim(theMonster.anims, animationName)
+    }
     // CREATION OF MONSTERS
     async createMonsterRoots(scene){
         monoloth = await BABYLON.SceneLoader.LoadAssetContainerAsync("./models/mons/", "monoloth.glb", scene)
@@ -14820,7 +15110,7 @@ class App{
         body.rotation.y = Math.random() * 4
         body.visibility = .9
 
-        let weapCSize = { width: .5, height: .6, depth: 1}
+        let weapCSize = { width: .5, height: .6, depth: 1.7}
         let weapZ = .5
         let punchedS
         let effectS
@@ -15023,6 +15313,7 @@ class App{
         }
         if(Monsterz.length){
             Monsterz.forEach(mon => {
+                if(isAMinnion) return
                 mon.body.actionManager.registerAction(new ExecuteCodeAction(
                     {
                         trigger: ActionManager.OnIntersectionEnterTrigger,
@@ -15295,35 +15586,6 @@ class App{
                     }
                 }
             ))
-        }else{
-            this.toRegAction(atkDetection, this.myChar.detector, () => {
-                const minnionDet = Monsterz.find(mon => mon.monsId === monsId)
-                if(!minnionDet) return log("this minnion is not found on the monsters array")
-                if(minnionDet.minnionOwner !== this.myChar._id) return log("you are not the owner")
-                if(minnionDet.isAttacking) return log("still attacking")
-                
-                this.stopAnim(animationGroups, "running", true)
-                minnionDet.isChasing = false
-                const mnspos = minnionDet.body.position
-                this.socket.emit("monsWillStop", {
-                    monsId: minnionDet.monsId, 
-                    targHero: this.det._id, 
-                    pos: {x: mnspos.x, y:0, z: mnspos.z}
-                })
-            })
-            this.toRegActionExit(atkDetection, this.myChar.detector, () => {
-                const minnionDet = Monsterz.find(mon => mon.monsId === monsId)
-                if(!minnionDet) return log("this minnion is not found on the monsters array")
-                if(minnionDet.isAttacking) return log("still attacking")
-                if(minnionDet.minnionOwner !== this.myChar._id) return log("you are not the owner")
-                if(this.socketAvailable){
-                    this.socket.emit("monsWillChase", {monsId: minnionDet.monsId, targHero: minnionOwner})
-                }else{
-                    minnionDet.isAttacking = false
-                    minnionDet.targHero = minnionOwner
-                    minnionDet.isChasing = true
-                }
-            })
         }
         // for sounds
         if(farSound !== undefined){
@@ -15374,6 +15636,7 @@ class App{
             isSleeping: false,
             targHero,
             intervalWillAttack,
+            onCollideTimeOut,
             standBy,
             expGain,
             punchedS,
@@ -15385,7 +15648,7 @@ class App{
             chasingS,
             isAMinnion,
             minnionOwner,
-            isSummoned: false
+            isSummoned: false,
         }
         if(isAMinnion) enemy.regEnemy = []
         let intervalLookAround
@@ -15730,6 +15993,7 @@ class App{
             body.lookAt(new Vector3(x, body.position.y, z),0,0,0)
             this.playAnim(me.anims, "running")
             body.locallyTranslate(new Vector3(0,0,me.spd))
+            
         }
         robHealthGui.width = `${(me.hp/hp * 100) * 4}px`;
     }

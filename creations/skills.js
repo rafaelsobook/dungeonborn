@@ -21,7 +21,7 @@ const skills = [
     {
         name: "fireBall",
         lvl: 1,
-        pointsToClaim: 3,
+        pointsToClaim: 5,
         pointsForUpgrade: 2,
         element: "any",
         requireMode: "any",
@@ -40,7 +40,7 @@ const skills = [
     {
         name: "rephantasm",
         lvl: 1,
-        pointsToClaim: 5,
+        pointsToClaim: 6,
         pointsForUpgrade: 2,
         element: "normal",
         requireMode: "any",
@@ -116,7 +116,7 @@ const skills = [
     {
         name: "pact",
         lvl: 1,
-        pointsToClaim: 5,
+        pointsToClaim: 10,
         pointsForUpgrade: 7,
         element: "dark",
         requireMode: "any",
@@ -127,7 +127,7 @@ const skills = [
         returnModeDura: 1000,
         skillCoolDown: 1000 * 2,
         demand: {name:"mp", minCost: 200, cost: .3}, // percent of mana and min cost
-        effects: { effectType: "damage", dmgPm: 0, plusDmg: 1000, chance: 10, bashPower: 10},
+        effects: { effectType: "damage", dmgPm: 0, plusDmg: 100, chance: 10, bashPower: 10},
         tier: "rare",  
         upgradePlus: 100,      
         desc: "You can consider yourself as a summoner for having this skill. Use this skill on monsters with lower life if the power of this skill plus your magic force is greater than the monster's life then it will increase the chance to capture your target"

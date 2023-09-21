@@ -372,8 +372,8 @@ body {
 .settings-container {
   @include centerFix(4);
   @include flexCenter();
-  width: 54%;
-  height: 55%;
+  width: 65%;
+  height: 60%;
   background: #1f1f1f;
   flex-direction: column;
   transition: 0.5s ease-in-out;

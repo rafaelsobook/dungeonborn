@@ -5,24 +5,32 @@ const ranks = [
     },
     {
         rankDig: "1",
-        displayRank: "D"
+        displayRank: "E"
     },
     {
         rankDig: "2",
-        displayRank: "C"
+        displayRank: "D"
     },
     {
         rankDig: "3",
-        displayRank: "B"
+        displayRank: "C"
     },
     {
         rankDig: "4",
-        displayRank: "A"
+        displayRank: "B"
     },
     {
         rankDig: "5",
+        displayRank: "A"
+    },
+    {
+        rankDig: "6",
         displayRank: "S"
     },
+    {
+        rankDig: "7",
+        displayRank: "SSS"
+    }
 ]
 
 export default ranks
