@@ -11164,14 +11164,8 @@ class App{
             clearInterval(theMons.intervalWillAttack)
             this.stopAnim(theMons.anims, 'hit', true);
             this.monsterDied(data.monsId, data.willAnimate)
-            if(data.willGoDown){                
-                this.goingUpDowns.push({mesh: theMons.body, spd: -1})
-                
-                setTimeout(() => {
-                    this.goingUpDowns = this.goingUpDowns.filter(msh => msh.mesh.name !== theMons.body.name)
-                    log(this.goingUpDowns)
-                }, 1000)
-            }
+            if(data.willGoDown) this.goDown(theMons.body, 4000)
+            
             this.removeToBash({_id: data.monsId})
             Monsterz = Monsterz.filter(mons => mons.monsId !== data.monsId);
         })
