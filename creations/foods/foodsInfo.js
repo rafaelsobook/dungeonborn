@@ -51,7 +51,7 @@ const foodsInfo = [
     {
         dn: 'small potion',
         name: "spotion",
-        plusHealth: .3,
+        plusHealth: .1,
         desc: "A small potion that can generate your life for an amount",
         raw: false,
         plus: 80,
@@ -59,7 +59,7 @@ const foodsInfo = [
     {
         dn: 'medium potion',
         name: "mpotion",
-        plusHealth: .5,
+        plusHealth: .2,
         desc: "A Medium potion that can generate your life for an amount",
         raw: false,
         plus: 200,
@@ -67,7 +67,7 @@ const foodsInfo = [
     {
         dn: 'big potion',
         name: "bigpotion",
-        plusHealth: .6,
+        plusHealth: .5,
         desc: "A Big potion that can generate your life for an amount",
         raw: false,
         plus: 500,

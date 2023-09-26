@@ -391,7 +391,23 @@ const records = [
         cState: 6000,
         durability: 6000,
         rarity: 4,
-        notLootIn: ["dungeon"]
+        notLootIn: ["dungeon"],
+        handleColor: {r: 0.941,g:0,b:0}
+    },
+    { 
+        dn: "Demons Idle",
+        name: 'demonsidle', 
+        itemType: 'sword',
+        desc: "A sword that lights on the dark, It was the origin of the cursed swords",
+        origPrice: 7000,
+        secondPrice: 4000,
+        craftMaterial: { name: "bluemincore", qnty: 2, forgeChance: 5},
+        plusDmg: 90,
+        cState: 6000,
+        durability: 6000,
+        rarity: 4,
+        notLootIn: ["dungeon"],
+        handleColor: {r:0,g:0.369,b:0.933}
     },
     { 
         dn: "Golem's Birth",
@@ -407,20 +423,7 @@ const records = [
         rarity: 3,
         notLootIn: ["dungeon"]
     },
-    { 
-        dn: "Demons Idle",
-        name: 'demonsidle', 
-        itemType: 'sword',
-        desc: "A sword that lights on the dark, It was the origin of the cursed swords",
-        origPrice: 7000,
-        secondPrice: 4000,
-        craftMaterial: { name: "bluemincore", qnty: 2, forgeChance: 5},
-        plusDmg: 90,
-        cState: 6000,
-        durability: 6000,
-        rarity: 4,
-        notLootIn: ["dungeon"]
-    },
+
     { 
         dn: 'Ruzty Sword',
         name: 'ruztysword', 
@@ -795,6 +798,19 @@ const records = [
         secondPrice: 1500,
         desc: "A core that can be found in demons, normally from blue horn demons",
         rarity: 3,
+        notLootIn: ["dungeon", "heartland"]
+    },
+    {
+        dn: "Noir Core",
+        name: 'noircore', 
+        for: "noir",
+        itemType: 'core', 
+        plusDef: 0, plusDmg: 0, 
+        magRes: 0, plusMag: 0,
+        origPrice: 6000,
+        secondPrice: 4000,
+        desc: "This demonic core has tremendous power inside, It can even destroy a country if given in wrong hands. no body has seen this core for ages",
+        rarity: 5,
         notLootIn: ["dungeon", "heartland"]
     },
     {

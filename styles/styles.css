@@ -609,6 +609,8 @@ body {
       -ms-flex-direction: column;
           flex-direction: column;
   overflow-y: scroll;
+  padding-bottom: 20px;
+  height: 90%;
 }
 
 .settings-container .settings-main .settings-list .set-view .links-bx {
@@ -2663,6 +2665,12 @@ nav {
   pointer-events: none;
 }
 
+.rui-btn:active {
+  -webkit-transform: scale(0.95);
+          transform: scale(0.95);
+  outline: none;
+}
+
 .settingsIcon {
   position: fixed;
   top: 1.5%;
@@ -2688,12 +2696,6 @@ nav {
   pointer-events: none;
   height: 100%;
   width: 100%;
-}
-
-.rui-btn:active {
-  -webkit-transform: scale(0.95);
-          transform: scale(0.95);
-  outline: none;
 }
 
 .right-lower-ui {
@@ -2891,15 +2893,21 @@ nav {
   }
   .right-lower-ui {
     position: fixed;
-    bottom: 9%;
-    right: 10%;
+    bottom: 25%;
+    right: 12%;
     z-index: 3;
     display: none;
+    width: 145px;
+    height: 120px;
+  }
+  .right-lower-ui .mode-btn {
+    width: 40px;
+    height: 40px;
   }
   .right-lower-ui .atk-btn-bx {
     cursor: pointer;
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
   }
   .right-upper-ui {
     position: fixed;
@@ -2935,12 +2943,13 @@ nav {
     margin-top: 4%;
   }
   .rui-btn {
-    width: 45px;
-    height: 45px;
+    width: 35px;
+    height: 35px;
+    margin-bottom: 4px;
   }
   .rui-btn .rui-caps {
     letter-spacing: 1px;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     top: 90%;
   }
   .oc-img {
@@ -6760,13 +6769,13 @@ nav {
   z-index: 4;
   width: 65%;
   top: 50%;
-  height: 50%;
+  height: 60%;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: start;
-      -ms-flex-pack: start;
-          justify-content: flex-start;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
@@ -6777,6 +6786,7 @@ nav {
   opacity: 1;
   -webkit-transition: 0.5s ease-in-out;
   transition: 0.5s ease-in-out;
+  padding: 10px;
 }
 
 .alladventurer-detail-cont .adc-title {
@@ -6786,7 +6796,7 @@ nav {
   color: #4b0505;
   font-size: 1.2rem;
   margin-bottom: 10px;
-  height: 10%;
+  height: 5%;
   font-weight: 900;
 }
 
@@ -6805,7 +6815,8 @@ nav {
       -ms-flex-align: center;
           align-items: center;
   width: 100%;
-  height: 87%;
+  height: 85%;
+  overflow-y: scroll;
 }
 
 .alladventurer-detail-cont .adc-list .adc-bx {
@@ -6843,6 +6854,10 @@ nav {
   gap: 15px;
   font-size: 0.9rem;
   font-family: "Bellefair", serif;
+}
+
+.alladventurer-detail-cont .adc-close {
+  height: 5%;
 }
 
 .my-stat-hidding {

@@ -402,7 +402,7 @@ const createItemObj = (dat) => {
 
 let theGame
 let isInTutorialMode = false
-
+let isAdmin = false
 let xcor //coordinates ng joystick sa world axis
 let zcor //coordinates ng joystick sa world axis
 let bodyx
@@ -526,8 +526,9 @@ function openGameUI(det){
 function showNotif(message, dura){
     notifPopup.style.display = "block"
     notifTtle.innerHTML = message
-
-    dura && setTimeout(() => closeNotif(),dura)
+    let durationTimeout = 2000
+    if(dura) durationTimeout = dura
+    setTimeout(() => closeNotif(),dura)
 }
 function closeNotif(){
     notifPopup.style.display = "none"
@@ -756,8 +757,7 @@ class App{
         userId = this.det._id
         this.setMySkills()
     }
-    setHTMLUI(data){
-        
+    setHTMLUI(data){        
         const { sword, def, core, magic} = data.stats
         const labelsOfStats = document.querySelectorAll(".eqpd-int")
         const myApts = [];
@@ -782,9 +782,9 @@ class App{
             if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Aptitudes: ${myApts.join(" || ")}`
             if(elem.className && elem.className.includes('apts')) elem.innerHTML = `Race: ${data.race}`
         })
-        log(this.det.aptitude)
+ 
         let rankName = "none"
-        log(this.det.rank)
+
         if(this.det.rank !== "none"){
             const theRank = ranks.find(ran => ran.rankDig === this.det.rank)
             rankName = theRank.displayRank
@@ -1068,6 +1068,15 @@ class App{
         const absPos = inviMesh.getAbsolutePosition()
         return absPos
     }
+    addTitle(newTitleName, cb){
+        const isThere = this.det.titles.some(titleName => titleName === newTitleName)
+        if(isThere) return
+        this.det.titles.push(newTitleName)
+        this.updateMyDetailsOL(this.det, true).then(() => {
+            showNotif(`Title ${newTitleName} acquired`, 3500)
+            cb && cb()
+        })
+    }
     async showAllLordz(){
         lordzList.innerHTML = ''
         lordzCont.classList.remove("my-stat-hidding");
@@ -1119,14 +1128,11 @@ class App{
     async showAdventurerRecord(){
         topAdventurersCont.classList.remove("my-stat-hidding")
         const allAdventurers = await this.useFetch(`${APIURL}/characters`, "GET", this.token)
-        log(allAdventurers)
+
         let onlyAdventurers = []
         allAdventurers.forEach(plyrs => {
-            if(plyrs.rank !== "none"){
-                
-                log(plyrs.rank)
-                const theRank = ranks.find(rnks => rnks.rankDig === plyrs.rank)
-                log(theRank)
+            if(plyrs.rank !== "none"){ 
+                const theRank = ranks.find(rnk => rnk.rankDig === plyrs.rank)
                 const plCurrPoints = plyrs.clearedQuests.currPoints
                 const plCleared = plyrs.clearedQuests.totalCleared
                 const adventurerDet = {
@@ -1143,12 +1149,13 @@ class App{
         })
        
         toplist.innerHTML = ''
-        onlyAdventurers.sort(function(a, b){
+        onlyAdventurers = onlyAdventurers.sort(function(a, b){
             return b.rankNum-a.rankNum
         });
         let listOfAdvs = 0
         onlyAdventurers.forEach((plyrs, idx) => {
-            if(listOfAdvs >= 5) return
+            log(`${plyrs.name} rank:${plyrs.rankNum} ${plyrs.rankDisplay}`)
+            // if(listOfAdvs >= 5) return
             const bx = createElement("div", "adc-bx");
             const plName = createElement("p", "adc-name", `${idx+1}. ${plyrs.name}`)
 
@@ -1953,7 +1960,6 @@ class App{
             }
         }
         const itemAvailable = (det, chld) => {
-            log(det.name)
             if(chld.className === "none-cap") chld.style.display = "none";
             if(chld.className === "arms-bx"){
                 chld.children[0].src = `./images/loots/${det.name}.png`
@@ -2001,7 +2007,10 @@ class App{
                 noName(chld, "blade")
             }else{
                 const theItem = this.det.items.find(itm => itm.meshId === this.det.weapon.meshId)
-                if(!theItem) return log("my equiped weapon not found");
+                if(!theItem){
+                    this.det.weapon.name = "none"
+                    return noName(chld, "blade")
+                }
                 itemAvailable(theItem, chld)
             }
         })
@@ -2255,7 +2264,6 @@ class App{
                 this.det.points -= mySkill.pointsForUpgrade
                 mySkill.lvl+=1
                 mySkill.effects.plusDmg+=mySkill.upgradePlus
-                this._allSounds.upgradeS.play()
                 itemInfoCont.style.display = "none"
                 this.returnButtons([e.target])
             }else{
@@ -2374,6 +2382,7 @@ class App{
         let fireClone
         let smokeClone
 
+        const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
         const Col4 = BABYLON.Color4
         switch(skillName){
             case "superPunch":
@@ -2466,11 +2475,11 @@ class App{
                 fireClone = fire.clone("fireclone")
                 smokeClone = smoke.clone("smokeClone")
                 collisionForEnemy.lookAt(new Vector3(forwardDir.x, this.yPos, forwardDir.z),0,0,0)
-            
+                
                 Monsterz.forEach(mons => {
                     this.toRegAction(collisionForEnemy, mons.body, () => {
                         if(mons.isAMinnion) return
-                        const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
+                        
                         log(`fireball hit ${mons.monsName}`);
                         // sound
                         fireExplodeS.attachToMesh(mons.body)
@@ -2503,8 +2512,7 @@ class App{
                     this.toRegAction(collisionForEnemy, mons.bx, () => {
                         const theDemon = demons.find(dm => dm._id === mons._id)
                         if(!theDemon) return log('demon not found')
-                        if(theDemon.hp <= 0) return log("demon have 0hp")
-                        const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
+                        if(theDemon.hp <= 0) return log("demon have 0hp")                        
                         
                         // sound
                         fireExplodeS.attachToMesh(theDemon.bx)
@@ -2533,7 +2541,24 @@ class App{
                             theDemon.targHero = this.det._id
                         } 
                     })
-                })                
+                })
+                this.toRegAction(collisionForEnemy, this.myChar.bx, () => {
+                    if(this.det.hp <= 0) return
+                    // sound
+                    fireExplodeS.attachToMesh(this.myChar.bx)
+                    fireExplodeS.play()
+                    this.disposeSounds([fireExplodeS], 4000)
+                    // particle
+                    this.initExplosion(this.myChar.bx)
+                    
+                    particleMesh.dispose()
+                    fireClone.dispose()
+                    smokeClone.dispose()
+                    this.disposeMeeleeMesh(collisionForEnemy)                    
+                    
+                    this.hitByNonMultiAI(this.myChar.bx, player.bx, skillDmg, "hit", player._id, false, demonDet, true);
+                    this.playAnim(this.myChar.anims, "hit")
+                })               
                 collisionForEnemy.locallyTranslate(new Vector3(0,0,1))
 
                 fireClone.emitter = particleMesh
@@ -2582,7 +2607,6 @@ class App{
             case "spinningStar":
                 this.setAttachSound(skillName, `spinningStar.${player._id}`, player.bx, true)
                 
-                const fireExplodeS = this._allSounds.hitByFireS.clone('explode')
                 // particles for explosion
                 fireExplosionJson = {"name":"Explode Particle","id":"default system","capacity":10000,"disposeOnStop":false,"manualEmitCount":-1,"emitter":[0,0,0],"particleEmitterType":{"type":"SphereParticleEmitter","radius":1,"radiusRange":1,"directionRandomizer":0},"texture":{"tags":null,"url":"https://www.babylonjs.com/assets/Flare.png","uOffset":0,"vOffset":0,"uScale":1,"vScale":1,"uAng":0,"vAng":0,"wAng":0,"uRotationCenter":0.5,"vRotationCenter":0.5,"wRotationCenter":0.5,"homogeneousRotationInUVTransform":false,"isBlocking":true,"name":"https://www.babylonjs.com/assets/Flare.png","hasAlpha":false,"getAlphaFromRGB":false,"level":1,"coordinatesIndex":0,"coordinatesMode":0,"wrapU":1,"wrapV":1,"wrapR":1,"anisotropicFilteringLevel":4,"isCube":false,"is3D":false,"is2DArray":false,"gammaSpace":true,"invertZ":false,"lodLevelInAlpha":false,"lodGenerationOffset":0,"lodGenerationScale":0,"linearSpecularLOD":false,"isRenderTarget":false,"animations":[],"invertY":true,"samplingMode":3,"_useSRGBBuffer":false},"isLocal":false,"animations":[],"beginAnimationOnStart":false,"beginAnimationFrom":0,"beginAnimationTo":60,"beginAnimationLoop":false,"startDelay":0,"renderingGroupId":0,"isBillboardBased":true,"billboardMode":7,"minAngularSpeed":0,"maxAngularSpeed":0,"minSize":0.1,"maxSize":0.1,"minScaleX":1,"maxScaleX":1,"minScaleY":1,"maxScaleY":1,"minEmitPower":3,"maxEmitPower":3,"minLifeTime":2.9,"maxLifeTime":3,"emitRate":800,"gravity":[0,0,0],"noiseStrength":[10,10,10],"color1":[0.10588235294117647,0,0,1],"color2":[0.1803921568627451,0.01568627450980392,0,1],"colorDead":[0.1568627450980392,0,0,1],"updateSpeed":0.083,"targetStopDuration":0,"blendMode":0,"preWarmCycles":0,"preWarmStepOffset":1,"minInitialRotation":0,"maxInitialRotation":0,"startSpriteCellID":0,"spriteCellLoop":true,"endSpriteCellID":0,"spriteCellChangeSpeed":1,"spriteCellWidth":0,"spriteCellHeight":0,"spriteRandomStartCell":false,"isAnimationSheetEnabled":false,"sizeGradients":[{"gradient":0,"factor1":1.4,"factor2":2},{"gradient":1,"factor1":0.01,"factor2":0.25}],"textureMask":[1,1,1,1],"customShader":null,"preventAutoStart":false}
                 fireExplode = new BABYLON.ParticleSystem.Parse(fireExplosionJson, this._scene, "")
@@ -3139,6 +3163,10 @@ class App{
             switch(skillRecord.demand.name){
                 case "hp":
                     demandName = "HP"
+                    if(this.det.hp >= demandCost){
+                        willContinueSkill = true
+                        this.det.sp-=demandCost
+                    }
                 break;
                 case "sp":
                     demandName = "SP"
@@ -3154,6 +3182,7 @@ class App{
                     }
                 break
             }
+            cancelCaptionName = `require more ${demandName}`
             switch(skillRecord.name){
                 case "pact":
                     if(skillRecord.lvl < this.det.minnions.length){
@@ -3306,6 +3335,9 @@ class App{
             log(this.myChar.anims)
             if(btnName.includes("swordpic")){
                 if(this.det.weapon.name === "none") return
+                const isInMyItems = this.det.items.find(myinv => myinv.meshId === this.det.weapon.meshId)
+                log(this.det.items)
+                if(!isInMyItems) return this.setEquipedItems()
                 this.setRunningSound()
                 if(this.myChar.mode === "stand" || this.myChar.mode === "fist"){
 
@@ -4409,6 +4441,7 @@ class App{
                         const theSwordMyHand = this.myChar.swordz.find(sword => sword.name.split(".")[1] === itemName)
                         const theLandGround = this._scene.getMeshByName("ground")
                         if(!theLandGround) return log("not found ground")
+                        if(!theSwordMyHand) return log("not found sword")
                         if(theLandGround && theSwordMyHand){
                             this.myChar.soundColl.actionManager = new ActionManager(this._scene)
                             this.toRegAction(this.myChar.soundColl, theLandGround, async () => {
@@ -4485,7 +4518,13 @@ class App{
             }, 4500)
         });
         cancelBuy.addEventListener("click", e => apartCont.style.display = "none")
+
         cancelParents.forEach(btn => btn.addEventListener("click", e => {
+            
+            // means the adventurer record 
+            if(e.target.parentElement.className.includes("alladventurer-detail-cont")){                
+                return e.target.parentElement.classList.add("my-stat-hidding")
+            }
             e.target.parentElement.style.display ="none"
             if(this.targetRecource === "guild") this.allCanPress()
         }))
@@ -4899,8 +4938,6 @@ class App{
                     soundOfConsume = this._allSounds.eatSolidS
                 }
                 const aBtn = createElement("button", "plantseed item-infobtn", nameOfBtn,async () => {
-                    
-                    if(!theFood) return log("food not found")
                     if(!theFood.name.includes("potion")){
                         if(foodNameLower.includes("antidote")){
                             isCuring = true
@@ -4915,6 +4952,8 @@ class App{
                         }
                     }else{
                         //means potion
+                        const plusHealth = this.det.maxHp * theFood.plusHealth
+                        this.det.hp += plusHealth
                         this.det.hp += theFood.plus
                     }
                     if(soundOfConsume){
@@ -5691,6 +5730,11 @@ class App{
         theDemon.lifeGui.width = `${(parseInt(theDemon.hp)/parseInt(theDemon.maxHp) * 100) * 4}px`;
         
         let monsHaveBlood = true
+        if(theDemon.targHero === undefined){
+            theDemon.targHero = this.det._id
+            theDemon._moving = true
+            theDemon.mode = "weapon"
+        }
         switch(mode){
             case "weapon":
                 theDemon.sliceHitS.setPlaybackRate(.9 + Math.random()*.3)
@@ -7991,6 +8035,12 @@ class App{
     checkIfHaveWeapon(){
         if(this.det.weapon.name !== "none") {
             log("WE HAVE WEAPON")
+            const isInMyItems = this.det.items.find(myinv => myinv.meshId === this.det.weapon.meshId)
+            if(!isInMyItems){
+                swordPicBtn.style.display = "none"
+                throwBtn.style.display = "none"
+                return 
+            }
             if(this.det.weapon.name.toLowerCase().includes("spear")){
                 log("mode is weapon so show the throw spear")
                 swordPicBtn.style.display = "block"
@@ -9209,8 +9259,7 @@ class App{
         this._loadDungeonSounds()
         this._allSounds.windambient.play(true);
         this.createMainHitBox(scene, "rockTexWall.jpg", 2, 10)
-          
-
+        
         this.runLifeManaStaminaRegen()
 
         const cam = this.arcCam(scene)
@@ -9266,7 +9315,8 @@ class App{
 
 
         const dGround = MeshBuilder.CreateGround("ground", { width: 100, height: 300}, scene)
-        dGround.isVisible = false;dGround.position.y-=.2        
+        dGround.isVisible = false;
+        dGround.position.y-=.2        
 
         await this.createNecessary(scene)
         await this.createDungeonTiles(scene)
@@ -9291,53 +9341,42 @@ class App{
             dungeonGate.meshes[0].addRotation(0,Math.PI,0)
         }
 
-        // let rocksLeft = -110
-        // while(rocksLeft <= 120){
-        //     const roRotat = Math.random() <= .6
-        //     const scaleR = .5 + Math.random() * 1
-        //     let dungNum = Math.floor(Math.random()*4)
-        //     if(dungNum === 0) dungNum = 1
-        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksLeft + Math.random()*5}, roRotat && Math.PI *.2, scene, {ran: scaleR})
+        if(floorNumber === 8){
+            const dungPillar = await this.importMesh(scene, "./models/", "dungPillars.glb", true)
+            dungPillar.name = "ground"
+            this.blocks.push(dungPillar)
 
-        //     this.blocks.push(newRock)
-        //     rocksLeft+=3
-        // }
-        // let rocksR = -110
-        // while(rocksR <= 120){
-        //     const roRotat = Math.random() <= .6
-        //     const scaleR = .5 + Math.random() * 1
-        //     let dungNum = Math.floor(Math.random()*4)
-        //     if(dungNum === 0) dungNum = 1
-        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 17 + Math.random() * .5,y: -Math.random()*1.5, z: rocksR + Math.random() * 4}, roRotat && Math.PI *.2, scene, {ran: scaleR})
+            let bigRLeft = -100
+            while(bigRLeft <= 100){
+                const scaleR = .5 + Math.random() * 1
+                let dungNum = Math.floor(Math.random()*4)
+                if(dungNum === 0) dungNum = 1
+                const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRLeft + Math.random()*5}, Math.random()*4, scene, {ran: scaleR})
 
-        //     this.blocks.push(newRock)
-        //     rocksR+=3
-        // };
+                this.blocks.push(newRock)
+                bigRLeft+=12
+            }
+            let bigRri = -100
+            while(bigRri <= 100){
+                const scaleR = .5 + Math.random() * 1
+                let dungNum = Math.floor(Math.random()*4)
+                if(dungNum === 0) dungNum = 1
+                const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRri + Math.random() * 4}, Math.random()*4, scene, {ran: scaleR})
 
-        // let bigRLeft = -100
-        // while(bigRLeft <= 100){
-        //     const roRotat = Math.random() <= .6
-        //     const scaleR = 2 + Math.random() * 1
-        //     let dungNum = Math.floor(Math.random()*4)
-        //     if(dungNum === 0) dungNum = 1
-        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: -26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRLeft + Math.random()*5}, Math.random()*4, scene, {ran: scaleR})
- 
-        //     this.blocks.push(newRock)
-        //     bigRLeft+=12
-        // }
-        // let bigRri = -100
-        // while(bigRri <= 100){
-        //     const roRotat = Math.random() <= .6
-        //     const scaleR = 2 + Math.random() * 1
-        //     let dungNum = Math.floor(Math.random()*4)
-        //     if(dungNum === 0) dungNum = 1
-        //     const newRock = this.createComplicatedIns(Spike.meshes[1], 'bigrock', {x: 26 + Math.random() * .5,y: -Math.random()*1.5, z: bigRri + Math.random() * 4}, Math.random()*4, scene, {ran: scaleR})
+                this.blocks.push(newRock)
+                bigRri+=12
 
-        //     this.blocks.push(newRock)
-        //     bigRri+=12
-        // };
+                const rightPillar = dungPillar.clone("ground")
+                rightPillar.position = new Vector3(14 + Math.random()*3,0,bigRri)
+                this.blocks.push(rightPillar)
 
-        if(floorNumber >= 5){
+                const leftPillar = dungPillar.clone("ground")
+                leftPillar.position = new Vector3(-14 - Math.random()*3,0,bigRri)
+                this.blocks.push(leftPillar)
+            };
+        }
+
+        if(floorNumber >= 5 && floorNumber < 8 ){
             let crysNums = -10
             while(crysNums <= floorNumber){
                 let crystalName = Math.random()*10 > 9 ? 'redberyl' : 'azurite'
@@ -9356,13 +9395,15 @@ class App{
 
         this.myChar = this.createCharacter(this.det,theCharacterRoot,scene,true, allsword, allhelmets, allshields, 1.7)
         myCharDet = this.myChar;
-   
+
         const demonArray = allDemonz(floorNumber);
         
         let demonNum = "none"
         if(floorNumber >= 4 && floorNumber <= 5) demonNum = 0
         if(floorNumber >= 5 && floorNumber <= 7) demonNum = 1
+        if(floorNumber === 8) demonNum = 2
         if(demonNum !== "none") this.createDemon(theCharacterRoot, demonArray[demonNum], this.btf, scene)
+        
         this.Crytalz.forEach(cryz => {
             cryz.mesh.actionManager = new ActionManager(scene)
             this.toRegAction(cryz.mesh, this.myChar.detector, () => {
@@ -9454,8 +9495,50 @@ class App{
             monsterDetail.effects = houndInfo.effects
         }
         dungeonSpawnInterval = setInterval(() => {
+            if(floorNumber === 8 && !demons.length){
+                Monsterz.forEach(mns => {
+                    if(mns.isAMinnion) return
+                    this.monsterDied(mns.monsId, true)
+                })
+                const portalPS = magicParticles[4].clone("green portal")
+                
+                const pathOutside = this.createPath(4, {x:0,y:0,z:85}, scene)
+                
+                portalPS.emitter = pathOutside
+                portalPS.start()
+                let intervalCircling
+                intervalCircling = setInterval(()=> {
+                    pathOutside.addRotation(.5,0,0)
+                }, 1000)
+                this.addTitle("lord", () => {
+                    this._allSounds.congratsS.play()
+                    const majestyDet = records.find(rec => rec.name === "majesty")
+                    if(majestyDet){
+                        this.popItemInfo({...majestyDet, meshId: makeRandNum(), price: majestyDet.secondPrice, qnty: 1 }, majestyDet.dn, true)
+                    }
+                })
+                
+                this.toRegAction(pathOutside, this.myChar.bx, async () => {
+                    clearInterval(intervalCircling)
+                    this.stopPress(true)
+                    this.prevPlace = 'dungeon'
+                    this.setUp(true)
+                    displayElems([apartInfos], "none")
+                    displayElems([aprtLoadingBx, apartCont], "flex")
+                    aprtLoadLabel.innerHTML = "Outside..."
+
+                    await this.updatePlace('swampforest')
+                    showLoadingScreen(false, 'wizard')
+                    this.emptyArray()
+                    Monsterz.forEach(mons => mons.body.position.y = 100)
+                    demons.forEach(mons => mons.bx.position.y = 100)
+                    await this._swampForest()
+                })
+                return clearInterval(dungeonSpawnInterval)
+            }
             if(floorNumber !== parseInt(floorNum)) return clearInterval(dungeonSpawnInterval)
-            if(Monsterz.length >= 10) return
+            
+            if(Monsterz.length >= 6) return
             const monsId = makeRandNum()
             monsterDetail.monsId = monsId
             monsterDetail.pos = {x: -70 + Math.random() * 120, z: -50 + Math.random()*100}
@@ -9463,11 +9546,17 @@ class App{
             
             const dungMons = Monsterz.find(mns => mns.monsId === monsId)
             if(dungMons){
-                if(Math.random() > .5){
+                if(Math.random() > .1){
                     dungMons.targHero = this.det._id
                     dungMons.isChasing = true  
-                }                             
+                }
+                Monsterz.forEach(mnsx => {
+                    this.toRegAction(dungMons.body, mnsx.body, () => {
+                        dungMons.body.locallyTranslate(new Vector3(-.3,0,0))
+                    })
+                })                       
             }
+            
         }, 5000)
         this.createMonster(monsRoot, monsterDetail, scene)
         // let leftMons = -80
@@ -9479,30 +9568,35 @@ class App{
         // HITBOX
         for(var brickLength = 0;brickLength <= 30; brickLength+=1){ // right side of heartland
             this.createHitBx(scene, makeRandNum(), {x: -35 + Math.random()*2 , y: 1, z: -90 + Math.random()*150 }, 50+Math.random()*1, false, false, Math.random()>.9 ? 1 : 0, boxPos => {
-               
+                const monsId = makeRandNum()
+                monsterDetail.monsId = monsId
+                monsterDetail.pos = boxPos
+                this.createMonster(monsRoot, monsterDetail, scene)
             });
             this.createHitBx(scene, makeRandNum(), {x: 33 + Math.random()*2 , y: 1, z: -90 + Math.random()*150 }, 50+Math.random()*1, false, false, Math.random()>.9 ? 1 : 0, boxPos => {
-                
+                const monsId = makeRandNum()
+                monsterDetail.monsId = monsId
+                monsterDetail.pos = boxPos
+                this.createMonster(monsRoot, monsterDetail, scene)
             });
         } 
 
-        this.createMonsterToChase(Monsterz, 'ghost', {x: 0, z: -30}, {width: 30}, 0, scene)
-        this.createMonsterToChase(Monsterz, 'slime', {x: 0, z: 60}, {width: 30}, 0, scene)
-        this.createMonsterToChase(Monsterz, 'eater', {x: 0, z: -30}, {width: 30}, 0, scene)
-        this.createMonsterToChase(Monsterz, 'hellhound', {x: 0, z: 30}, {width: 30}, 0, scene)
+        this.createMonsterToChase(Monsterz, monsterDetail.monsName, {x: 0, z: -30}, {width: 30}, 0, scene)
+        this.createMonsterToChase(Monsterz, monsterDetail.monsName, {x: 0, z: 60}, {width: 30}, 0, scene)
+        this.createMonsterToChase(Monsterz, monsterDetail.monsName, {x: 0, z: -30}, {width: 30}, 0, scene)
+        this.createMonsterToChase(Monsterz, monsterDetail.monsName, {x: 0, z: 30}, {width: 30}, 0, scene)
         
         this.camSetTarg(this.myChar.camTarg, cam, -Math.PI/2, 5);
 
-        const PathMod = await this.importMesh(scene, "./models/", 'portal.glb')
-        PathMod.meshes[1].parent = null; PathMod.meshes[0].dispose()
-        PathMod.meshes[1].position.z = -104;
-
-        
-        const gate2 = await this.importMesh(scene, "./models/", 'gate2.glb',true)
-        gate2.position = new Vector3(0,0,105);
-        gate2.lookAt(new Vector3(0,0,0), 0,0,0)
-        gate2.addRotation(0,Math.PI,0)
         if(floorNumber < 8){
+            const PathMod = await this.importMesh(scene, "./models/", 'portal.glb')
+            PathMod.meshes[1].parent = null; PathMod.meshes[0].dispose()
+            PathMod.meshes[1].position.z = -104;
+
+            const gate2 = await this.importMesh(scene, "./models/", 'gate2.glb',true)
+            gate2.position = new Vector3(0,0,105);
+            gate2.lookAt(new Vector3(0,0,0), 0,0,0)
+            gate2.addRotation(0,Math.PI,0)
             // paths
             const startPath = this.createPath(5,  {x: 0, z: -106}, scene)
             startPath.actionManager.registerAction(new ExecuteCodeAction(
@@ -9561,7 +9655,7 @@ class App{
                 }
             ))
         }
-
+  
         this.createSceneGlow(1, scene)
 
         const trapDmg = 50*floorNumber
@@ -9616,7 +9710,13 @@ class App{
                 }, 3000)
             })
         }
-        
+        if(floorNumber === 8){
+            const challengeSound = new BABYLON.Sound("encounterS", "sounds/scarySounds/challengingS.mp3", scene,
+            null, {volume: .2, loop: true, autoplay: true})
+            challengeSound.attachToMesh(this.myChar.bx)
+            this.myChar.bx.position = new Vector3(0,this.yPos,-75)
+            demons[0].bx.position = new Vector3(0,this.yPos,80)
+        }
         const toRender = () => {
             this.actionAndMovement(this.btf, this.cam)
             this.renderMonsters()
@@ -9628,9 +9728,23 @@ class App{
         Spike.meshes.forEach(mesh => mesh.position.y+=100);
         window.innerHeight < 650 && this._makeJoyStick(this.socket, cam,scene, false)
         this.registerBlocks(this.myChar, .09);
-
+        this.prevPlace = "dungeon"
+        if(floorNumber < 8){
+            const theSoundNum = Math.random()
+            if(theSoundNum > 0 && theSoundNum < .3){
+                this._allSounds.scaryone.play()
+            }
+            if(theSoundNum > .3 && theSoundNum < .6){
+                this._allSounds.scarytwo.play()
+            }
+            else{
+                this._allSounds.scarythree.play()
+            }
+        }
         this._allSounds.scaryone.play()
+
         this.musicInterval = setInterval(() => {
+            if(floorNumber === 8) return clearInterval(this.musicInterval)
             const theSoundNum = Math.random()
             if(theSoundNum > 0 && theSoundNum < .3){
                 this._allSounds.scaryone.play()
@@ -11979,11 +12093,9 @@ class App{
                 log("my details",this.det)
                 log(`monsters total `, Monsterz)
                 log(`focus on ${this.focusOn}`)
-                Monsterz.forEach(mxx => {
-                    if(mxx.minnionOwner === this.det._id){
-                        log(mxx)
-                    }
-                } )
+                demons.forEach(demn => {
+                    log(demn.bx.position)
+                })
                 // this.myChar.mode = "poisoned"
                 // this.det.maxHp += 200
                 // this.det.hp+=199
@@ -12003,12 +12115,12 @@ class App{
                     pl.nameMesh.isVisible = false
                 })
             }
-            if(keyPressed === "m") {
+            if(keyPressed === "m" && isAdmin) {
                 this.det.coins+=20000
                 this.myChar.nameMesh.isVisible = false;
                 
                 log(Monsterz)}
-            if(keyPressed === "q") this.myChar.bx.locallyTranslate(new Vector3(0,0,2))
+            if(keyPressed === "q" && isAdmin) this.myChar.bx.locallyTranslate(new Vector3(0,0,10))
             clearTimeout(this.savingTimeout)
             
             switch(keyPressed){
@@ -13383,17 +13495,34 @@ class App{
         transparentEmber.addSizeGradient(0, 0.05, .1);
         transparentEmber.addSizeGradient(0.2, .1, .2);
         transparentEmber.addSizeGradient(0.95, .01, .02);
-        // setInterval(() => {
-        //     fireExp1.start()
-        //     emberFire.start()
-        //     spherSmoke.start()
-        //     setTimeout(() => {
-        //         emberFire.gravity = new Vector3(0,-2,0)
-        //         // spherSmoke.updateSpeed = 0.01
-        //     }, 800)
-        // }, 4000)
-        magicParticles = [fireExp1, emberFire, spherSmoke, transparentEmber]
+
+        const portalPS = this.createPSystem({"name":"CPU particle system","id":"default system","capacity":10000,"disposeOnStop":false,"manualEmitCount":-1,"emitter":[0,0,0],"particleEmitterType":{"type":"CylinderParticleEmitter","radius":0.2,"height":0,"radiusRange":0,"directionRandomizer":0},"texture":{"tags":null,"url":"https://assets.babylonjs.com/textures/flare.png","uOffset":0,"vOffset":0,"uScale":1,"vScale":1,"uAng":0,"vAng":0,"wAng":0,"uRotationCenter":0.5,"vRotationCenter":0.5,"wRotationCenter":0.5,"homogeneousRotationInUVTransform":false,"isBlocking":true,"name":"https://assets.babylonjs.com/textures/flare.png","hasAlpha":false,"getAlphaFromRGB":false,"level":1,"coordinatesIndex":0,"optimizeUVAllocation":true,"coordinatesMode":0,"wrapU":1,"wrapV":1,"wrapR":1,"anisotropicFilteringLevel":4,"isCube":false,"is3D":false,"is2DArray":false,"gammaSpace":true,"invertZ":false,"lodLevelInAlpha":false,"lodGenerationOffset":0,"lodGenerationScale":0,"linearSpecularLOD":false,"isRenderTarget":false,"animations":[],"invertY":true,"samplingMode":3,"_useSRGBBuffer":false},"isLocal":false,"animations":[],"beginAnimationOnStart":false,"beginAnimationFrom":0,"beginAnimationTo":60,"beginAnimationLoop":false,"startDelay":0,"renderingGroupId":0,"isBillboardBased":true,"billboardMode":7,"minAngularSpeed":0,"maxAngularSpeed":0,"minSize":0.1,"maxSize":0.1,"minScaleX":1,"maxScaleX":1,"minScaleY":1,"maxScaleY":1,"minEmitPower":2,"maxEmitPower":2,"minLifeTime":1,"maxLifeTime":2,"emitRate":499.99,"gravity":[0,0,0],"noiseStrength":[10,10,10],"color1":[1,1,1,1],"color2":[1,1,1,1],"colorDead":[1,1,1,0],"updateSpeed":0.016666666666666666,"targetStopDuration":0,"blendMode":0,"preWarmCycles":0,"preWarmStepOffset":1,"minInitialRotation":0,"maxInitialRotation":0,"startSpriteCellID":0,"spriteCellLoop":true,"endSpriteCellID":0,"spriteCellChangeSpeed":1,"spriteCellWidth":0,"spriteCellHeight":0,"spriteRandomStartCell":false,"isAnimationSheetEnabled":false,"useLogarithmicDepth":false,"sizeGradients":[{"gradient":0,"factor1":0.03,"factor2":0.08},{"gradient":0.74,"factor1":0.5,"factor2":0.4},{"gradient":1,"factor1":0.01,"factor2":0.02}],"textureMask":[1,1,1,1],"customShader":null,"preventAutoStart":false}, scene)
+        portalPS.pSystem.color1 = new Color3(0.286,0.004,0.251)
+        portalPS.pSystem.color2 = new Color3(0.408,0.082,0.427)
+        portalPS.pSystem.colorDead = new Color3(0.306,0,0)
+
+
+        magicParticles = [fireExp1, emberFire, spherSmoke, transparentEmber,portalPS.pSystem]
         magicParticles.forEach(mps => mps.stop())
+    }
+    async createMagicCircle(scene){
+        const firstCirc = await this.importMesh(scene, "./models/", "magCircle.glb", true)
+        const secondCirc = await this.importMesh(scene, "./models/", "secMagCircle.glb", true)
+        const thirdCircle = await this.importMesh(scene, "./models/", "thirdMagCircle.glb", true)
+        const fourtCircle = await this.importMesh(scene, "./models/", "fourthMagCirc.glb", true)
+ 
+        const glowMat = new StandardMaterial("glowCircle", scene);
+        glowMat.emissiveColor = new Color3(.09,.5,.2);
+ 
+        magicCircles = [firstCirc,secondCirc,thirdCircle, fourtCircle]
+        magicCircles.forEach(magc => {            
+            const gMatClone = glowMat.clone('secMat')
+            magc.material = gMatClone
+            magc.rotation = new Vector3(Math.PI/2,0,0);
+            magc.isVisible = false
+            magc.visibility = .4
+        })
+        glowMat.dispose()
     }
     async createMerchant(scene, merchPos, merchTarg, merchName){
         const Merchant = await this.importMesh(scene, "./models/", "merchant.glb");
@@ -13422,24 +13551,6 @@ class App{
         treasure = TheTreaz.meshes[1]
         treasure.position = new Vector3(0,100,0)
         return TheTreaz
-    }
-    async createMagicCircle(scene){
-        const firstCirc = await this.importMesh(scene, "./models/", "magCircle.glb", true)
-        const secondCirc = await this.importMesh(scene, "./models/", "secMagCircle.glb", true)
-        const thirdCircle = await this.importMesh(scene, "./models/", "thirdMagCircle.glb", true)
- 
-        const glowMat = new StandardMaterial("glowCircle", scene);
-        glowMat.emissiveColor = new Color3(.09,.5,.2);
- 
-        magicCircles = [firstCirc,secondCirc,thirdCircle]
-        magicCircles.forEach(magc => {            
-            const gMatClone = glowMat.clone('secMat')
-            magc.material = gMatClone
-            magc.rotation = new Vector3(Math.PI/2,0,0);
-            magc.isVisible = false
-            magc.visibility = .4
-        })
-        glowMat.dispose()
     }
     async createRuneRock(scene, pos, color){
         let prevManaRegen = this.det.regens.mana 
@@ -14672,7 +14783,7 @@ class App{
         rootSword.isVisible = false;
         
         meshes.forEach(mesh => {
-            if(mesh.name === "ear.elf") mesh.dispose()
+            if(mesh.name === "ear.elf") return mesh.dispose()
             if(mesh.name.includes('armor')){
                 if(mesh.name.includes(det.armor.name)){
                     mesh.isVisible = true
@@ -14961,8 +15072,7 @@ class App{
                     weapMesh.scaling = new Vector3(5,5,5)
                     weapMesh.lookAt(new Vector3(mypos.x, .5, mypos.z),0,0,0,BABYLON.Space.WORLD)
                     weapMesh.addRotation(Math.PI,0,0);
-                    weapMesh.locallyTranslate(new Vector3(0,0,-5-Math.random()*3))
-                    log(this.flyingWeaponz.length)
+                    weapMesh.locallyTranslate(new Vector3(0,0,-1 + Math.random()*.7))
                 })
             })
         }
@@ -15724,15 +15834,6 @@ class App{
                 })     
             }
         })
-        allhelmets.forEach(helm => {
-            if(det.helmet){
-                if(helm.name.split(".")[1] === det.helmet.name){
-                    const clonedHelmet = helm.clone(`${helm.name}`)
-                    clonedHelmet.parent = rHead
-                    clonedHelmet.position = new Vector3(0,0,0);
-                }
-            }
-        })
 
         entries.rootNodes[0].parent = body
         entries.rootNodes[0].position.y -= this.yPos
@@ -15752,9 +15853,9 @@ class App{
         weaponCol.position.y += 2
 
         meshes.forEach(mesh => {
-            if(mesh.name.includes("body")) {
-                const demonMat = new StandardMaterial("demonMat", scene)
- 
+            if(mesh.name === "ear.elf") return mesh.dispose()
+            if(mesh.name.includes("body") && det.demonType !== "noir") {
+                const demonMat = new StandardMaterial("demonMat", scene) 
                 switch(det.demonType){
                     case "bluedemon":
                         demonMat.diffuseColor = new Color3(r,g,b)                            
@@ -15821,12 +15922,13 @@ class App{
         const whoopS = this._allSounds.whoop.clone();
         const dieSound = this._allSounds.dyingDemonS.clone("demonDyingSound")
         
+        effectS = this._allSounds.manaAbsorbS.clone()
         switch(det.demonType){
             case "bluedemon":
-                effectS = this._allSounds.manaAbsorbS.clone()
+               // sounds               
             break;
-            default:
-                effectS = this._allSounds.manaAbsorbS.clone()
+            case "noir":               
+                const { wingAnimas, figureMeshes } = this.transformInto(scene,det._id,"demon", rootMesh, rHead, meshes)
             break;
         }
         
@@ -15839,8 +15941,13 @@ class App{
         dieSound.attachToMesh(body);
         effectS.attachToMesh(body);
         
+        let longRangeInterval
+        let willChaseTimeout
+        let fireReleased = 0
+        const fireBallDmg = 200 + Math.random()*200
         this.toRegAction(humanDetector, this.myChar.bx, () => {
-            const theDemon = demons.find(dm => dm._id === det._id)
+            let theDemon = demons.find(dm => dm._id === det._id)
+            if(!theDemon) return console.warn("demon not found")
             this.playerLookAt(theDemon.bx, this.myChar.bx.position)
             theDemon.mode = "weapon"
             this.getSword(rootSword, rHand)
@@ -15848,22 +15955,86 @@ class App{
             theDemon.targHero = this.det._id
             if(!theDemon.doneSpeaking){
                 this._allSounds.enemyEncounter.play()
-                this._allSounds.demonSpeech?.attachToMesh(theDemon.bx)
-                this._allSounds.demonSpeech?.setPlaybackRate(1.1)
-                this._allSounds.demonSpeech?.play()
-
+                if(det.demonType !== "noir"){
+                    this._allSounds.demonSpeech?.attachToMesh(theDemon.bx)
+                    this._allSounds.demonSpeech?.setPlaybackRate(1.1)
+                    this._allSounds.demonSpeech?.play()
+                }
                 this.createOwnSpeech(det.speech, 2000)
+            }else{
+                if(det.demonType === "noir"){
+                    // aoe skill
+                }
             }
             theDemon.doneSpeaking = true
         })
+        this.toRegActionExit(humanDetector, this.myChar.bx, () => {
+            let theDemon = demons.find(dm => dm._id === det._id)
+            if(!theDemon) return console.warn("demon not found")
+            this.playerLookAt(theDemon.bx, this.myChar.bx.position)
+            
+            if(det.demonType === "noir"){
+                if(Math.random() > .3){
+                    theDemon._moving = true
+                    theDemon.targHero = this.det._id
+                    clearTimeout(willChaseTimeout)
+                    clearInterval(longRangeInterval)
+                    this.initiateSkill("leap", theDemon, 0,0, false, this.myChar.bx.position, 0, "any")
+                }else{                                        
+                    theDemon._moving = false
+                    theDemon.mode = "none"
+                    this.createNewCircle(magicCircles[3], rgbColors[4].rgb, { x: Math.PI,y:0,z:0}, theDemon.bx.position, det._id, 800, this.myChar.bx.position)
+                    this.createOwnSpeech(det.otherSpeech[Math.floor(Math.random()*det.otherSpeech.length)], 2500)
+                    clearTimeout(willChaseTimeout)
+                    clearInterval(longRangeInterval)
+                    longRangeInterval = setInterval(() => {         
+                        theDemon = demons.find(dm => dm._id === det._id)
+                        if(!theDemon){
+                            clearTimeout(willChaseTimeout)
+                            clearInterval(longRangeInterval)
+                            return
+                        }
+                        if(fireReleased >= 20){
+                            clearTimeout(willChaseTimeout)
+                            clearInterval(longRangeInterval)
+                            theDemon.mode = "weapon"
+                            theDemon._moving = true
+                            return fireReleased = 0
+                        }
+                        if(this.det.hp <= 0){
+                            clearTimeout(willChaseTimeout)
+                            clearInterval(longRangeInterval)
+                            return 
+                        }
+                        if(!theDemon) return clearInterval(longRangeInterval)
+                        if(Math.random()>.8){
+                            clearTimeout(willChaseTimeout)
+                            willChaseTimeout = setTimeout(() => {
+                                theDemon.mode = "weapon"
+                                theDemon._moving = true
+                            }, 1000)
+                            clearTimeout(willChaseTimeout)
+                            clearInterval(longRangeInterval)
+                            return this.initiateSkill("leap", theDemon, 0,0, false, this.myChar.bx.position, 0, "any")
+                        }
+                        this.playerLookAt(theDemon.bx, this.myChar.bx.position)
+                        this.initiateSkill("fireBall", theDemon, 0,100 + Math.random()*100, false, this.myChar.bx.position, fireBallDmg, "any", det)
+                        
+                        this.playAnim(theDemon.anims, "fireBall") 
+                    }, 1000)
+                }
+            }
+        })
         this.toRegAction(longRangeCol, this.myChar.bx, () => {
             const theDemon = demons.find(dm => dm._id === det._id)
+            
             theDemon.mode = "none"
             this.initiateSkill("leap", theDemon, 0,0, false, this.myChar.bx.position, 0, "any")
             theDemon._moving = true
+            clearInterval(longRangeInterval)
         })
-
-        if(det.demonType === "reddemon"){
+    
+        if(det.demonType === "reddemon" || det.demonType === "noir"){
             this.toRegActionExit(longRangeCol, this.myChar.bx, () => {
                 const theDemon = demons.find(dm => dm._id === det._id)
                 if(!theDemon) return log("no demon found")
@@ -15919,6 +16090,9 @@ class App{
 
                 this._allSounds.demonMockS?.attachToMesh(theDemon.bx)
                 this._allSounds.demonMockS?.play()
+                setTimeout(() => {
+                    this.createOwnSpeech(det.dyingSpeech, 3000)
+                }, 1000)
                 return theDemon._moving = false
             }
             
@@ -16039,19 +16213,19 @@ const startTheGame = async () => {
     log(data)
 }
 
-const checkIfRecordExist = () => {
-    
+const checkIfRecordExist = () => {    
     // if(window.innerWidth < mobileMaxWidth){
     //     document.querySelectorAll(".desk").forEach(elem => elem.style.display = "none")
     //     return continueBtn.style.display = "none"
     // }
     const charDet = JSON.parse(sessionStorage.getItem("dungeonborn"))
-    
+    log(charDet)
     if(charDet){
         log("there is record")
         newsContainer.style.display = "none"
         continueBtn.style.display = "block"
         loginPage.style.display = "none"
+        if(charDet.details.username === "raf") isAdmin = true
         if(window.innerWidth < mobileMaxWidth) continueBtn.style.display = "none";
     }else{
         log("walang record")
