@@ -6,6 +6,7 @@
     "babylonjs-loaders": "./babylonjs-loaders.js",
     "engine.io-client": "./engine.io-client.js",
     "engine.io-parser": "./engine.io-parser.js",
+    "rpg-convers": "./rpg-convers.js",
     "socket.io-client": "./socket.io-client.js",
     "socket.io-parser": "./socket.io-parser.js"
   }

@@ -1,4 +1,4 @@
-import * as GUI from 'babylonjs-gui';
+import * as GUI from '../_snowpack/pkg/babylonjs-gui.js';
 const log = console.log
 class Goblin{
     constructor(pos, directory, modelName, gobType, isMulti, monsLvl, BABYLON, hp, spd, scene){
