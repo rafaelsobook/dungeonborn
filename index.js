@@ -348,9 +348,10 @@ const aboutCont = document.querySelector(".about-container")
 const abtBackBtn = document.querySelector(".back-btn")
 // NEWS
 const newsContainer = document.querySelector(".news-container")
-const newsBtn = document.querySelector(".news-btn")
-newsBtn.addEventListener("click", () => newsContainer.style.display = "none")
-
+const homeCancelBtns = document.querySelectorAll(".home-cancel")
+homeCancelBtns.forEach(hBtn => {
+    hBtn.addEventListener("click", e => e.target.parentElement.style.display = "none")
+})
 // fps
 let divFps = document.querySelector(".fps");
 // tutorial container
@@ -4032,7 +4033,7 @@ class App{
                                                 this.obtain('coin', det.cash, false)
                                                 setTimeout(() => {
                                                     let rewardGap = 300
-                                                    convers.startConversation([...det.speech, lastSpeechConvo], 0, () => {
+                                                    convers.startConversation(det.speech, 0, () => {
                                                         det.potions.forEach(itmName => {
                                                             const theItm = records.find(recItm => recItm.name === itmName)
                                                             const newItem = {...theItm, price: theItm.secondPrice}
@@ -4569,7 +4570,7 @@ class App{
         cancelBuy.addEventListener("click", e => apartCont.style.display = "none")
 
         cancelParents.forEach(btn => btn.addEventListener("click", e => {
-            
+            log("hey")
             // means the adventurer record 
             if(e.target.parentElement.className.includes("alladventurer-detail-cont")){                
                 return e.target.parentElement.classList.add("my-stat-hidding")
@@ -4648,7 +4649,7 @@ class App{
                     })
                 break;
                 case "checkquest":
-                    this.showTransaction("Checking Quest", false)
+                    this.showTransaction("Checking Quest ...", false)
                     await this.setUpQuest()
                     this.showTransaction("Quests Retrieved", 1500)
                     questCont.style.display = "flex"
@@ -7542,18 +7543,18 @@ class App{
         await this.useFetch(`${APIURL}/quests/delete/${_questId}`, "DELETE", this.token)
     }
     async setUpQuest(){
+        questList.innerHTML = 'Loading ...'
         const response = await fetch(`${APIURL}/quests`)
         this.quests = await response.json();
-        questList.innerHTML = ''
+        
         if(!this.quests.length) return questList.innerHTML = "<p class='not-available'>No Available Quest At The Moment</p>"
         this.quests.forEach(qst => {
-            log(qst)
             const newDiv = createElement("div", `qst-bx ${qst.questId}`)
             const qstImg = createElement("img", `qst-target-img`);
             if(qst.questTarget.targetType === "edibles"){
                 qstImg.src = `./images/loots/${qst.questTarget.targetName}.png`
             }else{
-                qstImg.src = `./images/questpics/${qst.questPicName}.png`
+                qstImg.src = `./images/monsters/${qst.questTarget.targetName}.png`
             }
             const qttle = createElement("p", 'qst-ttle', qst.title)
             const theQrank = ranks.find(rnk => rnk.rankDig === qst.requiredRank)

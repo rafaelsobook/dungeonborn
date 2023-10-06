@@ -63,8 +63,8 @@ function allDemonz(floorNumber){
             demonType: "noir",//blue //red// noir
             effects: { effectType: "absorb", absorbType: "mp", defaultAbs: 20, chance: 9, dura: 100, plusDmg: 30*floorNumber, dmgPm: 0 },
             demonColor: {r:0.81, g:0, b:0}, 
-            hp: 600*floorNumber,
-            maxHp: 600*floorNumber,
+            hp: 1000*floorNumber,
+            maxHp: 1000*floorNumber,
             expGain: 100 * floorNumber,
             name: undefined, 
             x: 0, 
@@ -72,21 +72,21 @@ function allDemonz(floorNumber){
             nType: 'standby', 
             gender: 'male', 
             toWear: {hair: "isveltte", cloth: "bluedemon", pants: "brown", boots: "danes", hairColor: {r: 0.25,g: 0.08,b:0.08} }, 
-            displayW: {name: "majesty", dmg: 250, isHide: false},
-            skillDmg: 200*floorNumber,
-            primarySkillDmg: 250*floorNumber,
+            displayW: {name: "majesty", dmg: 500, isHide: false},
+            skillDmg: 350*floorNumber,
+            primarySkillDmg: 350*floorNumber,
             armor: {name: "none"},
             _moving: false,
             _attacking: false,
             _talking: false,
             mode: 'stand',
-            spd: 2.5,
+            spd: 3.5,
             condition: "none",
             dirTarg: {x: 0, z: 0},
             speech: `Someone has made it here so far`,
             dyingSpeech: "you lowly humans",
             otherSpeech: ['You shall burn', 'Play with my fire', "There is no escape", "It's too late to return now"],
-            atkInterval: 1400
+            atkInterval: 1300
         },
     ]
 }
