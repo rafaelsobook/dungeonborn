@@ -435,15 +435,18 @@ const npcInfos = [
             ]
         },
         golemKillSpeech: function (mainName){
+            this.normSpeech = [
+                {name: "Nick", message: "We are almost ready to face the real danger"}
+            ]
             return [
                 { name: "Nick", message: "here you are, How's adventuring "},
                 { name: mainName, message: "I killed the Golem and took its core"},
                 { name: mainName, message: "What are we gonna do with this .."},
                 { name: "Nick", message: "I'm Impressed, You defeated a Golem for a short period of time"},
-                { name: "Nick", message: "You have a potential kid..."},
-                { name: "Nick", message: "Take the core to a dwarven shop, And craft a sword using that core"},
-                { name: "Nick", message: "After that go with me, We will go buy some slave for you"},
-                { name: "Nick", message: "Uhh and bring money with you .... Atleast 30,000"},                
+                { name: "Nick", message: "You have potential..."},
+                { name: "Nick", message: "Take the core to dwarven shop, Craft sword using that core"},
+                { name: "Nick", message: "After that we can start take things seriously"},
+                { name: "Nick", message: "Crafting weapon requires iron and cores"},                
             ]
         },
         firstCraftingSpeech: function (mainName){
@@ -451,10 +454,10 @@ const npcInfos = [
                 { name: "Nick", message: `Well done ${mainName} ! I can see you have successfully crafted a weapon`},
                 { name: "Nick", message: "Tho you have to be aware ... crafting or enhancing weapon can sometimes fail"},
                 { name: "Nick", message: "Enough of that ! We have an emergency !"},                
-                { name: "Nick", message: "Lots of demon are showing near the Village"},                
+                { name: "Nick", message: "Lots of Tree Monsters are showing in the mist"},                
                 { name: "Nick", message: "You think you can test your new sword on them ?"},                
                 { name: "Nick", message: "I know it's hard ! hundreds of adventurers already died !"},                
-                { name: "Nick", message: "Only 10 survived ! .. According to them they saw the demons in the mist !"},                
+                { name: "Nick", message: "Only 10 survived ! .. According to them they saw the monsters in the mist !"},                
                 { name: "Nick", message: "After the hidden land... That is where the massacre happens "},                
                 { name: "Nick", message: "I'll go there Immediately ! there's no time "},                
             ]

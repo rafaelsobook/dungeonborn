@@ -29,7 +29,6 @@ const {Matrix, Texture, Axis,ParticleSystem, Mesh, ShadowGenerator, ActionManage
 
 const webSocketURL = "https://dbtcp.herokuapp.com"|| "ws://localhost:3000" || "https://dungeonborntcpcon.onrender.com"
 const APIURL = "https://dbserver.herokuapp.com" || 'http://localhost:8100' || 'https://fair-ruby-fly-tam.cyclic.app'
-
 const imgDir = "./images/peoplepics/"
 
 const apiOpt = (meth, toPost, token) => {
@@ -3628,6 +3627,7 @@ class App{
                 log("waking up from bed leave")
                 this.updateMyDetailsOL(this.det, false);
                 return clearInterval(restingInterval)
+            
             }
         })
         pacBtn.addEventListener("click", async e => {
@@ -3773,7 +3773,7 @@ class App{
                     
                     if(det.name === "cancel") return log("okay nevermind")
                     
-                    convers.startConversation([ { name: "Smythe", message: det.desc[0]},{ name: "Smythe", message: det.desc[1]}, ], 0, 2500, () => {
+                    convers.startConversation([ { name: "Smythe", message: det.desc[0]},{ name: "Smythe", message: det.desc[1]}, ], 0, () => {
                         log("open crafting box")
                         setTimeout(() => this.setCraftOrFixing(det.displayCap, "core", det.name), 1500)
                     })
@@ -3926,6 +3926,7 @@ class App{
                             })
                         break;
                         default:
+                            log(this.targDetail)
                             convers.startConversation(this.targDetail, 0, () => {
                                 log(this.targetRecource)
                                 simpleNpc = simpleNpc.map(npz => npz._id === this.targetRecource.name.split(".")[1] ? {...npz, _talking: false, _moving: true} : npz)
@@ -4056,55 +4057,54 @@ class App{
                             }
                             const theStoryName = this.haveStory.storyName
                             const theConversation = this.putPictureOnConv(this.targDetail)
+                            let npcBoxToGo
                             switch(theStoryName){
                                 case "firstFriend":
                                     // this.continuesSpeech(this.targDetail, 0, 2900, notYetSpoken ? initNickChoices : undefined)
                                     convers.startConversation(theConversation, 0,notYetSpoken ? initNickChoices : undefined)
                                 break;
                                 case "firstGoblinKilled":
-                                    convers.startConversation(theConversation, 0, () => {
-                                        const bxNearGate = this.btf.clone("bxNearGate")
-                                        bxNearGate.position = new Vector3(0,0,-120)
-                                        this.playerLookAt(theTalkingNpc.bx, bxNearGate.position);
+                                    convers.startConversation(theConversation, 0, async () => {
+                                        npcBoxToGo = this.btf.clone("bxNearGate")
+                                        npcBoxToGo.position = new Vector3(0,0,-120)
+                                        this.playerLookAt(theTalkingNpc.bx, npcBoxToGo.position);
                                         theTalkingNpc._running = true;                                        
 
                                         this.det.storyQue = this.det.storyQue.filter(queName => queName !== "firstGoblinKilled")
                                         this.det.storyQue.push("proceedToKillGolem")
-                                        this.updateMyDetailsOL(this.det, true).then(() => {
-                                            log(arrayOfSpeech)
-                                            setTimeout(() => {
-                                                log(`nps is running ? ${theTalkingNpc._running}`);
-                                                this.createOwnSpeech("Golem, what on earth !", 4000, "#f5f5f5")
-                                            }, 2000)
-                                            openGameUI()
-                                            this.allCanPress()
-                                        })
+                                        await this.updateMyDetailsOL(this.det, true)
+                                        openGameUI()
+                                        this.allCanPress()
+                                        setTimeout(() => {
+                                            log(`npc is running ? ${theTalkingNpc._running}`);
+                                            this.createOwnSpeech("Golem, what on earth !", 4000, "#f5f5f5")
+                                        }, 2000)
                                     })
                                 break;
                                 case "firstGolemKilled":
-                                    convers.startConversation(this.targDetail, 0, () => {                                       
+                                    convers.startConversation(this.targDetail, 0, async () => {                                       
 
                                         this.det.storyQue = this.det.storyQue.filter(queName => queName !== theStoryName)
                                         this.det.storyQue.push("proceedToCrafting")
-                                        this.updateMyDetailsOL(this.det, true).then(() => {
-                                            setTimeout(() => {
-                                                this.createOwnSpeech("Crafting weapons.. sounds interesting", 4000, "#f5f5f5")
-                                            },2000)
-                                            openGameUI()
-                                            this.allCanPress()
-                                        })
+                                        await this.updateMyDetailsOL(this.det, true)
+                                        setTimeout(() => this.createOwnSpeech("Crafting weapons.. sounds interesting", 4000, "#f5f5f5"))
+                                        openGameUI()
+                                        this.allCanPress()
                                     })
                                 break
                                 case "firstCraftingFinished":
-                                    convers.startConversation(this.targDetail, 0, () => {                                       
+                                    convers.startConversation(this.targDetail, 0, async () => {                                       
                                         log("A monster will pop up")
-                                        // this.det.storyQue = this.det.storyQue.filter(queName => queName !== theStoryName)
-                                        // this.det.storyQue.push("proceedToCrafting")
-                                        // this.updateMyDetailsOL(this.det, true).then(() => {
-                                        //     setTimeout(() => {
-                                        //         this.createOwnSpeech("Crafting weapons.. sounds interesting", 4000, "#f5f5f5")
-                                        //     },2000)
-                                        // })
+                                        this.det.storyQue = this.det.storyQue.filter(queName => queName !== theStoryName)
+                                        this.det.storyQue.push("proceedToKillMonsterTree")
+                                        npcBoxToGo = this.btf.clone("bxNearGate")
+                                        npcBoxToGo.position = new Vector3(0,0,-5)
+                                        this.playerLookAt(theTalkingNpc.bx, npcBoxToGo.position);
+                                        theTalkingNpc._running = true;    
+                                        await this.updateMyDetailsOL(this.det, true)
+                                        openGameUI()
+                                        this.allCanPress()
+                                        setTimeout(() => this.createOwnSpeech("Before A Golem. And now this ...", 3000, "#f5f5f5"))
                                     })
                                 break
                             }
@@ -4127,14 +4127,14 @@ class App{
                             })
                         break;
                         default:
+                            log(this.targDetail)
                             convers.startConversation(this.targDetail, 0, () => {
                                 openGameUI()
                                 this.allCanPress()
                             })
                         break
                     }
-                }
-                
+                }                
                 return this.setWalkSound()
             }
             if(this.targetRecource.name.includes("scroll")){
@@ -6987,7 +6987,14 @@ class App{
         if(itemElementz.length) displayElems(itemElementz, "block")
     }
     putPictureOnConv(messageArr){
-        const newArray = messageArr.map(msgs => msgs.name === this.det.name ? {...msgs, isLeft: false, imageDirectory: `${imgDir}me.png`} : {...msgs,isLeft:true,imageDirectory: `${imgDir}other.png`})
+        const haveNick = messageArr.some(msgs => msgs.name === "Nick")
+        let newArray = messageArr.map(msgs => msgs.name === this.det.name ? {...msgs, isLeft: false, imageDirectory: `${imgDir}me.png`} : {...msgs,isLeft:true,imageDirectory: `${imgDir}other.png`})
+        if(haveNick){
+            log("haveNick")
+            newArray = messageArr.map(msgs => msgs.name === this.det.name ? {...msgs, isLeft: false, imageDirectory: `${imgDir}other.png`} : {...msgs,isLeft:true,imageDirectory: `${imgDir}nick.png`})
+        }else {
+            log("no nick")
+        }
         return newArray
     }
     giveMonsterRoot(monsName){
@@ -8229,15 +8236,12 @@ class App{
         const scene = new Scene(this._engine)
           
         const cam = new ArcRotateCamera("arcCam", Math.PI/2, -1, 5, new Vector3(0,0,0), scene)
-        cam.setTarget(new Vector3(0,1,0))
-
         cam.attachControl(canvas, true)
 
         hemLight = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
         hemLight.intensity = .4
 
         const dirLight = new BABYLON.DirectionalLight("dirlight", new Vector3(0,-1,0), scene)
-
 
         await this.createDungeonTiles(scene)
         
@@ -8378,13 +8382,7 @@ class App{
         });
 
         panel.addControl(picker);  
-        
         panel.isVisible = false
-        
-        cam.minZ = .01
-        this.camSetTarg(Character.meshes[0], cam, 3,4.0)        
-        cam.upperRadiusLimit = 3;
-
         let theList
         category.addEventListener("click", e => {
             
@@ -8483,10 +8481,14 @@ class App{
             await this._goToRoom(`apartment.0`);
             this.activateSockets(allsword, seedMesh, treasure);
         })
+        this.camSetTarg(Character.meshes[0], cam, 4.5,1.15)
         cam.setTarget(new Vector3(0,1,0))
-        cam.alpha = 3.8
+        cam.alpha = 4.5
         cam.beta = 1.15
-        cam.radius = 3        
+        
+        cam.minZ = .01
+        cam.lowerRadiusLimit = 3;
+        cam.upperRadiusLimit = 3
     }
     async _testPlace(inTutorialMode){    
         let spawnMonsterInterval;        
@@ -10430,9 +10432,9 @@ class App{
         
         this.det.storyQue.forEach(stryName => {
             if(stryName === "firstGolemKilled") this.haveStory = { storyName: "firstGolemKilled", npcName: "Nick", npcPos: { x: 5.11, z:8}, willTalkOnLoad: false }
+            if(stryName === "firstCraftingFinished") this.haveStory = { storyName: "firstCraftingFinished", npcName: "Nick", npcPos: { x: 5.11, z:8}, willTalkOnLoad: false }
         })
-        npcInfos.forEach(npz => {          
-
+        npcInfos.forEach(npz => {
             this.createNpc(theCharacterRoot, npz, true, btf)
         })
         if(this.haveStory){
@@ -14830,7 +14832,6 @@ class App{
                 }
             }
         })
-
         entries.rootNodes[0].parent = body
         entries.rootNodes[0].position.y -= this.yPos
         entries.rootNodes[0].rotationQuaternion = null
@@ -14881,7 +14882,6 @@ class App{
             })
         }
         this.keepSword(rootSword, rootBone);
-
         const toPush = {
             _id: det._id,
             name: det.name,
@@ -14907,8 +14907,9 @@ class App{
             this.openPopUpAction("speak");
             this.targetRecource = body;
             log(det)
-            if(det.condition === "none") return this.targDetail = det.speech;            
-            const {theSpeech, additionalDet} = det.condition(this.det);
+            if(det.condition === "none") return this.targDetail = this.putPictureOnConv(det.speech)          
+            let {theSpeech, additionalDet} = det.condition(this.det);
+  
             switch(det.name){
                 case "jericho":
                     this.targDetail = theSpeech;
@@ -14917,9 +14918,6 @@ class App{
                     }else{
                         this.craftToLearn = undefined
                     }
-                    
-                    log("I will speak to the craftsman")
-                    log(`he will teach me `, additionalDet)
                 break;
                 case "markus":
                     this.targDetail = theSpeech;
@@ -14928,12 +14926,9 @@ class App{
                     }else{
                         this.craftToLearn = undefined
                     }
-                    
-                    log("I will speak to the craftsman")
-                    log(`he will teach me `, additionalDet)
                 break
                 default:                    
-                    this.targDetail = det.condition(this.det);
+                    this.targDetail = det.condition(this.det)
                     log(this.targDetail)
                 break
             }

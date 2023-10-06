@@ -2449,20 +2449,10 @@ nav {
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-  background: -webkit-gradient(linear, left top, left bottom, from(#2e2e2e), color-stop(#202020), color-stop(#2e2e2e), to(#646464));
-  background: linear-gradient(to Bottom, #2e2e2e, #202020, #2e2e2e, #646464);
-  color: #adadad;
-  border: 1px solid #1d1c1c;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 150%;
-  padding: 7px 0px;
-  width: 15%;
-  padding: 4px;
+  width: 20%;
   border: none;
   outline: none;
-  font-family: "Jim Nightshade", cursive;
-  color: #f5f5f5;
+  cursor: pointer;
 }
 
 .setup-container .choices .done-setup:hover {
