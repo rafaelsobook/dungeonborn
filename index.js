@@ -9713,7 +9713,7 @@ class App{
                     // await this.updateLocOnline({x: 0, z:0}, {x: 0, z: -94}) 
                     // this.myChar.bx.position = new Vector3(0,this.yPos,-94)
                     await this._dungeon('Normal', floor, true)
-                    // this.myChar.bx.position = new Vector3(0,this.yPos,-94)
+                    this.myChar.bx.position = new Vector3(0,this.yPos,-94)
                     this.arrangeCam(-1.4, 1.15)                                   
                 }
             ))
