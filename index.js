@@ -63,7 +63,6 @@ const apiOpt = (meth, toPost, token) => {
         }
     }    
 }
-
 let moveNums = { straight: 0, leftRight: 0 }
 let rgbColors = [
     {
@@ -2264,7 +2263,9 @@ class App{
             if(isMine){
                 const mySkill = this.det.skills.find(skl =>skl.name === skill.name)
                 if(!mySkill) return log("not found skill")
-                if(mySkill.pointsForUpgrade > this.det.points) return this.showTransaction(`required ${mySkill.pointsForUpgrade}point${mySkill.pointsForUpgrade === 1 ? "" : "s"} for upgrade`,2000)
+                if(mySkill.pointsForUpgrade > this.det.points) {
+                    this.returnButtons([e.target])
+                    return this.showTransaction(`required ${mySkill.pointsForUpgrade}point${mySkill.pointsForUpgrade === 1 ? "" : "s"} for upgrade`,2000)}
                 this.det.points -= mySkill.pointsForUpgrade
                 mySkill.lvl+=1
                 mySkill.effects.plusDmg+=mySkill.upgradePlus
@@ -2274,7 +2275,9 @@ class App{
                 upgradeOrLearn.innerHTML = `Learn`
                 const theSkillToLearn = skills.find(skl => skl.name === skill.name)
                 if(!theSkillToLearn) return log("skill to learn not found")
-                if(theSkillToLearn.pointsToClaim > this.det.points) return this.showTransaction(`required ${theSkillToLearn.pointsToClaim}points to learn this skill`,2000)
+                if(theSkillToLearn.pointsToClaim > this.det.points){
+                    this.returnButtons([e.target])
+                    return this.showTransaction(`required ${theSkillToLearn.pointsToClaim}points to learn this skill`,2000)}
                 this.det.points -= theSkillToLearn.pointsToClaim
                
                 this.det.skills.push(theSkillToLearn)
@@ -2306,22 +2309,16 @@ class App{
     }
     skillIntro(skillRecord, player){
         
-        player.mode = "none";
         player._casting = true;
         player._moving = false
         player._attacking = false
         
         player.anims.forEach(anim => anim.stop())
         this.playAnim(player.anims, skillRecord.name, skillRecord.animationLoop)
-        setTimeout(() => {
-            this.stopAnim(player.anims, skillRecord.name)
-            player.mode = skillRecord.requireMode;
-            player._casting = false;
-            if(skillRecord.requireMode === "any") player.mode = player.prevMode
-        }, skillRecord.returnModeDura)
         let leapSound
         let circPos
         let infrontP
+        
         switch (skillRecord.name) {
             case "leap":
                 leapSound = this._scene.getSoundByName(`leap.${player._id}`)
@@ -2359,8 +2356,7 @@ class App{
                 }else{
                     player.auraz.forEach(auraps => auraps.start())
                     player.auraOn = true
-                }
-                
+                }                
             break
         }
     }
@@ -2546,23 +2542,25 @@ class App{
                         } 
                     })
                 })
-                this.toRegAction(collisionForEnemy, this.myChar.bx, () => {
-                    if(this.det.hp <= 0) return
-                    // sound
-                    fireExplodeS.attachToMesh(this.myChar.bx)
-                    fireExplodeS.play()
-                    this.disposeSounds([fireExplodeS], 4000)
-                    // particle
-                    this.initExplosion(this.myChar.bx)
-                    
-                    particleMesh.dispose()
-                    fireClone.dispose()
-                    smokeClone.dispose()
-                    this.disposeMeeleeMesh(collisionForEnemy)                    
-                    
-                    this.hitByNonMultiAI(this.myChar.bx, player.bx, skillDmg, "hit", player._id, false, demonDet, true);
-                    this.playAnim(this.myChar.anims, "hit")
-                })               
+                if(demonDet){
+                    this.toRegAction(collisionForEnemy, this.myChar.rootMesh, () => {
+                        if(this.det.hp <= 0) return
+                        // sound
+                        fireExplodeS.attachToMesh(this.myChar.bx)
+                        fireExplodeS.play()
+                        this.disposeSounds([fireExplodeS], 4000)
+                        // particle
+                        this.initExplosion(this.myChar.bx)
+                        
+                        particleMesh.dispose()
+                        fireClone.dispose()
+                        smokeClone.dispose()
+                        this.disposeMeeleeMesh(collisionForEnemy)                    
+                        
+                        this.hitByNonMultiAI(this.myChar.bx, player.bx, skillDmg, "hit", player._id, false, demonDet, true);
+                        this.playAnim(this.myChar.anims, "hit")
+                    }) 
+                }            
                 collisionForEnemy.locallyTranslate(new Vector3(0,0,1))
 
                 fireClone.emitter = particleMesh
@@ -2804,14 +2802,14 @@ class App{
         setTimeout(() => {
             if(demonDet) return
             player._casting = false
-            if(skillRecord.requireMode === "any"){
-                player.mode = player.prevMode
-                if(player.mode === "none"){//for bug issues
-                    player.mode = "fist"
-                }
-            }else{
-                player.mode = skillRecord.requireMode
-            }
+            // if(skillRecord.requireMode === "any"){
+            //     player.mode = player.prevMode
+            //     if(player.mode === "none"){//for bug issues
+            //         player.mode = "fist"
+            //     }
+            // }else{
+            //     player.mode = skillRecord.requireMode
+            // }
         }, skillRecord.returnModeDura)
 
         if(demonDet) return collisionForEnemy
@@ -3228,8 +3226,6 @@ class App{
             if(!willContinueSkill) return this.showTransaction(cancelCaptionName,1500);
             if(this.myChar.mode === "none") return this._statPopUp("skill not ready", 0, "red");
             if(this.myChar._casting) return this._statPopUp("still casting other skill", 0, "red");
-            const prevMode = this.myChar.mode
-            this.myChar.prevMode = this.myChar.mode
 
             this.updateHP_UI()
             this.updateMP_UI()
@@ -3269,11 +3265,10 @@ class App{
                         elemColor: elemColor.rgb,
                         inFrontPos,
                         place: this.currentPlace,
-                        skillDmg: skillRecord.effects.plusDmg,
-                        prevMode
+                        skillDmg: skillRecord.effects.plusDmg
                     })
                 }else{
-                    this.initiateSkill(skillName, this.myChar, phyDmg, magDmg, elemColor.rgb, inFrontPos, skillRecord.effects.plusDmg, prevMode)
+                    this.initiateSkill(skillName, this.myChar, phyDmg, magDmg, elemColor.rgb, inFrontPos, skillRecord.effects.plusDmg, false)
                 }
             }, skillRecord.castDuration)
 
@@ -3282,7 +3277,7 @@ class App{
         skillCateg.addEventListener("click", e => {
             const skillCategName = e.target.className.split(" ")[1]
             if(skillCategName === undefined) return
-            skillCategName === "myskillset" ? this.showSkillList(this.det.skills, true) : this.showSkillList(skills, false) 
+            this.showSkillList(this.det.skills, skillCategName === "myskillset")
         })
         toCraftCont.addEventListener("click", e => {
             const theTargBtn = e.target.innerHTML
@@ -6533,8 +6528,6 @@ class App{
         thePlayer.bx.position = new Vector3(data.pos.x, this.yPos, data.pos.z)
         // this.addToBash({_id: data.targHero, mesh: thePlayer.bx, bashPower: data.bashPower})
         this.stopAnim(thePlayer.anims, 'willbow');
-        this.recourceHits = 0 // for tree and ore
-        clearInterval(this.hitRecourceInterval)
         if(!data.skillName){
             this.stopAnim(thePlayer.anims, 'willbow')
             this.playAnim(thePlayer.anims, 'hit')
@@ -7242,7 +7235,6 @@ class App{
                     bx.style.border = `1px solid blue`
                 break;
             }
-
             const sbImgE = createElement("img", "skill-img");
             sbImgE.src = `./images/skills/${ !canShow ? 'lock' : skl.name}.png`
             const skillNE = createElement("p", "sb-skillName", skl.displayName);
@@ -7313,8 +7305,7 @@ class App{
             myskillLists.append(noListCap)
         }
     }
-    showAllSkillz(){
-        
+    showAllSkillz(){        
         AllSkillInfoCont.style.display = "block"
         AllSkillInfoCont.classList.remove("transClose")        
         skillRemPoints.innerHTML = `Available Points ${this.det.points}`
@@ -9382,13 +9373,11 @@ class App{
             }
 
         }
-
         const thePeeble = await this.createPeeble("./images/modeltex/rockTexWhite.png", scene, 300, {xmin: -60, xmax: 120}, {zmin: -250, zmax: 500 });
         thePeeble.position.y+= 1
 
         const SharpROCK = await this.importMesh(scene, "./models/", "sharpRock.glb")
         sharpRock = SharpROCK.meshes[1]
-
 
         const dGround = MeshBuilder.CreateGround("ground", { width: 100, height: 300}, scene)
         dGround.isVisible = false;
@@ -9718,15 +9707,14 @@ class App{
                     this._allSounds.enteringHoleS.play()
                     clearInterval(monsSpawnInterval)               
                     let floor = parseInt(floorNumber)
-                    floor +=1
+                    floor += 1
                     Monsterz.forEach(mons => mons.body.position.y = 100)
                     demons.forEach(mons => mons.bx.position.y = 100)
-                    await this.updateLocOnline({x: 0, z:0}, {x: 0, z: -94}) 
-                    this.myChar.bx.position = new Vector3(0,this.yPos,-94)
+                    // await this.updateLocOnline({x: 0, z:0}, {x: 0, z: -94}) 
+                    // this.myChar.bx.position = new Vector3(0,this.yPos,-94)
                     await this._dungeon('Normal', floor, true)
-                    this.myChar.bx.position = new Vector3(0,this.yPos,-94)
-                    this.arrangeCam(-1.4, 1.15)
-                                   
+                    // this.myChar.bx.position = new Vector3(0,this.yPos,-94)
+                    this.arrangeCam(-1.4, 1.15)                                   
                 }
             ))
         }
@@ -11172,14 +11160,12 @@ class App{
             thePlayer.rootSword.addRotation(Math.PI,0,0)
         })
         this.socket.on("user-cast", data => {
-            const {skillName, prevMode, place, elemColor, phyDmg, magDmg, inFrontPos} = data
+            const {skillName, place, elemColor, phyDmg, magDmg, inFrontPos} = data
             if(place !== this.currentPlace) return log("someone cast skill from diff place")
             players.forEach(player => {
                 if(player._id === data._id) {
-                    log("A player cast skill")
-                    player.mode = "none";
                     player._casting = true;
-                    this.initiateSkill(skillName, player, phyDmg, magDmg, elemColor, inFrontPos, data.skillDmg, prevMode)
+                    this.initiateSkill(skillName, player, phyDmg, magDmg, elemColor, inFrontPos, data.skillDmg, false)
                 }
             })
         })
@@ -11486,7 +11472,7 @@ class App{
                 this.stopPress()
                 this.myChar.anims.forEach(anim => anim.stop())
                 this.myChar._moving = false
-
+                this.allCanPress()
                 if(this.myLoadingBarMin > 0){ //IF OPENING A TREASURE                
                     clearInterval(this.intervalUntilFull)
                     this.myLoadingBarMin = 0
@@ -11502,9 +11488,6 @@ class App{
                     log("I am hit while opening a treasure")
                     this.socketAvailable && this.socket.emit('reclose-treasure', this.targDetail.meshId)
                 }
-                const curMode = this.myChar.mode
-                this.myChar.mode = "none";
-                clearTimeout(this._attackTimeout)
                 this.hitByHero(this.myChar, data)
                 const myDef = this.recalPhyDefense(data.dmgTaken)
                 let toDeduct = myDef >= data.dmgTaken ? 1 : data.dmgTaken
@@ -11525,11 +11508,8 @@ class App{
                     }, 10000)
                     return this.gameOver()
                 }
-                this._attackTimeout = setTimeout(() => {
-                    this.allCanPress()
-                    this.myChar.mode = curMode
-                }, 500)
-                log("I am hit by a hero updating life")
+                this.recourceHits = 0 // for tree and ore
+                clearInterval(this.hitRecourceInterval)
             }else{
                 if(!thePlayer) return log("player that is hit not here")
                 log(thePlayer.name + " got hit")
@@ -11819,7 +11799,8 @@ class App{
                 this.playAnim(playerDet.anims, playerDet.moveActionName)
                 if(!playerDet.runningS.isPlaying) playerDet.runningS.play()
             }else if(
-            !playerDet._moving 
+            !playerDet._moving
+            && !playerDet._casting
             && !playerDet._attacking
             && !playerDet._training
             && !playerDet._minning
@@ -12013,7 +11994,7 @@ class App{
         // scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, e => {
 
         // }))
-        let btfRadius = 5
+        let btfRadius = 900
         let mousePressed = 0
         let canMouseMove = false
         scene.onPointerObservable.add((pointerInfo) => {
@@ -12048,8 +12029,7 @@ class App{
             const me = players.find(pl => pl._id === this.det._id)
             if(!me) return log("not found myself")
 
-            const moveFunc = () => {
-                
+            const moveFunc = () => {                
                 if(!this.myChar._moving) clearInterval(this.hitRecourceInterval)
                 resetBtfLookAndPos()
                 
@@ -12227,8 +12207,7 @@ class App{
                 break
 
             }
-        })
-  
+        })  
     }
     registerBlocks(myChar, spdBackwards){
         this.blocks.forEach(block => {
