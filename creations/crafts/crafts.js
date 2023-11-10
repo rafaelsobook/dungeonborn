@@ -22,7 +22,7 @@ const AllCrafts = [
             },
             {
                 name: "iron",
-                qnty: 1
+                qnty: 2
             },
         ],
         desc: 'A useful craft to defend yourself in the wild'
@@ -34,10 +34,30 @@ const AllCrafts = [
         requirements: [
             {
                 name: "leaves",
-                qnty: 2
+                qnty: 5
             }
         ],
         desc: 'only make this craft If you are far from monsters, so you can rest well'
+    },
+    {
+        name: "geteld",
+        craftType: "recource",
+        rqrdLvl: 10,
+        requirements: [
+            {
+                name: "fabric",
+                qnty: 5
+            },
+            {
+                name: "leaves",
+                qnty: 2
+            },
+            {
+                name: "wood",
+                qnty: 3
+            }
+        ],
+        desc: 'Craft this tent if you know your surroundings well'
     },
 ]
 

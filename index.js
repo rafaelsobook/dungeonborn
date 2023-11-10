@@ -425,6 +425,7 @@ let houzess = []
 let players = []
 let bonFirezz = []
 let bedLeavxx = []
+let geteldsCreated = []
 let Monsterz = []
 let demons = []
 let simpleNpc = []
@@ -432,6 +433,7 @@ let simpleNpc = []
 let theBonFirez = []
 let theFlowerz = []
 let theBedLeaves = []
+let theGetelds = []
 let theHouzes = []
 let allUzers = []
 let theOrez = []
@@ -479,6 +481,7 @@ let magicCircles = []
 let magicParticles = []
 let bonFireMesh
 let bedLeaveMesh
+let geteldMesh
 let grassBush
 let roadplank
 let dangerPlank
@@ -2980,7 +2983,9 @@ class App{
         if(!this.det.mycrafts.length) return
         const notAllowed = this.notAllowedCraft.some(pName => pName === this.currentPlace)
         if(notAllowed) return this.showTransaction("Craft Not Allowed", 2000)
+
         this.det.mycrafts.forEach(crft => {
+            
             const crftBx = createElement("div", "crft-bx")
             const crftImg = createElement("img", "craft-img")
             crftImg.src = `./images/actions/${crft.name}.svg`
@@ -3082,6 +3087,35 @@ class App{
                             })
                         } 
                     break;
+                    case "geteld":
+                        this.initializeMesh(geteldMesh, -this.yPos, crft.name);
+                        this.craftFunc = () => {
+                            if(this.currentPlace.includes("apartment") || this.currentPlace.includes("guild") || this.currentPlace.includes("heartland")) return this.showTransaction("Not Allowed Here", 2400)
+                            this.myChar.mode = 'none'
+                            toCraftCont.style.display = "none"
+                            const bonFPos = this.toDropMesh.getAbsolutePosition();
+                            this.willBow()
+                            const {x,z} = this.myChar.bx.position
+                            const myFPos = this.getMyPos(this.myChar.bx, 2)
+                            if(this.socketAvailable) this.socket.emit("stop-dosomething", 
+                            {_id: this.det._id, 
+                            dirTarg:{x: myFPos.x,z:myFPos.z}, 
+                            mypos: {x,z}, dur: 2000,
+                            mode: "willbow" })
+
+                            this.myChar.bx.lookAt(new Vector3(myFPos.x,this.yPos,myFPos.z),0,0,0)
+                            this.willHeadLoading(400, () => {
+                                openGameUI(this.det)
+                                this.myChar.mode = 'stand'
+                                this.allCanPress()
+                                this.craftGeteld({x: bonFPos.x, y: bonFPos.y+.05, z: bonFPos.z}, this._scene)
+                                if(this.socketAvailable) this.socket.emit("put-geteld", 
+                                {meshId: makeRandNum(), pos: {x: bonFPos.x, y: bonFPos.y, z: bonFPos.z}, place: this.currentPlace });
+                                this.cancelCraft()
+                                this.deductItemForCrafting(crft.requirements)
+                            })
+                        } 
+                    break;
                     default: // crafting weapon
                         this.craftFunc = () => {
                             toCraftCont.style.display = "none"
@@ -3139,7 +3173,6 @@ class App{
             })
         })
     }
-
     setRunningSound(){
         myCharDet.runningS.setPlaybackRate(1.2)
         const isOnFloorPlace = this.floorPlaces.some(placeName => this.currentPlace.includes(placeName))
@@ -3155,7 +3188,6 @@ class App{
             myCharDet.runningS.setPlaybackRate(.74)
         }
     }
-
     setRightUIs(categArrays, allOpen){
         rightUpperUI.style.display = "flex"
         rightUpperUI.childNodes.forEach(nod => {
@@ -3560,7 +3592,7 @@ class App{
         let restingInterval
         cancelDoingBtn.addEventListener("click", async e => {
 
-            if(this.targetRecource.name.includes("bed")){
+            if(this.targetRecource.name.includes("bed" && this.currentPlace.includes("apartment"))){
                 doingCont.style.display = "none"
                 this.myChar.bx.parent = null
                 this.myChar.bx.position = new Vector3(2,this.yPos,2.6)
@@ -3614,16 +3646,20 @@ class App{
                 return clearInterval(restingInterval)
             }
             //means we're sleeping on the ground wild
-            if(this.myChar.mode === "onground" && !this.currentPlace.includes("apartment")){
+            if(this.myChar.mode === "onground"){
                 doingCont.style.display = "none"
                 this.myChar.mode = "stand"
                 openGameUI()
                 this.allCanPress()
-                this.myChar.bx.position.y = this.yPos
-                log("waking up from bed leave")
+                log(this.targetRecource)
+                const prevPs = this.targetRecource.position
+                this.det.x = prevPs.x
+                this.det.z = prevPs.z
+                log(prevPs)
+                this.myChar.bx.position = new Vector3(prevPs.x, this.yPos, prevPs.z)
+                log("waking up from sleeping")
                 this.updateMyDetailsOL(this.det, false);
-                return clearInterval(restingInterval)
-            
+                return clearInterval(restingInterval)            
             }
         })
         pacBtn.addEventListener("click", async e => {
@@ -3859,6 +3895,28 @@ class App{
                     this.closePopUpAction()
                 },100)
                 return log("we will sleep in the bedleave")
+            }
+            if(this.targetRecource.name === "geteld"){
+                this.closePopUpAction()
+                this.stopPress()
+                this.myChar._moving = false
+                this.animStopAll(this.myChar, ['walk', 'running.fist', 'running.weapon'])
+                apartCont.style.display = "none"
+                doingCont.style.display = "block"
+                doingName.innerHTML = 'Sleeping'
+                cancelDoingBtn.innerHTML = 'wake up'
+                closeGameUI()
+                const blpos = this.targetRecource.position
+                this.myChar.bx.position = new Vector3(blpos.x,blpos.y+.8,blpos.z)
+                this.myChar.mode = "onground"
+                clearInterval(restingInterval)
+                restingInterval = setInterval(() => {
+                    if(this.det.survival.sleep >= 100 && this.det.sp >= this.det.maxSp) return clearInterval(restingInterval)
+                    this.det.survival.sleep+=.5
+                    this.det.sp+=1
+                    this.closePopUpAction()
+                },100)
+                return log("we will sleep in the geteld")
             }
             if(this.targetRecource.name.includes("bed")){
                 this.closePopUpAction()
@@ -6003,7 +6061,7 @@ class App{
                 }else log("this monster has no core")
 
                 if(theItem){ // if there is an item for this monster
-                    if(Math.random() * 10 > 8.5) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
+                    if(Math.random() * 10 > 8.2) this.popItemInfo({...theItem, meshId: makeRandNum(), qnty: 1})
                 }
                 
                 // EDIBLE MONSTERS
@@ -6182,8 +6240,7 @@ class App{
                     anim.stop()
                 }
             })
-        }
-        
+        }        
         if(theMons.monsSoundDied !== undefined) theMons.monsSoundDied.play()
         theMons.nameMesh.dispose()
         theMons.monsHealthPlane.dispose()
@@ -7990,6 +8047,7 @@ class App{
             theBonFirez = data.bonfires
             theFlowerz = data.flowerz
             theBedLeaves = data.bedleaves
+            theGetelds = data.getelds
 
             this.checkAll()
             plOnline.innerHTML = `players online: ${data.uzers.length}`
@@ -8137,6 +8195,7 @@ class App{
         this.checkSeedz()
         this.checkBonFirez()
         this.checkBedLeaves()
+        this.checkTents()
         this.checkTreasurez()
         this.checkFlowers()
         this.checkLootz()
@@ -10920,6 +10979,18 @@ class App{
             }
         })
     }
+    checkTents(){
+        if(isLoading || !geteldMesh ) return log('still loading geteld')
+        theGetelds.forEach(mon => {
+            if(mon.place !== this.currentPlace) return log("place not here")
+            const isMade = geteldsCreated.some(bonf => bonf.meshId === mon.meshId)
+            if(!isMade){
+               // create craftBonfire
+               this.craftGeteld(mon.pos)
+               geteldsCreated.push(mon)
+            }
+        })
+    }
     checkSeedz(){
         if(isLoading || seedMesh === undefined) return log('still loading or undeifned seed')
         theSeedz.forEach(seed => {
@@ -11329,6 +11400,11 @@ class App{
             log("someone craft bedleave")
             theBedLeaves = allbonzfire
             this.checkBedLeaves()
+        })
+        this.socket.on("geteld-crafted", allbonzfire => {
+            log("someone craft tent")
+            theGetelds = allbonzfire
+            this.checkTents()
         })
         this.socket.on("check-monsdied", data => {
             if(data.place !== this.currentPlace) return log("not the same place")
@@ -13471,6 +13547,21 @@ class App{
             this.closePopUpAction()
         })
     }
+    craftGeteld(loc, scene){
+        if(!geteldMesh) return log("geteldMesh not ready")
+        const tentGeteld = geteldMesh.clone("geteld");
+        tentGeteld.parent = null
+        tentGeteld.position = new Vector3(loc.x,loc.y,loc.z)
+
+        this.toRegAction(this.myChar.bx, tentGeteld, () => {
+            this.openPopUpAction("rest")
+            this.targetRecource = tentGeteld;
+            log("colliding with geteld")
+        })
+        this.toRegActionExit(this.myChar.bx, tentGeteld, () => {
+            this.closePopUpAction()
+        })
+    }
     putFakeShadow(meshBody, sizeShadow, posY){
         const newFakeShadow = fakeShadow.createInstance(`fakeShadow.${meshBody.name.split(".")[1]}`)
         newFakeShadow.parent = null
@@ -13691,6 +13782,9 @@ class App{
 
         const BedLeave = await this.importMesh(scene, "./models/", "bedleave.glb")
         bedLeaveMesh = BedLeave.meshes[1];
+
+        const GeteldRoot = await this.importMesh(scene, "./models/", "geteld.glb")
+        geteldMesh = GeteldRoot.meshes[1];
 
         const GrassBush = await this.importMesh(scene, "./models/", "grassBushes.glb")
         grassBush = GrassBush.meshes[1];

@@ -9,8 +9,15 @@ const goblinLoot = [
     {
         name: 'fabric', 
         itemType: 'loot',
-        price: 3,
-        desc: "this can also be used for crafting medicines and weapon",
+        price: 10,
+        desc: "this can also be used for crafting medicines, shelter and weapon",
+        for: "slime",
+    },
+    {
+        name: 'fabric', 
+        itemType: 'loot',
+        price: 10,
+        desc: "this can also be used for crafting medicines, shelter and weapon",
         for: "ghost",
     },
     {

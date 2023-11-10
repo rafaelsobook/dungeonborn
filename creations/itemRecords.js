@@ -42,7 +42,7 @@ const records = [
         itemType: 'loot',
         origPrice: 30,
         secondPrice: 20,
-        desc: "this can also be used for crafting medicines and weapon",
+        desc: "this can be used for crafting medicines, shelter and weapons",
         rarity: 10,
         notLootIn: ["dungeon"]
     },
