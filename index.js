@@ -694,12 +694,15 @@ class App{
         // ADDITIONAL FUNCTIONS
         this.createNormalNpc = normalNpc
 
+        // tools
+        this.lod = 50
         this.mobileMode = false
         if(window.innerWidth >= 650){
             log("mobile mode TRUE")
             this.mobileMode = true
         }else{ log("mobile FALSE !")}
 
+    
         this.main()        
     }
     handleEncounterSound(theSound, bodyToAttached, playBackRate){
@@ -3591,11 +3594,12 @@ class App{
         // kaya nandito tong restingInterval kase kelangan ko din sa cancelDoing
         let restingInterval
         cancelDoingBtn.addEventListener("click", async e => {
-
-            if(this.targetRecource.name.includes("bed" && this.currentPlace.includes("apartment"))){
+            log(this.targetRecource.name, this.currentPlace)
+            if(this.targetRecource.name.includes("bed") && this.currentPlace.includes("apartment")){
                 doingCont.style.display = "none"
                 this.myChar.bx.parent = null
-                this.myChar.bx.position = new Vector3(2,this.yPos,2.6)
+                // this.myChar.bx.position = new Vector3(2,this.yPos,2.6)
+                this.myChar.bx.position = new Vector3(0,this.yPos,0)
                 this.myChar.mode = "stand"
                 openGameUI()
                 this.allCanPress()
@@ -3643,10 +3647,12 @@ class App{
                         }, 3000)
                     })
                 }
+                log("we are inside apartment")
                 return clearInterval(restingInterval)
             }
             //means we're sleeping on the ground wild
             if(this.myChar.mode === "onground"){
+                log("we are on the wild")
                 doingCont.style.display = "none"
                 this.myChar.mode = "stand"
                 openGameUI()
@@ -12537,7 +12543,7 @@ class App{
         hitBxMat.specularColor = new Color3(0,0,0)
         
         hitBx.position.y = 100
-
+        hitBx.addLODLevel(this.lod,null)
         this.hitBox = hitBx
     }
     createHitBx(scene, meshId, pos, hp, scaleSize, posY, lootRarity,cb){
@@ -12547,6 +12553,7 @@ class App{
         const bxHeight = this.getMeshHeight(bx)
         let boxSound;
         let explodeS
+        
         const smokePrtcle = this.createSmoke(scene, (partcle) => {
             partcle.emitRate = 30
             partcle.createSphereEmitter(1);
@@ -12873,7 +12880,6 @@ class App{
         const rightPlank = roadplank.clone("rightPlank")
         const topPlank = roadplank.clone("topPlank")
      
-        
         rightPlank.position = new Vector3(pos.x,.5,pos.z)
         const {x,z} = rightPlank.getAbsolutePosition();
         topPlank.parent = rightPlank
@@ -12886,6 +12892,10 @@ class App{
         this.freeze(leftPlank)
         this.freeze(rightPlank)
         this.freeze(topPlank)
+
+        leftPlank.addLODLevel(this.lod-10, null)
+        rightPlank.addLODLevel(this.lod-10, null)
+        topPlank.addLODLevel(this.lod-10, null)
         this.blocks.push(topPlank)
     }
     createWoodTall(pos,scaleUp, woodFat, dirTarg, rotat){
@@ -12895,6 +12905,7 @@ class App{
         tallWood.scaling = new Vector3(woodFat,scaleUp,woodFat)
         tallWood.lookAt(new Vector3(x,tallWood.position.y,z),0,0,0)
         if(rotat)tallWood.addRotation(rotat.x,0,rotat.z)
+        tallWood.addLODLevel(this.lod, null)
     }
     createPSystem(theJson,scene){
 
@@ -13750,7 +13761,7 @@ class App{
     createTallRock(pos, num){
         if(!this.tallRocks.length) return log("Tall rocks main mesh not made")
         const theTallRock = this.tallRocks[num].clone("rock")
-
+        theTallRock.addLODLevel(this.lod, null)
         theTallRock.position = new Vector3(pos.x,pos.y,pos.z)
         this.putFakeShadow(theTallRock, 8,.02)
         this.blocks.push(theTallRock);
@@ -13843,6 +13854,7 @@ class App{
         meshes[0].position = new Vector3(0,0,0)
 
         const grass = BABYLON.Mesh.MergeMeshes([meshes[1], meshes[2]], true, true, undefined, false, true);
+        grass.addLODLevel(this.lod, null)
         grass.position = new Vector3(0,0,0)
         grass.freezeWorldMatrix();
         grass.material.freeze()
@@ -13893,11 +13905,13 @@ class App{
     async createMainTree(scene, treeName){
         const Tree = await this.importMesh(scene,"./models/", `${treeName ? treeName : "tree"}.glb`);
         wholeTree = Tree.meshes[1]
+        wholeTree.addLODLevel(this.lod+10, null)
     }
     createManyInstance(model, total, xMinAndMax, zMinAndMax, mainModelUp, willBump){
         const {xmin,xmax} = xMinAndMax;
         const {zmin,zmax} = zMinAndMax;
         if(mainModelUp) model.position.y = 100;
+        model.addLODLevel(this.lod, null)
         for(var i = 0;i <= total;i ++){
             const newModel = model.createInstance()
             const newX = BABYLON.Scalar.RandomRange(xmin, xmax)
@@ -14007,6 +14021,8 @@ class App{
         newHouse.checkCollisions = true
         newHouse.freezeWorldMatrix()
         newHouse.material.freeze()
+
+        newHouse.addLODLevel(45, null);
         this.blocks.push(newHouse)
     }
     async createImportantHouse(modelName, pos, doorPos, rotatY, scene){
@@ -14061,6 +14077,7 @@ class App{
         })
         this.blocks.push(tvrnH)
         tvrnH.boundingBox = true;
+        tvrnH.addLODLevel(45, null);
         return Tavern
     }
     createOre(mesh, data){
@@ -14185,9 +14202,8 @@ class App{
         newPlane.freezeWorldMatrix();
         newTree.material.freeze()
         this.Trees.push({...data, body: newPlane})
-        if(fakeShadow){
-            this.putFakeShadow(newPlane, 4,.02);
-        }
+        newTree.addLODLevel(this.lod+15,null)
+        if(fakeShadow) this.putFakeShadow(newPlane, 4,.02);
     }
     createTreasure(theMesh, data){
         const newTreasure = theMesh.clone(`treasure.${data.meshId}`)
@@ -14240,7 +14256,7 @@ class App{
         const newMesh = theMesh.clone(`flower.${data.meshId}`)
         newMesh.position = new Vector3(data.pos.x,0,data.pos.z)
         newMesh.rotation = new Vector3(0,Math.random()*4,0)
-
+        newMesh.addLODLevel(this.lod,null)
         this.myChar.detector.actionManager.registerAction(new ExecuteCodeAction(
             {
                 trigger: ActionManager.OnIntersectionEnterTrigger,
@@ -14906,6 +14922,7 @@ class App{
                 }
             }
         })
+        entries.rootNodes[0].addLODLevel(this.lod - 15,null)
         entries.rootNodes[0].parent = body
         entries.rootNodes[0].position.y -= this.yPos
         entries.rootNodes[0].rotationQuaternion = null
@@ -14926,6 +14943,7 @@ class App{
             if(mesh.name.includes('armor')){
                 if(mesh.name.includes(det.armor.name)){
                     mesh.isVisible = true
+                    mesh.addLODLevel(this.lod - 20, null)
                 }else{
                     mesh.dispose()
                 }
@@ -15461,7 +15479,7 @@ class App{
         if(!entries.rootNodes[0].getChildren()) return log(`error making ${monsName} `)
         entries.rootNodes[0].getChildren().forEach(mes => {
             mes.name = mes.name.split(" ")[2]
-           
+            
             if(monsName === "slime"){
                 log("yes a slime")
                 if(mes.name.includes("slime")){
@@ -15509,6 +15527,7 @@ class App{
         
         meshes[0].scaling = new Vector3(1 + scaleR,1 + scaleR,1 + scaleR)
         meshes[0].parent = body
+        
         meshes[0].position = new Vector3(0,-1,0)
         if(monsName === "golem") meshes[0].rotationQuaternion = null
         // ACTION MANAGERS

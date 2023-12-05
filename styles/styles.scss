@@ -1416,7 +1416,8 @@ nav {
 // LOADING SCREEN
 #loadingScreen {
   @include fitToScreen(10);
-  background-color: rgb(41, 37, 34);
+  background: url("../images/wallpaper/decemberWall.png") no-repeat;
+  background-size: cover;
   display: none;
   justify-content: center;
   align-items: center;

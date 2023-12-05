@@ -1994,7 +1994,8 @@ nav {
   z-index: 10;
   height: 100%;
   width: 100%;
-  background-color: #292522;
+  background: url("../images/wallpaper/decemberWall.png") no-repeat;
+  background-size: cover;
   display: none;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
