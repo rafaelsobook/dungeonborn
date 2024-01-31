@@ -83,8 +83,8 @@ function allDemonz(floorNumber){
             spd: 3.5,
             condition: "none",
             dirTarg: {x: 0, z: 0},
-            speech: `Someone has made it here so far`,
-            dyingSpeech: "you lowly humans",
+            speech: `Someone is brave to face me`,
+            dyingSpeech: "lowly humans",
             otherSpeech: ['You shall burn', 'Play with my fire', "There is no escape", "It's too late to return now"],
             atkInterval: 1300
         },

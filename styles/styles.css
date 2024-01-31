@@ -2831,6 +2831,14 @@ nav {
   display: none;
 }
 
+.right-lower-ui .autoattack-btn {
+  bottom: 39%;
+  left: -25%;
+  -webkit-transform: scale(1.2) rotate(-90deg);
+          transform: scale(1.2) rotate(-90deg);
+  border: 1px solid #8d8d8d;
+}
+
 .right-lower-ui .for-border {
   position: absolute;
   width: 100px;

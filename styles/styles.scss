@@ -1969,6 +1969,12 @@ nav {
     left: -6%;
     display: none;
   }
+  .autoattack-btn {
+    bottom: 39%;
+    left: -25%;
+    transform: scale(1.2) rotate(-90deg);
+    border: 1px solid #8d8d8d;
+  }
   .for-border {
     position: absolute;
     width: 100px;
