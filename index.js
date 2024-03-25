@@ -27,8 +27,8 @@ const log = console.log
 
 const {Matrix, Texture, Axis,ParticleSystem, Mesh, ShadowGenerator, ActionManager, ExecuteCodeAction, GlowLayer, PointLight, Engine, Scene, ArcRotateCamera, HemisphericLight,DirectionalLight, Vector3, MeshBuilder, FreeCamera, SceneLoader, Color3, StandardMaterial} = BABYLON
 
-const webSocketURL = "https://dbtcp.herokuapp.com"||"https://dungeonborntcpcon.onrender.com"
-const APIURL = "https://dbserver.herokuapp.com" || 'https://fair-ruby-fly-tam.cyclic.app'
+const webSocketURL = "https://db-tcp-c70a89fa25d5.herokuapp.com"||"https://dungeonborntcpcon.onrender.com"
+const APIURL = "https://dbserver-0e89e73ffdf0.herokuapp.com" || 'https://fair-ruby-fly-tam.cyclic.app'
 const imgDir = "./images/peoplepics/"
 
 const apiOpt = (meth, toPost, token) => {
